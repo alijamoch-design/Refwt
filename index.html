@@ -33,7 +33,7 @@
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v4.0.0</div>
+                <div class="splash-version">v5.0.0</div>
             </div>
         </div>
 
@@ -52,7 +52,6 @@
                             <i class="fa-regular fa-bell"></i>
                             <span class="badge" id="notificationBadge">0</span>
                         </button>
-                        <!-- تم إزالة زر Settings نهائياً -->
                     </div>
                 </div>
 
@@ -134,10 +133,12 @@
                             </div>
                         </div>
 
-                        <!-- زر قلب الزوج (جديد) -->
+                        <!-- زر قلب الزوج المحسن -->
                         <div class="swap-flip-container">
                             <button class="swap-flip-btn" onclick="flipSwapPair()">
-                                <i class="fa-solid fa-arrow-down-arrow-up"></i>
+                                <i class="fa-solid fa-arrow-down-wide-short"></i>
+                                <span id="swapPairText">USDT ⟷ REFI</span>
+                                <i class="fa-solid fa-arrow-up-wide-short"></i>
                             </button>
                         </div>
 
@@ -161,22 +162,18 @@
                         <div class="swap-info">
                             <div class="info-row">
                                 <span>Exchange Rate</span>
-                                <span>1 USDT = 500,000 REFI</span>
+                                <span id="swapRate">1 USDT = 500,000 REFI</span>
                             </div>
-                            <div class="info-row highlight">
+                            <div class="info-row">
                                 <span>Network Fee</span>
                                 <span class="fee-free">0 BNB (FREE)</span>
                             </div>
-                            <div class="info-row">
-                                <span>REFI Price</span>
-                                <span id="refiPrice">$0.000002</span>
-                            </div>
                         </div>
 
-                        <!-- ملاحظة (تم تحديثها) -->
-                        <div class="swap-note success">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span>✅ All swaps are FREE! No fees charged.</span>
+                        <!-- ملاحظة السواب -->
+                        <div class="swap-note info">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span id="swapNote">You can swap any token to USDT or REFI only</span>
                         </div>
 
                         <!-- زر التأكيد -->
@@ -313,7 +310,7 @@
                 </div>
 
                 <div class="referral-description">
-                    <i class="fa-regular fa-star" style="color: #ff5ad9;"></i>
+                    <i class="fa-regular fa-star"></i>
                     <p>Share your link and get <span class="highlight">250,000 REFI</span> for every friend who joins. Complete milestones to earn massive USDT rewards!</p>
                 </div>
 
@@ -322,6 +319,14 @@
                 </div>
 
                 <div class="milestones-list" id="milestonesList"></div>
+                
+                <!-- سجل الإحالات (اختياري) -->
+                <div class="referral-history" id="referralHistory" style="display: none;">
+                    <div class="section-header">
+                        <h3>Referral History</h3>
+                    </div>
+                    <div class="referral-history-list" id="referralHistoryList"></div>
+                </div>
             </div>
         </main>
 
@@ -346,7 +351,9 @@
         </nav>
     </div>
 
-    <!-- نافذة الإيداع -->
+    <!-- ====== MODALS ====== -->
+
+    <!-- نافذة الإيداع المحسنة -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -359,10 +366,15 @@
                 <div class="form-group">
                     <label>Select Currency</label>
                     <div class="currency-select-wrapper">
-                        <select id="depositCurrency" class="form-select" onchange="updateDepositMin()">
+                        <select id="depositCurrency" class="form-select" onchange="updateDepositInfo()">
                             <option value="REFI">REFI (Min: 500,000)</option>
                             <option value="USDT">USDT (Min: 10)</option>
                             <option value="BNB">BNB (Min: 0.02)</option>
+                            <option value="ETH">ETH (Min: 0.005)</option>
+                            <option value="SHIB">SHIB (Min: 2,000,000)</option>
+                            <option value="PEPE">PEPE (Min: 3,000,000)</option>
+                            <option value="SOL">SOL (Min: 0.12)</option>
+                            <option value="TRX">TRX (Min: 40)</option>
                         </select>
                         <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="depositIcon">
                     </div>
@@ -375,19 +387,30 @@
                     <label>Transaction ID</label>
                     <input type="text" id="txnId" class="form-input" placeholder="Enter transaction ID">
                 </div>
+                
+                <!-- عنوان الإيداع الديناميكي مع زر نسخ -->
                 <div class="deposit-address-card">
-                    <p>Send to this address:</p>
-                    <div class="address-container">
-                        <code>0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
-                        <button class="copy-btn-small" onclick="copyAddress()">
-                            <i class="fa-regular fa-copy"></i>
+                    <div class="address-header">
+                        <p>Send to this address:</p>
+                        <button class="copy-address-btn" onclick="copyDepositAddress()">
+                            <i class="fa-regular fa-copy"></i> Copy
                         </button>
                     </div>
-                    <div class="address-note">
+                    <div class="address-container" id="depositAddressContainer">
+                        <code id="depositAddress">0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
+                    </div>
+                    <div class="address-note" id="depositAddressNote">
                         <i class="fa-regular fa-circle-check"></i>
                         <span>Supports BEP20 & ERC20</span>
                     </div>
                 </div>
+                
+                <!-- معلومات إضافية -->
+                <div class="deposit-info" id="depositInfo">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Minimum deposit will be verified by admin</span>
+                </div>
+                
                 <button class="modal-btn" onclick="submitDeposit()">
                     <i class="fa-regular fa-circle-down"></i>
                     Submit Deposit
@@ -411,27 +434,28 @@
                     <div class="currency-select-wrapper">
                         <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
                             <option value="REFI">REFI (No fee)</option>
-                            <option value="USDT">USDT (No fee)</option>
-                            <option value="BNB">BNB (No fee)</option>
+                            <option value="USDT">USDT (Fee: 0.00016 BNB)</option>
+                            <option value="BNB">BNB (Fee: 0.0005 BNB)</option>
                         </select>
                         <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Amount</label>
-                    <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount">
+                    <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" oninput="checkWithdrawFee()">
                 </div>
                 <div class="form-group">
                     <label>Wallet Address</label>
                     <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address">
                 </div>
                 
-                <!-- تم إزالة رسوم USDT -->
-                <div id="feeInfo" class="fee-info success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span>✅ All withdrawals are FREE! No fees charged.</span>
+                <!-- تحذير الرسوم -->
+                <div id="feeWarning" class="fee-warning hidden">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="feeWarningText">This withdrawal requires a fee</span>
                 </div>
                 
+                <!-- ملخص السحب -->
                 <div class="withdraw-summary">
                     <div class="summary-row">
                         <span>You will receive:</span>
@@ -439,7 +463,7 @@
                     </div>
                     <div class="summary-row">
                         <span>Network fee:</span>
-                        <span class="fee-free">0 BNB (FREE)</span>
+                        <span id="networkFee">0 BNB</span>
                     </div>
                 </div>
                 
@@ -451,7 +475,7 @@
         </div>
     </div>
 
-    <!-- نافذة التاريخ (جديد) -->
+    <!-- نافذة التاريخ المحسنة -->
     <div id="historyModal" class="modal">
         <div class="modal-content history-modal">
             <div class="modal-header">
@@ -465,11 +489,11 @@
                     <button class="history-tab active" onclick="filterHistory('all')">All</button>
                     <button class="history-tab" onclick="filterHistory('deposit')">Deposits</button>
                     <button class="history-tab" onclick="filterHistory('withdraw')">Withdrawals</button>
+                    <button class="history-tab" onclick="filterHistory('swap')">Swaps</button>
                     <button class="history-tab" onclick="filterHistory('referral')">Referrals</button>
                     <button class="history-tab" onclick="filterHistory('staking')">Staking</button>
                 </div>
                 <div class="history-list" id="historyList">
-                    <!-- سيتم تعبئتها بواسطة JavaScript -->
                     <div class="loading-spinner">
                         <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading history...
                     </div>
@@ -478,7 +502,7 @@
         </div>
     </div>
 
-    <!-- نافذة الإشعارات (جديد) -->
+    <!-- نافذة الإشعارات -->
     <div id="notificationsModal" class="modal">
         <div class="modal-content notifications-modal">
             <div class="modal-header">
@@ -488,14 +512,77 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="notifications-list" id="notificationsList">
-                    <!-- سيتم تعبئتها بواسطة JavaScript -->
-                    <div class="empty-state">
-                        <i class="fa-regular fa-bell-slash"></i>
-                        <p>No notifications yet</p>
-                        <span>We'll notify you when something arrives</span>
-                    </div>
+                <div class="notifications-list" id="notificationsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== ADMIN PANEL - صفحة المشرف المحسنة ====== -->
+    <div id="adminPanel" class="admin-panel hidden">
+        <div class="admin-header">
+            <div class="admin-header-content">
+                <h2><i class="fa-solid fa-crown" style="color: gold;"></i> Admin Dashboard</h2>
+                <button class="admin-close-btn" onclick="closeAdminPanel()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="admin-stats" id="adminStats">
+                <div class="admin-stat-card">
+                    <span class="admin-stat-label">Total Users</span>
+                    <span class="admin-stat-value" id="totalUsers">0</span>
                 </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-label">Pending</span>
+                    <span class="admin-stat-value" id="pendingCount">0</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-label">Approved</span>
+                    <span class="admin-stat-value" id="approvedCount">0</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-label">Total Referrals</span>
+                    <span class="admin-stat-value" id="totalReferralsCount">0</span>
+                </div>
+            </div>
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="showAdminTab('deposits')">
+                    <i class="fa-regular fa-circle-down"></i> Deposits
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('withdrawals')">
+                    <i class="fa-regular fa-circle-up"></i> Withdrawals
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('completed')">
+                    <i class="fa-regular fa-circle-check"></i> Completed
+                </button>
+                <button class="admin-tab" onclick="showAdminTab('rejected')">
+                    <i class="fa-regular fa-circle-xmark"></i> Rejected
+                </button>
+            </div>
+        </div>
+        
+        <div class="admin-content" id="adminContent">
+            <!-- المحتوى يتعبأ ديناميكياً -->
+            <div class="loading-spinner">
+                <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading admin panel...
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار العملة -->
+    <div id="currencySelectorModal" class="modal currency-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Currency</h3>
+                <button class="close-btn" onclick="closeModal('currencySelectorModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="currency-search">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
+                </div>
+                <div class="currency-list" id="currencyList"></div>
             </div>
         </div>
     </div>
@@ -553,25 +640,6 @@
                 </button>
             </div>
             <div class="modal-body" id="stakingDetailsBody"></div>
-        </div>
-    </div>
-
-    <!-- نافذة اختيار العملة (جديد) -->
-    <div id="currencySelectorModal" class="modal currency-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Select Currency</h3>
-                <button class="close-btn" onclick="closeModal('currencySelectorModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="currency-search">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
-                </div>
-                <div class="currency-list" id="currencyList"></div>
-            </div>
         </div>
     </div>
 
