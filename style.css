@@ -7,13 +7,12 @@
 }
 
 :root {
-    /* الألوان الوردية الرئيسية */
+    /* الألوان الوردية */
     --pink-1: #ff5ad9;
     --pink-2: #e128b6;
     --pink-3: #b0007a;
     --pink-4: #ff00cc;
     --pink-5: #ff8ee8;
-    --pink-6: #ff3b9a;
     --pink-glow: rgba(255, 90, 217, 0.5);
     --pink-glow-strong: rgba(255, 0, 204, 0.8);
     
@@ -29,22 +28,16 @@
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --info: #3b82f6;
     
     /* التدرجات */
     --gradient-pink: linear-gradient(135deg, var(--pink-1), var(--pink-2), var(--pink-3));
-    --gradient-pink-reverse: linear-gradient(135deg, var(--pink-3), var(--pink-2), var(--pink-1));
     --gradient-pink-horizontal: linear-gradient(90deg, var(--pink-1), var(--pink-2), var(--pink-3));
     --gradient-dark: linear-gradient(135deg, #1e1a2a, #2a1a2a);
     
     /* الظلال */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-pink: 0 4px 20px var(--pink-glow);
 }
 
-/* ====== BASE STYLES ====== */
 body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
@@ -53,10 +46,9 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    position: relative;
 }
 
-/* ====== APP CONTAINER ====== */
+/* ====== حاوية التطبيق ====== */
 .app-container {
     width: 100%;
     max-width: 428px;
@@ -66,16 +58,14 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
-    -ms-overflow-style: none;
     box-shadow: 0 0 50px var(--pink-glow);
-    border-radius: 0;
 }
 
 .app-container::-webkit-scrollbar {
     display: none;
 }
 
-/* ====== SPLASH SCREEN ====== */
+/* ====== شاشة التحميل ====== */
 .splash-screen {
     position: fixed;
     top: 0;
@@ -106,34 +96,34 @@ body {
 }
 
 .splash-logo {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     background: var(--gradient-pink);
-    border-radius: 30px;
+    border-radius: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-    box-shadow: 0 0 30px var(--pink-glow-strong);
+    box-shadow: 0 0 40px var(--pink-glow-strong);
     animation: pulse 2s ease-in-out infinite;
-    padding: 10px;
+    padding: 15px;
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 30px var(--pink-glow-strong); }
-    50% { transform: scale(1.05); box-shadow: 0 0 50px var(--pink-glow-strong); }
+    0%, 100% { transform: scale(1); box-shadow: 0 0 40px var(--pink-glow-strong); }
+    50% { transform: scale(1.05); box-shadow: 0 0 60px var(--pink-glow-strong); }
 }
 
 .refi-logo-img {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     filter: brightness(0) invert(1);
 }
 
 .splash-title {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 36px;
+    font-weight: 800;
     background: var(--gradient-pink-horizontal);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -142,9 +132,9 @@ body {
 }
 
 .splash-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 90, 217, 0.3);
+    width: 45px;
+    height: 45px;
+    border: 4px solid rgba(255, 90, 217, 0.3);
     border-top-color: var(--pink-1);
     border-radius: 50%;
     margin: 20px auto;
@@ -157,12 +147,12 @@ body {
 
 .splash-version {
     color: var(--text-secondary);
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 20px;
     opacity: 0.7;
 }
 
-/* ====== HEADER ====== */
+/* ====== الهيدر ====== */
 .header {
     display: flex;
     justify-content: space-between;
@@ -242,7 +232,7 @@ body {
     font-weight: 600;
 }
 
-/* ====== BALANCE CARD ====== */
+/* ====== بطاقة الرصيد ====== */
 .balance-card {
     background: var(--gradient-dark);
     margin: 15px 20px;
@@ -330,7 +320,6 @@ body {
     gap: 5px;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .action-btn i {
@@ -351,7 +340,7 @@ body {
     transform: rotate(360deg);
 }
 
-/* ====== SECTION HEADER ====== */
+/* ====== عنوان القسم ====== */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -423,7 +412,7 @@ body {
     color: #10b981;
 }
 
-/* ====== ASSETS LIST ====== */
+/* ====== قائمة الأصول ====== */
 .assets-list {
     padding: 0 20px;
     display: flex;
@@ -523,7 +512,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* ====== TOP CRYPTO LIST ====== */
+/* ====== قائمة العملات ====== */
 .top-crypto-list {
     padding: 0 20px;
     display: flex;
@@ -602,38 +591,7 @@ body {
     color: var(--danger);
 }
 
-/* ====== NEWS TICKER ====== */
-.news-ticker {
-    background: var(--bg-card);
-    margin: 0 20px 20px;
-    padding: 12px 16px;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 1px solid var(--border-color);
-}
-
-.news-ticker i {
-    color: var(--pink-1);
-    font-size: 18px;
-}
-
-.news-text {
-    color: var(--text-secondary);
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    animation: ticker 15s linear infinite;
-}
-
-@keyframes ticker {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
-}
-
-/* ====== BOTTOM NAVIGATION ====== */
+/* ====== القائمة السفلية ====== */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -695,16 +653,12 @@ body {
     transform: translateY(-2px);
 }
 
-.nav-item:hover i {
-    transform: scale(1.1);
-}
-
-/* ====== HIDDEN CLASS ====== */
+/* ====== Hidden Class ====== */
 .hidden {
     display: none !important;
 }
 
-/* ====== BACK BUTTON ====== */
+/* ====== Back Button ====== */
 .back-btn {
     background: var(--bg-card);
     border: none;
@@ -724,7 +678,7 @@ body {
     transform: scale(1.1);
 }
 
-/* ====== SWAP SECTION ====== */
+/* ====== Swap Section ====== */
 .swap-container {
     padding: 20px;
 }
@@ -929,7 +883,7 @@ body {
     box-shadow: var(--shadow-pink);
 }
 
-/* ====== STAKING SECTION ====== */
+/* ====== Staking Section ====== */
 .staking-header {
     padding: 0 20px;
     margin: 10px 0;
@@ -1037,87 +991,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* ====== STAKING MISSIONS ====== */
-.staking-missions {
-    margin: 20px 0;
-}
-
-.mission-badge {
-    background: var(--gradient-pink);
-    color: white;
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 20px;
-}
-
-.missions-grid {
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.mission-card {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.mission-card:hover {
-    border-color: var(--pink-1);
-    transform: translateX(5px);
-}
-
-.mission-info h4 {
-    font-size: 14px;
-    margin-bottom: 5px;
-}
-
-.mission-info p {
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-
-.mission-reward {
-    color: var(--pink-1);
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.claim-btn {
-    background: var(--gradient-pink);
-    border: none;
-    border-radius: 12px;
-    padding: 8px 15px;
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.claim-btn:hover {
-    transform: scale(1.05);
-    box-shadow: var(--shadow-pink);
-}
-
-.claim-btn.completed {
-    background: var(--success);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.claim-btn.completed:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-/* ====== STAKE INPUT ====== */
+/* ====== Stake Input ====== */
 .stake-input-section {
     padding: 20px;
 }
@@ -1196,7 +1070,7 @@ body {
     margin-top: 5px;
 }
 
-/* ====== ACTIVE STAKES ====== */
+/* ====== Active Stakes ====== */
 .active-stakes-header {
     display: flex;
     justify-content: space-between;
@@ -1257,7 +1131,83 @@ body {
     color: var(--text-secondary);
 }
 
-/* ====== REFERRAL SECTION ====== */
+/* ====== Staking Missions ====== */
+.staking-missions {
+    margin: 20px 0;
+    padding-bottom: 30px;
+}
+
+.mission-badge {
+    background: var(--gradient-pink);
+    color: white;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.missions-grid {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mission-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.mission-card:hover {
+    border-color: var(--pink-1);
+    transform: translateX(5px);
+}
+
+.mission-info h4 {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.mission-info p {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.mission-reward {
+    color: var(--pink-1);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.claim-btn {
+    background: var(--gradient-pink);
+    border: none;
+    border-radius: 12px;
+    padding: 8px 15px;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.claim-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-pink);
+}
+
+.claim-btn.completed {
+    background: var(--success);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ====== Referral Section ====== */
 .referral-header {
     padding: 0 20px;
     margin: 10px 0;
@@ -1345,7 +1295,7 @@ body {
     font-weight: 700;
 }
 
-/* ====== MILESTONES LIST ====== */
+/* ====== Milestones List ====== */
 .milestones-list {
     padding: 0 20px;
     display: flex;
@@ -1418,7 +1368,7 @@ body {
     min-width: 45px;
 }
 
-/* ====== MODAL STYLES ====== */
+/* ====== Modal Styles ====== */
 .modal {
     display: none;
     position: fixed;
@@ -1507,7 +1457,7 @@ body {
     padding: 20px;
 }
 
-/* ====== FORM STYLES ====== */
+/* ====== Form Styles ====== */
 .form-group {
     margin-bottom: 20px;
 }
@@ -1644,7 +1594,7 @@ body {
     box-shadow: var(--shadow-pink);
 }
 
-/* ====== FEE WARNING ====== */
+/* ====== Fee Warning ====== */
 .fee-warning {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid var(--warning);
@@ -1662,7 +1612,7 @@ body {
     display: none;
 }
 
-/* ====== WITHDRAW SUMMARY ====== */
+/* ====== Withdraw Summary ====== */
 .withdraw-summary {
     background: var(--bg-card);
     border-radius: 12px;
@@ -1670,7 +1620,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ====== P2P MODAL ====== */
+/* ====== P2P Modal ====== */
 .p2p-modal {
     background: linear-gradient(135deg, #1e1a2a, #2a1a2a);
     border: 2px solid var(--pink-1);
@@ -1753,7 +1703,7 @@ body {
     margin-top: 5px;
 }
 
-/* ====== TOAST NOTIFICATION ====== */
+/* ====== Toast Notification ====== */
 .toast {
     position: fixed;
     bottom: 100px;
@@ -1797,11 +1747,7 @@ body {
     gap: 8px;
 }
 
-.toast-content i {
-    font-size: 18px;
-}
-
-/* ====== SCROLL TOP BUTTON ====== */
+/* ====== Scroll Top Button ====== */
 .scroll-top-btn {
     position: fixed;
     bottom: 100px;
@@ -1826,11 +1772,7 @@ body {
     display: flex;
 }
 
-.scroll-top-btn:hover {
-    transform: scale(1.1);
-}
-
-/* ====== LOADING SPINNER ====== */
+/* ====== Loading Spinner ====== */
 .loading-spinner {
     text-align: center;
     padding: 20px;
@@ -1842,27 +1784,7 @@ body {
     margin-right: 8px;
 }
 
-/* ====== RESPONSIVE ====== */
-@media (max-width: 428px) {
-    .balance-amount {
-        font-size: 40px;
-    }
-    
-    .action-btn {
-        padding: 10px 3px;
-        font-size: 11px;
-    }
-    
-    .action-btn i {
-        font-size: 16px;
-    }
-    
-    .staking-title, .referral-title {
-        font-size: 24px;
-    }
-}
-
-/* ====== ANIMATIONS ====== */
+/* ====== Animations ====== */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -1883,11 +1805,22 @@ body {
     animation: pop 0.3s ease;
 }
 
-/* ====== UTILITY CLASSES ====== */
-.text-pink { color: var(--pink-1); }
-.text-success { color: var(--success); }
-.text-warning { color: var(--warning); }
-.text-danger { color: var(--danger); }
-.bg-pink { background: var(--gradient-pink); }
-.glow { box-shadow: var(--shadow-pink); }
-.rounded-full { border-radius: 9999px; }
+/* ====== Responsive ====== */
+@media (max-width: 428px) {
+    .balance-amount {
+        font-size: 40px;
+    }
+    
+    .action-btn {
+        padding: 10px 3px;
+        font-size: 11px;
+    }
+    
+    .action-btn i {
+        font-size: 16px;
+    }
+    
+    .staking-title, .referral-title {
+        font-size: 24px;
+    }
+}
