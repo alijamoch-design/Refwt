@@ -28,11 +28,12 @@ const CMC_ICONS = {
     ETH: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
     SOL: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png',
     TON: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11419.png',
-    XRP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/52.png',
     ADA: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2010.png',
     DOGE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png',
     SHIB: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5994.png',
-    PEPE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png'
+    PEPE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png',
+    BONK: 'https://s2.coinmarketcap.com/static/img/coins/64x64/23095.png',
+    TRUMP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/28382.png'
 };
 
 // ====== الروابط الثابتة ======
@@ -51,50 +52,84 @@ const CRYPTO_IDS = {
     USDT: 'tether',
     SOL: 'solana',
     TON: 'the-open-network',
-    XRP: 'xrp',
     ADA: 'cardano',
     DOGE: 'dogecoin',
     SHIB: 'shiba-inu',
-    PEPE: 'pepe'
+    PEPE: 'pepe',
+    BONK: 'bonk',
+    TRUMP: 'official-trump'
 };
 
-// خطط الستيكينغ
+// خطط الستيكينغ المحسنة
 const STAKING_PLANS = [
-    { id: '3days', days: 3, return: 40, name: '3 Days', reward: 5 },
-    { id: '7days', days: 7, return: 50, name: '7 Days', reward: 20 },
-    { id: '15days', days: 15, return: 70, name: '15 Days', reward: 30 },
-    { id: '30days', days: 30, return: 100, name: '30 Days', reward: 50 }
+    { 
+        id: '3days', 
+        days: 3, 
+        return: 40, 
+        name: '3 Days', 
+        reward: 5,
+        minAmount: 10,
+        description: 'Short term stake with quick returns'
+    },
+    { 
+        id: '7days', 
+        days: 7, 
+        return: 50, 
+        name: '7 Days', 
+        reward: 20,
+        minAmount: 20,
+        description: 'Weekly staking with higher rewards'
+    },
+    { 
+        id: '15days', 
+        days: 15, 
+        return: 70, 
+        name: '15 Days', 
+        reward: 30,
+        minAmount: 50,
+        description: 'Bi-weekly stake for serious earners'
+    },
+    { 
+        id: '30days', 
+        days: 30, 
+        return: 100, 
+        name: '30 Days', 
+        reward: 50,
+        minAmount: 100,
+        description: 'Maximum returns for long-term holders'
+    }
 ];
 
 // مهام الستيكينغ
 const STAKING_MISSIONS = [
-    { id: '3days', plan: '3 Days', reward: 5, claimed: false },
-    { id: '7days', plan: '7 Days', reward: 20, claimed: false },
-    { id: '15days', plan: '15 Days', reward: 30, claimed: false },
-    { id: '30days', plan: '30 Days', reward: 50, claimed: false }
+    { id: '3days', plan: '3 Days', reward: 5, claimed: false, icon: 'fa-clock' },
+    { id: '7days', plan: '7 Days', reward: 20, claimed: false, icon: 'fa-calendar-week' },
+    { id: '15days', plan: '15 Days', reward: 30, claimed: false, icon: 'fa-calendar-alt' },
+    { id: '30days', plan: '30 Days', reward: 50, claimed: false, icon: 'fa-calendar-check' }
 ];
 
 // مهام الإحالة
 const REFERRAL_MILESTONES = [
-    { referrals: 10, reward: 50, unit: 'USDT' },
-    { referrals: 25, reward: 120, unit: 'USDT' },
-    { referrals: 50, reward: 250, unit: 'USDT' },
-    { referrals: 100, reward: 500, unit: 'USDT' },
-    { referrals: 250, reward: 1000, unit: 'USDT' }
+    { referrals: 10, reward: 50, unit: 'USDT', icon: 'fa-bronze' },
+    { referrals: 25, reward: 120, unit: 'USDT', icon: 'fa-silver' },
+    { referrals: 50, reward: 250, unit: 'USDT', icon: 'fa-gold' },
+    { referrals: 100, reward: 500, unit: 'USDT', icon: 'fa-platinum' },
+    { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-diamond' }
 ];
 
-// قائمة العملات العشر
+// قائمة العملات (12 عملة)
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
     { symbol: 'BNB', name: 'Binance Coin' },
     { symbol: 'SOL', name: 'Solana' },
-    { symbol: 'XRP', name: 'Ripple' },
     { symbol: 'ADA', name: 'Cardano' },
     { symbol: 'DOGE', name: 'Dogecoin' },
     { symbol: 'TON', name: 'Toncoin' },
     { symbol: 'SHIB', name: 'Shiba Inu' },
-    { symbol: 'PEPE', name: 'Pepe' }
+    { symbol: 'PEPE', name: 'Pepe' },
+    { symbol: 'BONK', name: 'Bonk' },
+    { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
 // ====== State Management ======
@@ -127,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStakingPlans();
     setupScrollListener();
     startLivePrices();
-    loadNews();
     
     if (isAdmin()) {
         addAdminCrown();
@@ -137,12 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====== Load User Data ======
 async function loadUserData() {
     try {
-        // Load from localStorage
         const localData = localStorage.getItem(`user_${userId}`);
         if (localData) {
             userData = JSON.parse(localData);
         } else {
-            // Initialize new user
             userData = {
                 userId: userId,
                 userName: userName,
@@ -153,12 +185,13 @@ async function loadUserData() {
                     BTC: 0,
                     ETH: 0,
                     SOL: 0,
-                    XRP: 0,
                     ADA: 0,
                     DOGE: 0,
                     SHIB: 0,
                     PEPE: 0,
-                    TON: 0
+                    TON: 0,
+                    BONK: 0,
+                    TRUMP: 0
                 },
                 referralCode: generateReferralCode(),
                 referredBy: null,
@@ -177,7 +210,6 @@ async function loadUserData() {
             localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         }
         
-        // Load from Firebase
         if (db) {
             const userDoc = await db.collection('users').doc(userId).get();
             if (userDoc.exists) {
@@ -192,7 +224,6 @@ async function loadUserData() {
                 await db.collection('users').doc(userId).set(userData);
             }
             
-            // استماع للتغييرات في الوقت الفعلي
             setupRealtimeListeners();
         }
         
@@ -207,7 +238,6 @@ async function loadUserData() {
 
 // ====== Generate Unique Referral Code ======
 function generateReferralCode() {
-    // كود فريد مكون من REF + 6 أحرف عشوائية + 4 أحرف من userId
     const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
     const userPart = userId.substring(0, 4).toUpperCase();
     return `REF${randomPart}${userPart}`;
@@ -218,27 +248,22 @@ function getReferralLink() {
     return `${BOT_LINK}?start=${userData.referralCode}`;
 }
 
-// ====== Process Referral (محمي ضد الغش) ======
+// ====== Process Referral ======
 async function processReferral() {
     try {
-        // استخراج كود الإحالة من مصادر متعددة
         const urlParams = new URLSearchParams(window.location.search);
         let referralCode = urlParams.get('start') || urlParams.get('ref');
         
-        // من Telegram WebApp
         if (!referralCode && tg.initDataUnsafe?.start_param) {
             referralCode = tg.initDataUnsafe.start_param;
         }
         
-        // التحقق من وجود كود إحالة صالح
         if (!referralCode || referralCode === userData.referralCode || userData.referredBy) {
-            return; // لا يوجد إحالة صالحة
+            return;
         }
         
-        // التحقق من Firebase
         if (!db) return;
         
-        // البحث عن صاحب كود الإحالة
         const referrerQuery = await db.collection('users')
             .where('referralCode', '==', referralCode)
             .limit(1)
@@ -253,28 +278,17 @@ async function processReferral() {
         const referrerId = referrerDoc.id;
         const referrerData = referrerDoc.data();
         
-        // منع إحالة النفس
         if (referrerId === userId) {
             console.log("Self-referral not allowed");
             return;
         }
         
-        // التحقق من عدم تكرار الإحالة
         if (referrerData.referrals && referrerData.referrals.includes(userId)) {
-            console.log("User already referred by this code");
+            console.log("User already referred");
             return;
         }
         
-        // التحقق من أن المستخدم جديد (لم تتم إحالته من قبل)
-        if (userData.referredBy) {
-            console.log("User already referred by someone else");
-            return;
-        }
-        
-        // ✅ كل شيء تمام - نطبق الإحالة
-        console.log("Valid referral! Processing bonus...");
-        
-        // تحديث بيانات المُحيل
+        // Process valid referral
         const updatedReferrals = [...(referrerData.referrals || []), userId];
         const updatedReferralCount = (referrerData.referralCount || 0) + 1;
         const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
@@ -287,25 +301,20 @@ async function processReferral() {
             lastReferral: new Date().toISOString()
         });
         
-        // تحديث بيانات المستخدم الجديد
         userData.referredBy = referralCode;
-        userData.balances.REFI = (userData.balances.REFI || 0) + 10000; // مكافأة ترحيبية
+        userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
         
-        // حفظ في localStorage
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
-        // تحديث في Firebase
         await db.collection('users').doc(userId).update({
             referredBy: referralCode,
             'balances.REFI': userData.balances.REFI
         });
         
-        // إرسال إشعار للمُحيل
         await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`);
         
         showToast(`🎉 Welcome! You got 10,000 REFI bonus from referral!`, 'success');
         
-        // تحديث الواجهة
         updateUI();
         
     } catch (error) {
@@ -353,7 +362,6 @@ function shareReferral() {
 function setupRealtimeListeners() {
     if (!db) return;
     
-    // استماع لتغييرات رصيد المستخدم
     db.collection('users').doc(userId).onSnapshot((doc) => {
         if (doc.exists) {
             const fbData = doc.data();
@@ -365,7 +373,6 @@ function setupRealtimeListeners() {
         }
     });
     
-    // استماع للمعاملات الجديدة
     db.collection('transactions')
         .where('userId', '==', userId)
         .where('status', '==', 'approved')
@@ -380,10 +387,10 @@ function setupRealtimeListeners() {
         });
 }
 
-// ====== Start Live Prices (تحديث كل دقيقة) ======
+// ====== Start Live Prices ======
 function startLivePrices() {
     fetchLivePrices();
-    setInterval(fetchLivePrices, 60000); // كل دقيقة
+    setInterval(fetchLivePrices, 60000);
 }
 
 // ====== Fetch Live Prices ======
@@ -410,6 +417,13 @@ async function fetchLivePrices() {
     } catch (error) {
         console.error("Error fetching prices:", error);
     }
+}
+
+// ====== Refresh Prices ======
+function refreshPrices() {
+    animateElement('.refresh-btn', 'pop');
+    fetchLivePrices();
+    showToast('Prices updated!', 'success');
 }
 
 // ====== Update UI ======
@@ -504,6 +518,7 @@ function renderStakingPlans() {
             <div class="plan-days">${plan.name}</div>
             <div class="plan-return">+${plan.return}%</div>
             <div class="plan-label">Return</div>
+            <div class="plan-min">Min: ${plan.minAmount} USDT</div>
         </div>
     `).join('');
 }
@@ -516,12 +531,16 @@ function renderStakingMissions() {
     missionsGrid.innerHTML = userData.stakingMissions.map(mission => {
         const hasStaked = userData.staking.some(s => s.plan.id === mission.id);
         const canClaim = hasStaked && !mission.claimed;
+        const missionPlan = STAKING_PLANS.find(p => p.id === mission.id);
         
         return `
             <div class="mission-card">
                 <div class="mission-info">
-                    <h4>First ${mission.plan} Stake</h4>
-                    <p>Complete your first ${mission.plan} staking</p>
+                    <i class="fa-regular ${mission.icon}"></i>
+                    <div>
+                        <h4>First ${mission.plan} Stake</h4>
+                        <p>Stake ${missionPlan?.minAmount || 10} USDT or more</p>
+                    </div>
                 </div>
                 <div class="mission-reward">${mission.reward} USDT</div>
                 ${canClaim ? 
@@ -544,11 +563,15 @@ function renderReferralMilestones() {
         const progress = Math.min((userData.referralCount / milestone.referrals) * 100, 100);
         const canClaim = userData.referralCount >= milestone.referrals && 
                         !userData.referralMilestones.find(m => m.referrals === milestone.referrals)?.claimed;
+        const isClaimed = userData.referralMilestones.find(m => m.referrals === milestone.referrals)?.claimed;
         
         return `
             <div class="milestone-item">
                 <div class="milestone-header">
-                    <span class="milestone-referrals">${milestone.referrals} Referrals</span>
+                    <span class="milestone-referrals">
+                        <i class="fa-regular ${milestone.icon}"></i>
+                        ${milestone.referrals} Referrals
+                    </span>
                     <span class="milestone-reward">${milestone.reward} ${milestone.unit}</span>
                 </div>
                 <div class="milestone-progress">
@@ -559,7 +582,7 @@ function renderReferralMilestones() {
                 </div>
                 ${canClaim ? 
                     `<button class="claim-btn" onclick="claimReferralMilestone(${milestone.referrals})" style="margin-top: 10px; width: 100%;">Claim Reward</button>` : 
-                    userData.referralMilestones.find(m => m.referrals === milestone.referrals)?.claimed ? 
+                    isClaimed ? 
                     '<p style="color: var(--success); text-align: center; margin-top: 10px;">✓ Claimed</p>' : 
                     ''}
             </div>
@@ -609,8 +632,10 @@ function updateStakingStats() {
     const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
     document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
     
+    const now = new Date();
     const rewards = userData.staking.reduce((sum, stake) => {
-        if (new Date(stake.endDate) < new Date() && !stake.claimed) {
+        const endDate = new Date(stake.endDate);
+        if (endDate < now && !stake.claimed) {
             return sum + (stake.amount * stake.plan.return / 100);
         }
         return sum;
@@ -638,24 +663,51 @@ function renderActiveStakes() {
         return;
     }
     
+    const now = new Date();
     activeStakes.innerHTML = userData.staking.map(stake => {
         const endDate = new Date(stake.endDate);
-        const now = new Date();
         const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+        const isComplete = endDate < now;
         
         return `
-            <div class="stake-item">
+            <div class="stake-item ${isComplete ? 'complete' : ''}">
                 <div class="stake-header">
                     <span class="stake-plan">${stake.plan.name}</span>
                     <span class="stake-amount">${stake.amount} USDT</span>
                 </div>
                 <div class="stake-details">
-                    <span>Return: +${stake.plan.return}%</span>
-                    <span>${daysLeft} days left</span>
+                    <span>Return: +${stake.plan.return}% (${(stake.amount * stake.plan.return / 100).toFixed(2)} USDT)</span>
+                    <span>${isComplete ? 'Complete!' : daysLeft + ' days left'}</span>
                 </div>
+                ${isComplete && !stake.claimed ? 
+                    '<button class="claim-btn" style="margin-top: 10px;" onclick="claimStakingReward(\'' + stake.startDate + '\')">Claim Rewards</button>' : 
+                    ''}
             </div>
         `;
     }).join('');
+}
+
+// ====== Claim Staking Reward ======
+function claimStakingReward(startDate) {
+    const stake = userData.staking.find(s => s.startDate === startDate);
+    if (!stake || stake.claimed) return;
+    
+    const reward = stake.amount * stake.plan.return / 100;
+    userData.balances.USDT += reward;
+    stake.claimed = true;
+    
+    if (db) {
+        db.collection('users').doc(userId).update({
+            balances: userData.balances,
+            staking: userData.staking
+        });
+    }
+    
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    showToast(`Claimed ${reward.toFixed(2)} USDT rewards!`, 'success');
+    updateStakingStats();
+    updateUI();
 }
 
 // ====== Update Referral Stats ======
@@ -792,6 +844,11 @@ function stakeUSDT() {
         return;
     }
     
+    if (amount < selectedStakingPlan.minAmount) {
+        showToast(`Minimum stake is ${selectedStakingPlan.minAmount} USDT for this plan`, 'error');
+        return;
+    }
+    
     if (!userData.balances.USDT || userData.balances.USDT < amount) {
         showToast('Insufficient USDT balance', 'error');
         return;
@@ -820,6 +877,7 @@ function stakeUSDT() {
     showToast(`Successfully staked ${amount} USDT for ${selectedStakingPlan.days} days!`, 'success');
     document.getElementById('stakeAmount').value = '';
     updateStakingStats();
+    renderStakingMissions();
     updateUI();
     animateElement('.confirm-btn', 'pop');
 }
@@ -1055,7 +1113,7 @@ function checkWithdrawFee() {
     if (currency === 'USDT') {
         feeWarning.classList.remove('hidden');
         networkFee.textContent = '0.00016 BNB';
-        if (receiveAmount) receiveAmount.textContent = (amount - 0).toFixed(2) + ' USDT';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(2) + ' USDT';
     } else {
         feeWarning.classList.add('hidden');
         networkFee.textContent = '0 BNB';
@@ -1084,6 +1142,7 @@ async function submitDeposit() {
         case 'REFI': minAmount = 500000; break;
         case 'USDT': minAmount = 10; break;
         case 'BNB': minAmount = 0.02; break;
+        default: minAmount = 0;
     }
     
     if (amount < minAmount) {
@@ -1203,26 +1262,6 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// ====== Load News ======
-function loadNews() {
-    const newsTicker = document.getElementById('newsTicker');
-    if (!newsTicker) return;
-    
-    const news = [
-        "🔥 REFI Network hits 100,000 users!",
-        "📈 Bitcoin surges past $50,000",
-        "💎 New staking rewards available",
-        "🚀 P2P trading coming soon",
-        "🎁 Referral bonuses increased"
-    ];
-    
-    let index = 0;
-    setInterval(() => {
-        newsTicker.textContent = news[index];
-        index = (index + 1) % news.length;
-    }, 5000);
-}
-
 // ====== Setup Scroll Listener ======
 function setupScrollListener() {
     const scrollBtn = document.getElementById('scrollTopBtn');
@@ -1312,12 +1351,14 @@ function showStakingDetails(type) {
             <h4>Total Staked</h4>
             <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('totalStaked').textContent}</p>
             <p>Your staked amount earns rewards based on the plan you choose.</p>
+            <p style="margin-top: 15px; color: var(--text-secondary);">Rewards are calculated and credited after the staking period ends.</p>
         `;
     } else if (type === 'rewards') {
         body.innerHTML = `
             <h4>Rewards Earned</h4>
             <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('rewardsEarned').textContent}</p>
-            <p>Rewards are calculated daily and can be claimed after the staking period ends.</p>
+            <p>Available rewards from completed stakes.</p>
+            <p style="margin-top: 15px; color: var(--text-secondary);">Claim your rewards from the Active Stakes section.</p>
         `;
     } else if (type === 'avg') {
         body.innerHTML = `
