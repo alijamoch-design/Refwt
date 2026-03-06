@@ -36,10 +36,47 @@ const CMC_ICONS = {
     TRUMP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/28382.png'
 };
 
+// ====== عناوين الإيداع ======
+const DEPOSIT_ADDRESSES = {
+    // عناوين رئيسية
+    REFI: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    USDT: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    BNB: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    ETH: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    SHIB: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    PEPE: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
+    // عناوين خاصة
+    SOL: '3DjcSVxfeP3u4WcV9KniMH11btgThnoGxcx54dMtbfuR',
+    TRX: 'TMSJH4QunFiUAqZ8iLvQDPajs1v4B3e5E6'
+};
+
+// ====== الحدود الدنيا للإيداع ======
+const DEPOSIT_MINIMUMS = {
+    REFI: 500000,
+    USDT: 10,
+    BNB: 0.02,
+    ETH: 0.005,
+    SHIB: 2000000,
+    PEPE: 3000000,
+    SOL: 0.12,
+    TRX: 40
+};
+
+// ====== ملاحظات الإيداع ======
+const DEPOSIT_NOTES = {
+    REFI: 'Supports BEP20 network',
+    USDT: 'Supports BEP20 & ERC20 networks',
+    BNB: 'Supports BEP20 network',
+    ETH: 'Supports ERC20 network',
+    SHIB: 'Supports ERC20 network',
+    PEPE: 'Supports ERC20 network',
+    SOL: 'Supports Solana network',
+    TRX: 'Supports TRC20 network'
+};
+
 // ====== الروابط الثابتة ======
 const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
 const ADMIN_ID = "1653918641";
-const DEPOSIT_ADDRESS = "0xbf70420f57342c6Bd4267430D4D3b7E946f09450";
 const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
 const REFERRAL_BONUS = 250000; // REFI per referral
 const REFI_PRICE = 0.000002; // سعر REFI الثابت
@@ -60,7 +97,7 @@ const CRYPTO_IDS = {
     TRUMP: 'official-trump'
 };
 
-// خطط الستيكينغ المحسنة
+// خطط الستيكينغ
 const STAKING_PLANS = [
     { 
         id: '3days', 
@@ -132,27 +169,22 @@ const TOP_CRYPTOS = [
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
-// جميع العملات المتاحة للاختيار
-const ALL_CURRENCIES = [
+// جميع العملات المتاحة للاختيار في السواب
+const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
     { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
-    { symbol: 'BNB', name: 'Binance Coin', icon: CMC_ICONS.BNB },
-    { symbol: 'BTC', name: 'Bitcoin', icon: CMC_ICONS.BTC },
     { symbol: 'ETH', name: 'Ethereum', icon: CMC_ICONS.ETH },
+    { symbol: 'BNB', name: 'Binance Coin', icon: CMC_ICONS.BNB },
     { symbol: 'SOL', name: 'Solana', icon: CMC_ICONS.SOL },
-    { symbol: 'TON', name: 'Toncoin', icon: CMC_ICONS.TON },
-    { symbol: 'ADA', name: 'Cardano', icon: CMC_ICONS.ADA },
-    { symbol: 'DOGE', name: 'Dogecoin', icon: CMC_ICONS.DOGE },
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
     { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE },
-    { symbol: 'BONK', name: 'Bonk', icon: CMC_ICONS.BONK },
-    { symbol: 'TRUMP', name: 'Trump Coin', icon: CMC_ICONS.TRUMP }
+    { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX || 'https://s2.coinmarketcap.com/static/img/coins/64x64/1958.png' }
 ];
 
 // ====== State Management ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
-let swapMode = 'usdt-to-refi';
+let swapMode = 'to-usdt'; // 'to-usdt' or 'to-refi'
 let livePrices = {};
 let unreadNotifications = 0;
 let currentCurrencySelector = 'pay';
@@ -212,7 +244,8 @@ async function loadUserData() {
                     PEPE: 0,
                     TON: 0,
                     BONK: 0,
-                    TRUMP: 0
+                    TRUMP: 0,
+                    TRX: 0
                 },
                 referralCode: generateReferralCode(),
                 referredBy: null,
@@ -367,10 +400,10 @@ async function processReferral() {
             'balances.REFI': userData.balances.REFI
         });
         
-        // إضافة معاملة للإحالة
+        // إضافة معاملة للإحالة (للمستخدم الجديد)
         const referralTransaction = {
             userId: userId,
-            type: 'referral',
+            type: 'referral_bonus',
             amount: 10000,
             currency: 'REFI',
             status: 'completed',
@@ -384,7 +417,7 @@ async function processReferral() {
         // إضافة معاملة للمُحيل
         const referrerTransaction = {
             userId: referrerId,
-            type: 'referral',
+            type: 'referral_bonus',
             amount: REFERRAL_BONUS,
             currency: 'REFI',
             status: 'completed',
@@ -394,10 +427,10 @@ async function processReferral() {
         await db.collection('transactions').add(referrerTransaction);
         
         // إرسال إشعار للمُحيل
-        await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`);
+        await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`, 'success');
         
         // إضافة إشعار للمستخدم الجديد
-        await addNotification(userId, `🎉 Welcome! You got 10,000 REFI bonus from referral!`);
+        await addNotification(userId, `🎉 Welcome! You got 10,000 REFI bonus from referral!`, 'success');
         
         showToast(`🎉 Welcome! You got 10,000 REFI bonus from referral!`, 'success');
         
@@ -499,7 +532,15 @@ function setupRealtimeListeners() {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === 'added') {
                     const tx = change.doc.data();
-                    if (tx.status === 'approved' || tx.status === 'completed') {
+                    
+                    // إضافة المعاملة إلى قائمة المعاملات
+                    if (!userData.transactions.some(t => t.timestamp === tx.timestamp && t.type === tx.type)) {
+                        userData.transactions.push(tx);
+                        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                    }
+                    
+                    // إشعارات حسب حالة المعاملة
+                    if (tx.status === 'approved') {
                         addNotification(userId, `✅ Your ${tx.type} of ${tx.amount} ${tx.currency} has been approved!`, 'success');
                     } else if (tx.status === 'rejected') {
                         const reason = tx.reason || 'No reason provided';
@@ -507,7 +548,7 @@ function setupRealtimeListeners() {
                     }
                 }
             });
-            loadUserData(); // إعادة تحميل البيانات
+            updateUI();
         });
 }
 
@@ -738,16 +779,17 @@ function renderReferralMilestones() {
     }).join('');
 }
 
-// ====== Render History ======
+// ====== Render History (بدون Referral) ======
 function renderHistory(filter = 'all') {
     const historyList = document.getElementById('historyList');
     if (!historyList || !userData) return;
     
     currentHistoryFilter = filter;
     
-    let transactions = [...userData.transactions].sort((a, b) => 
-        new Date(b.timestamp) - new Date(a.timestamp)
-    );
+    // استبعاد معاملات الإحالة من التاريخ
+    let transactions = [...userData.transactions]
+        .filter(tx => tx.type !== 'referral_bonus') // إزالة الإحالات
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
     if (filter !== 'all') {
         transactions = transactions.filter(tx => tx.type === filter);
@@ -776,18 +818,14 @@ function renderHistory(filter = 'all') {
             icon = 'fa-circle-up';
             typeClass = 'withdraw';
             typeText = 'Withdrawal';
-        } else if (tx.type === 'referral') {
-            icon = 'fa-users';
-            typeClass = 'referral';
-            typeText = 'Referral Bonus';
-        } else if (tx.type === 'staking') {
-            icon = 'fa-lock';
-            typeClass = 'staking';
-            typeText = 'Staking Reward';
         } else if (tx.type === 'swap') {
             icon = 'fa-arrow-right-arrow-left';
             typeClass = 'swap';
             typeText = 'Swap';
+        } else if (tx.type === 'staking') {
+            icon = 'fa-lock';
+            typeClass = 'staking';
+            typeText = 'Staking';
         }
         
         let statusClass = 'completed';
@@ -831,7 +869,7 @@ function filterHistory(filter) {
     renderHistory(filter);
 }
 
-// ====== Render Notifications ======
+// ====== Render Notifications (مع الإحالات) ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
@@ -860,6 +898,7 @@ function renderNotifications() {
         let icon = 'fa-bell';
         if (notif.type === 'success') icon = 'fa-circle-check';
         if (notif.type === 'error') icon = 'fa-circle-xmark';
+        if (notif.message.includes('referral') || notif.message.includes('Referral')) icon = 'fa-users';
         
         return `
             <div class="notification-item ${unreadClass}" onclick="markNotificationRead('${notif.id}')">
@@ -929,6 +968,7 @@ function updateTotalBalance() {
     total += (userData.balances.BNB || 0) * (livePrices.BNB?.price || 0);
     total += (userData.balances.BTC || 0) * (livePrices.BTC?.price || 0);
     total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
+    total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
     
     document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
 }
@@ -950,7 +990,7 @@ function updateStakingStats() {
     }, 0);
     
     document.getElementById('rewardsEarned').textContent = rewards.toFixed(2) + ' USDT';
-    document.getElementById('stakeBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
+    document.getElementById('stakeBalance').textContent = `Balance: $${(userData.balances.USDT || 0).toFixed(2)} USDT`;
     document.getElementById('activeStakesCount').textContent = userData.staking.length;
     
     if (userData.staking.length > 0) {
@@ -1052,13 +1092,11 @@ function updateReferralStats() {
 function updateSwapBalances() {
     if (!userData) return;
     
-    if (swapMode === 'usdt-to-refi') {
-        document.getElementById('payBalance').textContent = `Balance: $${(userData.balances.USDT || 0).toFixed(2)} USDT`;
-        document.getElementById('receiveBalance').textContent = `Balance: ${(userData.balances.REFI || 0).toLocaleString()} REFI`;
-    } else {
-        document.getElementById('payBalance').textContent = `Balance: ${(userData.balances.REFI || 0).toLocaleString()} REFI`;
-        document.getElementById('receiveBalance').textContent = `Balance: $${(userData.balances.USDT || 0).toFixed(2)} USDT`;
-    }
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
+    document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
+    document.getElementById('receiveBalance').textContent = `Balance: ${formatBalance(userData.balances[receiveCurrency] || 0, receiveCurrency)}`;
 }
 
 // ====== Update Notification Badge ======
@@ -1281,10 +1319,10 @@ function claimReferralMilestone(referrals) {
     userData.totalUsdtEarned += reward;
     userData.referralMilestones[milestoneIndex].claimed = true;
     
-    // إضافة معاملة
+    // إضافة معاملة (سيتم عرضها في الإشعارات فقط)
     const transaction = {
         userId: userId,
-        type: 'referral',
+        type: 'referral_bonus',
         amount: reward,
         currency: 'USDT',
         status: 'completed',
@@ -1319,7 +1357,7 @@ function showCurrencySelector(type) {
     const modal = document.getElementById('currencySelectorModal');
     const currencyList = document.getElementById('currencyList');
     
-    currencyList.innerHTML = ALL_CURRENCIES.map(curr => `
+    currencyList.innerHTML = SWAP_CURRENCIES.map(curr => `
         <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
             <img src="${curr.icon}" alt="${curr.symbol}">
             <div class="currency-list-info">
@@ -1334,39 +1372,76 @@ function showCurrencySelector(type) {
 
 // ====== Select Currency ======
 function selectCurrency(symbol) {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
     if (currentCurrencySelector === 'pay') {
+        // تحديث عملة الدفع
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = CMC_ICONS[symbol];
         
-        // تحديث وضع السواب
-        if (symbol === 'USDT') {
-            swapMode = 'usdt-to-refi';
-            document.getElementById('receiveCurrency').textContent = 'REFI';
-            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-        } else if (symbol === 'REFI') {
-            swapMode = 'refi-to-usdt';
+        // تحديث وضع السواب بناءً على العملة المختارة
+        if (symbol === 'USDT' || symbol === 'REFI') {
+            // يمكن التبديل بين USDT و REFI
+            if (symbol === 'USDT') {
+                document.getElementById('receiveCurrency').textContent = 'REFI';
+                document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+                swapMode = 'to-refi';
+            } else {
+                document.getElementById('receiveCurrency').textContent = 'USDT';
+                document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+                swapMode = 'to-usdt';
+            }
+        } else {
+            // العملات الأخرى يمكن تحويلها إلى USDT أو REFI فقط
+            // نختار USDT كوجهة افتراضية
             document.getElementById('receiveCurrency').textContent = 'USDT';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+            swapMode = 'to-usdt';
         }
     } else {
-        document.getElementById('receiveCurrency').textContent = symbol;
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS[symbol];
-        
-        // تحديث وضع السواب
-        if (symbol === 'USDT') {
-            swapMode = 'refi-to-usdt';
-            document.getElementById('payCurrency').textContent = 'REFI';
-            document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
-        } else if (symbol === 'REFI') {
-            swapMode = 'usdt-to-refi';
-            document.getElementById('payCurrency').textContent = 'USDT';
-            document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
+        // تحديث عملة الاستلام
+        // التأكد من أن العملة المختارة هي USDT أو REFI فقط
+        if (symbol === 'USDT' || symbol === 'REFI') {
+            document.getElementById('receiveCurrency').textContent = symbol;
+            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS[symbol];
+            
+            // تحديث وضع السواب
+            if (symbol === 'USDT') {
+                swapMode = 'to-usdt';
+            } else {
+                swapMode = 'to-refi';
+            }
+        } else {
+            showToast('You can only swap to USDT or REFI', 'warning');
+            return;
         }
     }
     
     closeModal('currencySelectorModal');
+    updateSwapNote();
     calculateSwap();
     updateSwapBalances();
+}
+
+// ====== تحديث ملاحظة السواب ======
+function updateSwapNote() {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    const swapNote = document.getElementById('swapNote');
+    const swapRate = document.getElementById('swapRate');
+    
+    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
+        swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
+        swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
+    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
+        swapNote.textContent = 'You can swap REFI to USDT at fixed rate';
+        swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
+    } else {
+        swapNote.textContent = `You can swap ${payCurrency} to ${receiveCurrency}`;
+        // هنا يمكن إضافة سعر الصرف الحقيقي من API
+        swapRate.textContent = `Rate will be calculated based on current market price`;
+    }
 }
 
 // ====== Filter Currencies ======
@@ -1374,7 +1449,7 @@ function filterCurrencies() {
     const searchTerm = document.getElementById('currencySearch').value.toLowerCase();
     const currencyList = document.getElementById('currencyList');
     
-    const filtered = ALL_CURRENCIES.filter(curr => 
+    const filtered = SWAP_CURRENCIES.filter(curr => 
         curr.name.toLowerCase().includes(searchTerm) || 
         curr.symbol.toLowerCase().includes(searchTerm)
     );
@@ -1392,19 +1467,24 @@ function filterCurrencies() {
 
 // ====== Flip Swap Pair ======
 function flipSwapPair() {
-    if (swapMode === 'usdt-to-refi') {
-        swapMode = 'refi-to-usdt';
-        document.getElementById('payCurrency').textContent = 'REFI';
-        document.getElementById('receiveCurrency').textContent = 'USDT';
-        document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
+    // التبديل مسموح فقط إذا كان أحد العملتين USDT أو REFI
+    if ((payCurrency === 'USDT' && receiveCurrency === 'REFI') || 
+        (payCurrency === 'REFI' && receiveCurrency === 'USDT')) {
+        // تبديل بين USDT و REFI
+        document.getElementById('payCurrency').textContent = receiveCurrency;
+        document.getElementById('receiveCurrency').textContent = payCurrency;
+        document.getElementById('payCurrencyIcon').src = CMC_ICONS[receiveCurrency];
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS[payCurrency];
+        
+        swapMode = swapMode === 'to-usdt' ? 'to-refi' : 'to-usdt';
     } else {
-        swapMode = 'usdt-to-refi';
-        document.getElementById('payCurrency').textContent = 'USDT';
-        document.getElementById('receiveCurrency').textContent = 'REFI';
-        document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+        showToast('Cannot flip this pair', 'warning');
     }
+    
+    updateSwapNote();
     calculateSwap();
     updateSwapBalances();
     animateElement('.swap-flip-btn', 'pop');
@@ -1413,21 +1493,35 @@ function flipSwapPair() {
 // ====== Calculate Swap ======
 function calculateSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
-    if (swapMode === 'usdt-to-refi') {
+    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
         const receiveAmount = payAmount * SWAP_RATE;
         document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
-    } else {
+    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
         const receiveAmount = payAmount / SWAP_RATE;
         document.getElementById('receiveAmount').value = receiveAmount.toFixed(6);
+    } else {
+        // للعملات الأخرى، نستخدم السعر الحي من livePrices
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
+        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : (livePrices[receiveCurrency]?.price || 0);
+        
+        if (payPrice > 0 && receivePrice > 0) {
+            const receiveAmount = (payAmount * payPrice) / receivePrice;
+            document.getElementById('receiveAmount').value = receiveAmount.toFixed(6);
+        } else {
+            document.getElementById('receiveAmount').value = '0';
+        }
     }
-    
-    document.getElementById('refiPrice').textContent = '$' + REFI_PRICE;
 }
 
-// ====== Confirm Swap (معفى من الرسوم) ======
+// ====== Confirm Swap ======
 function confirmSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value);
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    const receiveAmount = parseFloat(document.getElementById('receiveAmount').value);
     
     if (!payAmount || payAmount <= 0) {
         showToast('Please enter a valid amount', 'error');
@@ -1435,57 +1529,33 @@ function confirmSwap() {
         return;
     }
     
-    if (swapMode === 'usdt-to-refi') {
-        // USDT to REFI - مجاني
-        if (!userData.balances.USDT || userData.balances.USDT < payAmount) {
-            showToast('Insufficient USDT balance', 'error');
-            return;
-        }
-        
-        const receiveAmount = payAmount * SWAP_RATE;
-        userData.balances.USDT -= payAmount;
-        userData.balances.REFI += receiveAmount;
-        
-        // إضافة معاملة
-        const transaction = {
-            userId: userId,
-            type: 'swap',
-            amount: payAmount,
-            currency: 'USDT',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-            details: `Swapped to ${receiveAmount.toLocaleString()} REFI`
-        };
-        
-        userData.transactions.push(transaction);
-        
-        showToast(`Swapped $${payAmount} USDT to ${receiveAmount.toLocaleString()} REFI`, 'success');
-    } else {
-        // REFI to USDT - مجاني أيضاً (حسب طلبك)
-        if (!userData.balances.REFI || userData.balances.REFI < payAmount) {
-            showToast('Insufficient REFI balance', 'error');
-            return;
-        }
-        
-        const receiveAmount = payAmount / SWAP_RATE;
-        userData.balances.REFI -= payAmount;
-        userData.balances.USDT += receiveAmount;
-        
-        // إضافة معاملة
-        const transaction = {
-            userId: userId,
-            type: 'swap',
-            amount: payAmount,
-            currency: 'REFI',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-            details: `Swapped to $${receiveAmount.toFixed(2)} USDT`
-        };
-        
-        userData.transactions.push(transaction);
-        
-        showToast(`Swapped ${payAmount.toLocaleString()} REFI to $${receiveAmount.toFixed(2)} USDT`, 'success');
+    if (!userData.balances[payCurrency] || userData.balances[payCurrency] < payAmount) {
+        showToast(`Insufficient ${payCurrency} balance`, 'error');
+        return;
     }
+    
+    // التحقق من قواعد السواب: يمكن فقط التحويل إلى USDT أو REFI
+    if (receiveCurrency !== 'USDT' && receiveCurrency !== 'REFI') {
+        showToast('You can only swap to USDT or REFI', 'error');
+        return;
+    }
+    
+    // تنفيذ السواب
+    userData.balances[payCurrency] -= payAmount;
+    userData.balances[receiveCurrency] += receiveAmount;
+    
+    // إضافة معاملة
+    const transaction = {
+        userId: userId,
+        type: 'swap',
+        amount: payAmount,
+        currency: payCurrency,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        details: `Swapped to ${receiveAmount} ${receiveCurrency}`
+    };
+    
+    userData.transactions.push(transaction);
     
     if (db) {
         db.collection('users').doc(userId).update({
@@ -1496,6 +1566,8 @@ function confirmSwap() {
     }
     
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    showToast(`Swapped ${payAmount} ${payCurrency} to ${receiveAmount} ${receiveCurrency}`, 'success');
     
     document.getElementById('payAmount').value = '1';
     calculateSwap();
@@ -1518,7 +1590,7 @@ function showP2P() {
 // ====== Modal Functions ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
-    updateDepositIcon();
+    updateDepositInfo();
     animateElement('.modal-content', 'slideUpModal');
 }
 
@@ -1545,67 +1617,266 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('show');
 }
 
-function updateDepositIcon() {
-    const currency = document.getElementById('depositCurrency').value;
-    const icon = document.getElementById('depositIcon');
-    if (icon) icon.src = CMC_ICONS[currency];
+// ====== Admin Panel Functions ======
+function showAdminPanel() {
+    if (!isAdmin()) {
+        showToast('Access denied', 'error');
+        return;
+    }
+    
+    document.getElementById('adminPanel').classList.remove('hidden');
+    loadAdminData();
 }
 
-function updateWithdrawIcon() {
-    const currency = document.getElementById('withdrawCurrency').value;
-    const icon = document.getElementById('withdrawIcon');
-    if (icon) icon.src = CMC_ICONS[currency];
+function closeAdminPanel() {
+    document.getElementById('adminPanel').classList.add('hidden');
 }
 
-function copyAddress() {
-    navigator.clipboard.writeText(DEPOSIT_ADDRESS);
-    showToast('Address copied to clipboard!', 'success');
-    animateElement('.copy-btn-small', 'pop');
+async function loadAdminData() {
+    if (!db) return;
+    
+    try {
+        // جلب إحصائيات عامة
+        const usersSnapshot = await db.collection('users').get();
+        const totalUsers = usersSnapshot.size;
+        
+        const transactionsSnapshot = await db.collection('transactions').get();
+        const pendingCount = transactionsSnapshot.docs.filter(d => d.data().status === 'pending').length;
+        const approvedCount = transactionsSnapshot.docs.filter(d => d.data().status === 'approved' || d.data().status === 'completed').length;
+        
+        const referralsCount = usersSnapshot.docs.reduce((sum, doc) => sum + (doc.data().referralCount || 0), 0);
+        
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('pendingCount').textContent = pendingCount;
+        document.getElementById('approvedCount').textContent = approvedCount;
+        document.getElementById('totalReferralsCount').textContent = referralsCount;
+        
+        // عرض المعاملات المعلقة
+        showAdminTab('deposits');
+        
+    } catch (error) {
+        console.error("Error loading admin data:", error);
+        showToast('Error loading admin data', 'error');
+    }
 }
 
-function updateDepositMin() {
+async function showAdminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const adminContent = document.getElementById('adminContent');
+    
+    if (!db) return;
+    
+    let query;
+    if (tab === 'deposits') {
+        query = db.collection('transactions').where('type', '==', 'deposit').where('status', '==', 'pending');
+    } else if (tab === 'withdrawals') {
+        query = db.collection('transactions').where('type', '==', 'withdraw').where('status', '==', 'pending');
+    } else if (tab === 'completed') {
+        query = db.collection('transactions').where('status', 'in', ['approved', 'completed']);
+    } else if (tab === 'rejected') {
+        query = db.collection('transactions').where('status', '==', 'rejected');
+    }
+    
+    const snapshot = await query.limit(50).get();
+    
+    if (snapshot.empty) {
+        adminContent.innerHTML = '<div class="empty-state">No transactions found</div>';
+        return;
+    }
+    
+    let html = '';
+    snapshot.forEach(doc => {
+        const tx = { id: doc.id, ...doc.data() };
+        html += renderAdminTransactionCard(tx, tab);
+    });
+    
+    adminContent.innerHTML = html;
+}
+
+function renderAdminTransactionCard(tx, tab) {
+    const date = new Date(tx.timestamp);
+    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    let actionButtons = '';
+    if (tab === 'deposits' || tab === 'withdrawals') {
+        actionButtons = `
+            <div class="admin-tx-actions">
+                <button class="admin-approve-btn" onclick="approveTransaction('${tx.id}', '${tx.userId}', '${tx.type}', '${tx.currency}', ${tx.amount}, ${tx.fee || 0}, '${tx.feeCurrency || 'BNB'}')">
+                    <i class="fa-regular fa-circle-check"></i> Approve
+                </button>
+                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.id}', '${tx.userId}')">
+                    <i class="fa-regular fa-circle-xmark"></i> Reject
+                </button>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="admin-transaction-card">
+            <div class="admin-tx-header">
+                <div class="admin-tx-type ${tx.type}">
+                    <i class="fa-regular ${tx.type === 'deposit' ? 'fa-circle-down' : 'fa-circle-up'}"></i>
+                    <span>${tx.type.toUpperCase()}</span>
+                </div>
+                <span class="admin-tx-status ${tx.status}">${tx.status}</span>
+            </div>
+            <div class="admin-tx-details">
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">User:</span>
+                    <span class="admin-tx-value">${tx.userId.substring(0, 8)}...</span>
+                </div>
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Amount:</span>
+                    <span class="admin-tx-value">${tx.amount} ${tx.currency}</span>
+                </div>
+                ${tx.txnId ? `
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">TXID:</span>
+                    <div class="admin-address-container">
+                        <code>${tx.txnId.substring(0, 16)}...</code>
+                        <button class="admin-copy-btn" onclick="copyToClipboard('${tx.txnId}')">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>` : ''}
+                ${tx.address ? `
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Address:</span>
+                    <div class="admin-address-container">
+                        <code>${tx.address.substring(0, 16)}...</code>
+                        <button class="admin-copy-btn" onclick="copyToClipboard('${tx.address}')">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>` : ''}
+                ${tx.fee ? `
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Fee:</span>
+                    <span class="admin-tx-value">${tx.fee} ${tx.feeCurrency}</span>
+                </div>` : ''}
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Time:</span>
+                    <span class="admin-tx-value">${formattedDate}</span>
+                </div>
+                ${tx.reason ? `
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Reason:</span>
+                    <span class="admin-tx-value" style="color: var(--danger);">${tx.reason}</span>
+                </div>` : ''}
+            </div>
+            ${actionButtons}
+        </div>
+    `;
+}
+
+async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
+    try {
+        await db.collection('transactions').doc(txId).update({
+            status: 'approved',
+            approvedAt: new Date().toISOString()
+        });
+        
+        if (type === 'deposit') {
+            await db.collection('users').doc(targetUserId).update({
+                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
+            });
+            await addNotification(targetUserId, `✅ Your deposit of ${amount} ${currency} has been approved!`, 'success');
+        } else if (type === 'withdraw') {
+            // خصم المبلغ والرسوم
+            await db.collection('users').doc(targetUserId).update({
+                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(-amount)
+            });
+            if (fee > 0) {
+                await db.collection('users').doc(targetUserId).update({
+                    [`balances.${feeCurrency}`]: firebase.firestore.FieldValue.increment(-fee)
+                });
+            }
+            const feeText = fee > 0 ? ` (Fee: ${fee} ${feeCurrency})` : '';
+            await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
+        }
+        
+        showToast('Transaction approved!', 'success');
+        showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
+        
+    } catch (error) {
+        console.error("Error approving transaction:", error);
+        showToast('Error approving transaction', 'error');
+    }
+}
+
+async function rejectTransaction(txId, targetUserId) {
+    // طلب سبب الرفض
+    tg.showPopup({
+        title: 'Reject Transaction',
+        message: 'Please select a reason:',
+        buttons: [
+            { type: 'default', text: 'Invalid TXID', id: 'invalid' },
+            { type: 'default', text: 'Wrong amount', id: 'amount' },
+            { type: 'default', text: 'Suspicious', id: 'suspicious' },
+            { type: 'cancel', text: 'Cancel' }
+        ]
+    }, async (btnId) => {
+        if (!btnId || btnId === 'cancel') return;
+        
+        let reason = 'No reason provided';
+        if (btnId === 'invalid') reason = 'Invalid transaction ID';
+        if (btnId === 'amount') reason = 'Incorrect amount';
+        if (btnId === 'suspicious') reason = 'Suspicious activity detected';
+        
+        try {
+            await db.collection('transactions').doc(txId).update({
+                status: 'rejected',
+                reason: reason,
+                rejectedAt: new Date().toISOString()
+            });
+            
+            await addNotification(targetUserId, `❌ Your transaction was rejected. Reason: ${reason}`, 'error');
+            
+            showToast('Transaction rejected!', 'success');
+            showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
+            
+        } catch (error) {
+            console.error("Error rejecting transaction:", error);
+            showToast('Error rejecting transaction', 'error');
+        }
+    });
+}
+
+// ====== Deposit Functions ======
+function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const amountInput = document.getElementById('depositAmount');
-    updateDepositIcon();
+    const depositAddress = document.getElementById('depositAddress');
+    const depositIcon = document.getElementById('depositIcon');
+    const addressNote = document.getElementById('depositAddressNote');
     
-    if (currency === 'REFI') {
-        amountInput.placeholder = 'Min 500,000 REFI';
-    } else if (currency === 'USDT') {
-        amountInput.placeholder = 'Min 10 USDT';
-    } else if (currency === 'BNB') {
-        amountInput.placeholder = 'Min 0.02 BNB';
-    }
-}
-
-// ====== دالة فحص رسوم السحب المعدلة ======
-function checkWithdrawFee() {
-    const currency = document.getElementById('withdrawCurrency').value;
-    const feeWarning = document.getElementById('feeWarning');
-    const networkFee = document.getElementById('networkFee');
-    const receiveAmount = document.getElementById('receiveAmount_');
-    const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+    // تحديث الأيقونة
+    if (depositIcon) depositIcon.src = CMC_ICONS[currency] || CMC_ICONS.REFI;
     
-    updateWithdrawIcon();
+    // تحديث العنوان
+    depositAddress.textContent = DEPOSIT_ADDRESSES[currency] || DEPOSIT_ADDRESSES.REFI;
     
-    // رسوم السحب حسب العملة
-    if (currency === 'USDT') {
-        feeWarning.classList.remove('hidden');
-        feeWarning.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> USDT withdrawal requires 0.00016 BNB fee';
-        networkFee.textContent = '0.00016 BNB';
-        if (receiveAmount) receiveAmount.textContent = amount.toFixed(2) + ' USDT';
-    } else if (currency === 'BNB') {
-        feeWarning.classList.remove('hidden');
-        feeWarning.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> BNB withdrawal requires 0.0005 BNB fee';
-        networkFee.textContent = '0.0005 BNB';
-        if (receiveAmount) receiveAmount.textContent = amount.toFixed(4) + ' BNB';
+    // تحديث الملاحظة
+    addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || 'Check network before sending'}</span>`;
+    
+    // تحديث الحد الأدنى
+    const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
+    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE') {
+        amountInput.placeholder = `Min ${minAmount.toLocaleString()} ${currency}`;
     } else {
-        feeWarning.classList.add('hidden');
-        networkFee.textContent = '0 BNB';
-        if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+        amountInput.placeholder = `Min ${minAmount} ${currency}`;
     }
 }
 
-// ====== Submit Deposit ======
+function copyDepositAddress() {
+    const address = document.getElementById('depositAddress').textContent;
+    navigator.clipboard.writeText(address);
+    showToast('Address copied to clipboard!', 'success');
+    animateElement('.copy-address-btn', 'pop');
+}
+
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -1621,14 +1892,7 @@ async function submitDeposit() {
         return;
     }
     
-    let minAmount;
-    switch(currency) {
-        case 'REFI': minAmount = 500000; break;
-        case 'USDT': minAmount = 10; break;
-        case 'BNB': minAmount = 0.02; break;
-        default: minAmount = 0;
-    }
-    
+    const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
     if (amount < minAmount) {
         showToast(`Minimum deposit is ${minAmount} ${currency}`, 'error');
         return;
@@ -1639,6 +1903,7 @@ async function submitDeposit() {
         currency: currency,
         amount: amount,
         txnId: txnId,
+        address: DEPOSIT_ADDRESSES[currency],
         status: 'pending',
         timestamp: new Date().toISOString(),
         type: 'deposit'
@@ -1664,7 +1929,41 @@ async function submitDeposit() {
     }
 }
 
-// ====== Submit Withdraw (مع خصم الرسوم) ======
+// ====== Withdraw Functions ======
+function checkWithdrawFee() {
+    const currency = document.getElementById('withdrawCurrency').value;
+    const feeWarning = document.getElementById('feeWarning');
+    const feeWarningText = document.getElementById('feeWarningText');
+    const networkFee = document.getElementById('networkFee');
+    const receiveAmount = document.getElementById('receiveAmount_');
+    const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+    
+    updateWithdrawIcon();
+    
+    // رسوم السحب حسب العملة
+    if (currency === 'USDT') {
+        feeWarning.classList.remove('hidden');
+        feeWarningText.textContent = 'USDT withdrawal requires 0.00016 BNB fee';
+        networkFee.textContent = '0.00016 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(2) + ' USDT';
+    } else if (currency === 'BNB') {
+        feeWarning.classList.remove('hidden');
+        feeWarningText.textContent = 'BNB withdrawal requires 0.0005 BNB fee';
+        networkFee.textContent = '0.0005 BNB';
+        if (receiveAmount) receiveAmount.textContent = (amount - 0.0005).toFixed(4) + ' BNB';
+    } else {
+        feeWarning.classList.add('hidden');
+        networkFee.textContent = '0 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+    }
+}
+
+function updateWithdrawIcon() {
+    const currency = document.getElementById('withdrawCurrency').value;
+    const icon = document.getElementById('withdrawIcon');
+    if (icon) icon.src = CMC_ICONS[currency] || CMC_ICONS.REFI;
+}
+
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
@@ -1740,6 +2039,8 @@ function showToast(message, type = 'info') {
         icon.className = 'fa-regular fa-circle-check';
     } else if (type === 'error') {
         icon.className = 'fa-regular fa-circle-xmark';
+    } else if (type === 'warning') {
+        icon.className = 'fa-regular fa-circle-exclamation';
     } else {
         icon.className = 'fa-regular fa-circle-info';
     }
@@ -1747,6 +2048,12 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.classList.add('hidden');
     }, 3000);
+}
+
+// ====== Copy to Clipboard ======
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard!', 'success');
 }
 
 // ====== Setup Scroll Listener ======
@@ -1827,7 +2134,7 @@ function showStakingDetails(type) {
     modal.classList.add('show');
 }
 
-// ====== Admin Functions المحسنة ======
+// ====== Admin Functions ======
 function isAdmin() {
     return userId === ADMIN_ID;
 }
@@ -1836,7 +2143,6 @@ function addAdminCrown() {
     setTimeout(() => {
         const header = document.querySelector('.header-actions');
         if (header) {
-            // إزالة أي تاج موجود مسبقاً
             const existingCrown = document.getElementById('adminCrownBtn');
             if (existingCrown) existingCrown.remove();
             
@@ -1849,183 +2155,4 @@ function addAdminCrown() {
             console.log("👑 Admin crown added");
         }
     }, 1500);
-}
-
-// ====== Admin Panel المحسنة ======
-function showAdminPanel() {
-    if (!isAdmin()) {
-        showToast('Access denied', 'error');
-        return;
-    }
-    
-    console.log("👑 Opening admin panel...");
-    
-    if (!db) {
-        showToast('Firebase not connected', 'error');
-        return;
-    }
-    
-    // جلب جميع المعاملات المعلقة
-    db.collection('transactions').where('status', '==', 'pending').get()
-        .then(snapshot => {
-            const pending = [];
-            snapshot.forEach(doc => {
-                pending.push({ id: doc.id, ...doc.data() });
-            });
-            
-            if (pending.length === 0) {
-                tg.showPopup({
-                    title: '👑 Admin Panel',
-                    message: 'No pending transactions',
-                    buttons: [{ type: 'close' }]
-                });
-                return;
-            }
-            
-            // عرض كل معاملة مع خيارات الموافقة/الرفض
-            showTransactionActions(pending, 0);
-        })
-        .catch(error => {
-            console.error("Error loading admin panel:", error);
-            showToast('Error loading transactions: ' + error.message, 'error');
-            
-            tg.showPopup({
-                title: '❌ Error',
-                message: 'Failed to load transactions. Check console.',
-                buttons: [{ type: 'close' }]
-            });
-        });
-}
-
-// ====== عرض المعاملات مع خيارات الموافقة/الرفض ======
-function showTransactionActions(transactions, index) {
-    if (index >= transactions.length) {
-        tg.showPopup({
-            title: '✅ Done',
-            message: 'All transactions processed!',
-            buttons: [{ type: 'close' }]
-        });
-        return;
-    }
-    
-    const tx = transactions[index];
-    const message = `
-📋 **Transaction ${index + 1}/${transactions.length}**
-
-Type: ${tx.type.toUpperCase()}
-Amount: ${tx.amount} ${tx.currency}
-User: ${tx.userId}
-Time: ${new Date(tx.timestamp).toLocaleString()}
-${tx.txnId ? `TXID: ${tx.txnId}` : ''}
-${tx.address ? `Address: ${tx.address}` : ''}
-${tx.fee ? `Fee: ${tx.fee} ${tx.feeCurrency}` : ''}
-    `;
-    
-    tg.showPopup({
-        title: '👑 Admin Action Required',
-        message: message,
-        buttons: [
-            { type: 'default', text: '✅ Approve', id: 'approve' },
-            { type: 'default', text: '❌ Reject', id: 'reject' },
-            { type: 'cancel', text: '⏭️ Skip' }
-        ]
-    }, (btnId) => {
-        if (btnId === 'approve') {
-            approveTransaction(tx.id, tx.userId, tx.type, tx.currency, tx.amount, tx.fee, tx.feeCurrency);
-            setTimeout(() => showTransactionActions(transactions, index + 1), 500);
-        } else if (btnId === 'reject') {
-            promptRejectReason(tx.id, tx.userId);
-            setTimeout(() => showTransactionActions(transactions, index + 1), 500);
-        } else {
-            // Skip
-            showTransactionActions(transactions, index + 1);
-        }
-    });
-}
-
-// ====== الموافقة على المعاملة ======
-async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
-    try {
-        // تحديث حالة المعاملة
-        await db.collection('transactions').doc(txId).update({
-            status: 'approved',
-            approvedAt: new Date().toISOString()
-        });
-        
-        if (type === 'deposit') {
-            // إضافة الرصيد للمستخدم
-            const userRef = db.collection('users').doc(targetUserId);
-            await userRef.update({
-                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
-            });
-            
-            await addNotification(targetUserId, `✅ Your deposit of ${amount} ${currency} has been approved!`, 'success');
-            
-        } else if (type === 'withdraw') {
-            // خصم الرصيد والرسوم
-            const userRef = db.collection('users').doc(targetUserId);
-            
-            // خصم المبلغ المسحوب
-            await userRef.update({
-                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(-amount)
-            });
-            
-            // خصم الرسوم إذا موجودة
-            if (fee && feeCurrency) {
-                await userRef.update({
-                    [`balances.${feeCurrency}`]: firebase.firestore.FieldValue.increment(-fee)
-                });
-            }
-            
-            const feeText = fee ? ` (Fee: ${fee} ${feeCurrency})` : '';
-            await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
-        }
-        
-        showToast(`Transaction approved!`, 'success');
-        
-    } catch (error) {
-        console.error("Error approving transaction:", error);
-        showToast('Error approving transaction', 'error');
-    }
-}
-
-// ====== طلب سبب الرفض ======
-function promptRejectReason(txId, targetUserId) {
-    tg.showPopup({
-        title: '❌ Reject Transaction',
-        message: 'Please enter reason for rejection:',
-        buttons: [
-            { type: 'default', text: 'Invalid TXID' },
-            { type: 'default', text: 'Wrong amount' },
-            { type: 'default', text: 'Suspicious activity' },
-            { type: 'cancel', text: 'Cancel' }
-        ]
-    }, (btnId) => {
-        let reason = 'No reason provided';
-        if (btnId === 'ok') reason = 'Invalid TXID';
-        else if (btnId === 'ok_2') reason = 'Wrong amount';
-        else if (btnId === 'ok_3') reason = 'Suspicious activity';
-        else return;
-        
-        rejectTransaction(txId, targetUserId, reason);
-    });
-}
-
-// ====== رفض المعاملة ======
-async function rejectTransaction(txId, targetUserId, reason) {
-    try {
-        await db.collection('transactions').doc(txId).update({
-            status: 'rejected',
-            reason: reason,
-            rejectedAt: new Date().toISOString()
-        });
-        
-        await addNotification(targetUserId, `❌ Your transaction was rejected. Reason: ${reason}`, 'error');
-        
-        showToast(`Transaction rejected!`, 'success');
-        
-    } catch (error) {
-        console.error("Error rejecting transaction:", error);
-        showToast('Error rejecting transaction', 'error');
-    }
 }
