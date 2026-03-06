@@ -21,7 +21,7 @@ try {
 
 // ====== أيقونات العملات الرسمية من CoinMarketCap ======
 const CMC_ICONS = {
-    REFI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png',
+    REFI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png',
     USDT: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
     BNB: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
     BTC: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
@@ -155,7 +155,7 @@ let selectedStakingPlan = STAKING_PLANS[0];
 let swapMode = 'usdt-to-refi';
 let livePrices = {};
 let unreadNotifications = 0;
-let currentCurrencySelector = 'pay'; // 'pay' or 'receive'
+let currentCurrencySelector = 'pay';
 let currentHistoryFilter = 'all';
 
 // ====== Initialize Telegram Web App ======
@@ -381,6 +381,18 @@ async function processReferral() {
         userData.transactions.push(referralTransaction);
         await db.collection('transactions').add(referralTransaction);
         
+        // إضافة معاملة للمُحيل
+        const referrerTransaction = {
+            userId: referrerId,
+            type: 'referral',
+            amount: REFERRAL_BONUS,
+            currency: 'REFI',
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+            details: `Referral bonus from ${userId}`
+        };
+        await db.collection('transactions').add(referrerTransaction);
+        
         // إرسال إشعار للمُحيل
         await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`);
         
@@ -398,25 +410,37 @@ async function processReferral() {
 }
 
 // ====== Add Notification ======
-async function addNotification(userId, message) {
+async function addNotification(userId, message, type = 'info') {
     if (!db) return;
     
     const notification = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
         message: message,
+        type: type,
         read: false,
         timestamp: new Date().toISOString()
     };
     
-    await db.collection('users').doc(userId).update({
-        notifications: firebase.firestore.FieldValue.arrayUnion(notification)
-    });
-    
-    // إذا كانت للمستخدم الحالي، نحدث الواجهة
-    if (userId === userData?.userId) {
-        userData.notifications = userData.notifications || [];
-        userData.notifications.push(notification);
-        updateNotificationBadge();
+    try {
+        await db.collection('users').doc(userId).update({
+            notifications: firebase.firestore.FieldValue.arrayUnion(notification)
+        });
+        
+        // إذا كانت للمستخدم الحالي، نحدث الواجهة
+        if (userId === userData?.userId) {
+            userData.notifications = userData.notifications || [];
+            userData.notifications.push(notification);
+            updateNotificationBadge();
+            
+            // عرض إشعار فوري للمستخدم
+            if (type === 'success') {
+                showToast(message, 'success');
+            } else if (type === 'error') {
+                showToast(message, 'error');
+            }
+        }
+    } catch (error) {
+        console.error("Error adding notification:", error);
     }
 }
 
@@ -476,7 +500,10 @@ function setupRealtimeListeners() {
                 if (change.type === 'added') {
                     const tx = change.doc.data();
                     if (tx.status === 'approved' || tx.status === 'completed') {
-                        showToast(`✅ ${tx.type} completed!`, 'success');
+                        addNotification(userId, `✅ Your ${tx.type} of ${tx.amount} ${tx.currency} has been approved!`, 'success');
+                    } else if (tx.status === 'rejected') {
+                        const reason = tx.reason || 'No reason provided';
+                        addNotification(userId, `❌ Your ${tx.type} of ${tx.amount} ${tx.currency} was rejected. Reason: ${reason}`, 'error');
                     }
                 }
             });
@@ -789,6 +816,7 @@ function renderHistory(filter = 'all') {
                 </div>
                 ${tx.txnId ? `<div style="font-size: 10px; color: var(--text-tertiary); margin-top: 5px;">ID: ${tx.txnId.substring(0, 16)}...</div>` : ''}
                 ${tx.address ? `<div style="font-size: 10px; color: var(--text-tertiary); margin-top: 5px;">To: ${tx.address.substring(0, 16)}...</div>` : ''}
+                ${tx.reason ? `<div style="font-size: 10px; color: var(--danger); margin-top: 5px;">Reason: ${tx.reason}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -829,11 +857,15 @@ function renderNotifications() {
         const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
         
+        let icon = 'fa-bell';
+        if (notif.type === 'success') icon = 'fa-circle-check';
+        if (notif.type === 'error') icon = 'fa-circle-xmark';
+        
         return `
             <div class="notification-item ${unreadClass}" onclick="markNotificationRead('${notif.id}')">
                 <div class="notification-header">
                     <span class="notification-title">
-                        <i class="fa-regular fa-bell"></i>
+                        <i class="fa-regular ${icon}"></i>
                         Notification
                     </span>
                     <span class="notification-time">${formattedDate}</span>
@@ -1393,7 +1425,7 @@ function calculateSwap() {
     document.getElementById('refiPrice').textContent = '$' + REFI_PRICE;
 }
 
-// ====== Confirm Swap ======
+// ====== Confirm Swap (معفى من الرسوم) ======
 function confirmSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value);
     
@@ -1404,7 +1436,7 @@ function confirmSwap() {
     }
     
     if (swapMode === 'usdt-to-refi') {
-        // USDT to REFI
+        // USDT to REFI - مجاني
         if (!userData.balances.USDT || userData.balances.USDT < payAmount) {
             showToast('Insufficient USDT balance', 'error');
             return;
@@ -1429,7 +1461,7 @@ function confirmSwap() {
         
         showToast(`Swapped $${payAmount} USDT to ${receiveAmount.toLocaleString()} REFI`, 'success');
     } else {
-        // REFI to USDT
+        // REFI to USDT - مجاني أيضاً (حسب طلبك)
         if (!userData.balances.REFI || userData.balances.REFI < payAmount) {
             showToast('Insufficient REFI balance', 'error');
             return;
@@ -1492,6 +1524,7 @@ function showDepositModal() {
 
 function showWithdrawModal() {
     document.getElementById('withdrawModal').classList.add('show');
+    checkWithdrawFee();
     updateWithdrawIcon();
     animateElement('.modal-content', 'slideUpModal');
 }
@@ -1544,17 +1577,32 @@ function updateDepositMin() {
     }
 }
 
+// ====== دالة فحص رسوم السحب المعدلة ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
-    const feeInfo = document.getElementById('feeInfo');
+    const feeWarning = document.getElementById('feeWarning');
+    const networkFee = document.getElementById('networkFee');
     const receiveAmount = document.getElementById('receiveAmount_');
     const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
     
     updateWithdrawIcon();
     
-    // جميع عمليات السحب مجانية الآن
-    feeInfo.classList.remove('hidden');
-    if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+    // رسوم السحب حسب العملة
+    if (currency === 'USDT') {
+        feeWarning.classList.remove('hidden');
+        feeWarning.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> USDT withdrawal requires 0.00016 BNB fee';
+        networkFee.textContent = '0.00016 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(2) + ' USDT';
+    } else if (currency === 'BNB') {
+        feeWarning.classList.remove('hidden');
+        feeWarning.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> BNB withdrawal requires 0.0005 BNB fee';
+        networkFee.textContent = '0.0005 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(4) + ' BNB';
+    } else {
+        feeWarning.classList.add('hidden');
+        networkFee.textContent = '0 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+    }
 }
 
 // ====== Submit Deposit ======
@@ -1599,7 +1647,7 @@ async function submitDeposit() {
     try {
         if (db) {
             await db.collection('transactions').add(depositRequest);
-            await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`);
+            await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
         userData.transactions.push(depositRequest);
@@ -1616,7 +1664,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== Submit Withdraw ======
+// ====== Submit Withdraw (مع خصم الرسوم) ======
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
@@ -1632,11 +1680,31 @@ async function submitWithdraw() {
         return;
     }
     
+    // التحقق من رسوم السحب
+    let fee = 0;
+    let feeCurrency = 'BNB';
+    
+    if (currency === 'USDT') {
+        fee = 0.00016;
+        if (!userData.balances.BNB || userData.balances.BNB < fee) {
+            showToast(`You need ${fee} BNB for withdrawal fee`, 'error');
+            return;
+        }
+    } else if (currency === 'BNB') {
+        fee = 0.0005;
+        if (!userData.balances.BNB || userData.balances.BNB < (amount + fee)) {
+            showToast(`Insufficient BNB balance including fee`, 'error');
+            return;
+        }
+    }
+    
     const withdrawRequest = {
         userId: userId,
         currency: currency,
         amount: amount,
         address: address,
+        fee: fee,
+        feeCurrency: feeCurrency,
         status: 'pending',
         timestamp: new Date().toISOString(),
         type: 'withdraw'
@@ -1645,7 +1713,7 @@ async function submitWithdraw() {
     try {
         if (db) {
             await db.collection('transactions').add(withdrawRequest);
-            await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`);
+            await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
         showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
@@ -1759,7 +1827,7 @@ function showStakingDetails(type) {
     modal.classList.add('show');
 }
 
-// ====== Admin Functions ======
+// ====== Admin Functions المحسنة ======
 function isAdmin() {
     return userId === ADMIN_ID;
 }
@@ -1783,6 +1851,7 @@ function addAdminCrown() {
     }, 1500);
 }
 
+// ====== Admin Panel المحسنة ======
 function showAdminPanel() {
     if (!isAdmin()) {
         showToast('Access denied', 'error');
@@ -1791,43 +1860,172 @@ function showAdminPanel() {
     
     console.log("👑 Opening admin panel...");
     
-    if (db) {
-        db.collection('transactions').where('status', '==', 'pending').get()
-            .then(snapshot => {
-                const pending = [];
-                snapshot.forEach(doc => pending.push({ id: doc.id, ...doc.data() }));
-                
-                let message = '📋 PENDING TRANSACTIONS:\n\n';
-                if (pending.length === 0) {
-                    message += 'No pending transactions';
-                } else {
-                    pending.forEach(tx => {
-                        message += `${tx.type.toUpperCase()}: ${tx.amount} ${tx.currency}\n`;
-                        message += `User: ${tx.userId.substring(0, 8)}...\n`;
-                        message += `ID: ${tx.txnId || tx.address || 'N/A'}\n`;
-                        message += `Date: ${new Date(tx.timestamp).toLocaleString()}\n`;
-                        message += '──────────────────\n';
-                    });
-                }
-                
+    if (!db) {
+        showToast('Firebase not connected', 'error');
+        return;
+    }
+    
+    // جلب جميع المعاملات المعلقة
+    db.collection('transactions').where('status', '==', 'pending').get()
+        .then(snapshot => {
+            const pending = [];
+            snapshot.forEach(doc => {
+                pending.push({ id: doc.id, ...doc.data() });
+            });
+            
+            if (pending.length === 0) {
                 tg.showPopup({
                     title: '👑 Admin Panel',
-                    message: message,
-                    buttons: [
-                        { type: 'default', text: '🔄 Refresh' },
-                        { type: 'cancel', text: '❌ Close' }
-                    ]
-                }, (btnId) => {
-                    if (btnId === 'ok') {
-                        showAdminPanel();
-                    }
+                    message: 'No pending transactions',
+                    buttons: [{ type: 'close' }]
                 });
-            })
-            .catch(error => {
-                console.error("Error loading admin panel:", error);
-                showToast('Error loading transactions', 'error');
+                return;
+            }
+            
+            // عرض كل معاملة مع خيارات الموافقة/الرفض
+            showTransactionActions(pending, 0);
+        })
+        .catch(error => {
+            console.error("Error loading admin panel:", error);
+            showToast('Error loading transactions: ' + error.message, 'error');
+            
+            tg.showPopup({
+                title: '❌ Error',
+                message: 'Failed to load transactions. Check console.',
+                buttons: [{ type: 'close' }]
             });
-    } else {
-        showToast('Firebase not connected', 'error');
+        });
+}
+
+// ====== عرض المعاملات مع خيارات الموافقة/الرفض ======
+function showTransactionActions(transactions, index) {
+    if (index >= transactions.length) {
+        tg.showPopup({
+            title: '✅ Done',
+            message: 'All transactions processed!',
+            buttons: [{ type: 'close' }]
+        });
+        return;
+    }
+    
+    const tx = transactions[index];
+    const message = `
+📋 **Transaction ${index + 1}/${transactions.length}**
+
+Type: ${tx.type.toUpperCase()}
+Amount: ${tx.amount} ${tx.currency}
+User: ${tx.userId}
+Time: ${new Date(tx.timestamp).toLocaleString()}
+${tx.txnId ? `TXID: ${tx.txnId}` : ''}
+${tx.address ? `Address: ${tx.address}` : ''}
+${tx.fee ? `Fee: ${tx.fee} ${tx.feeCurrency}` : ''}
+    `;
+    
+    tg.showPopup({
+        title: '👑 Admin Action Required',
+        message: message,
+        buttons: [
+            { type: 'default', text: '✅ Approve', id: 'approve' },
+            { type: 'default', text: '❌ Reject', id: 'reject' },
+            { type: 'cancel', text: '⏭️ Skip' }
+        ]
+    }, (btnId) => {
+        if (btnId === 'approve') {
+            approveTransaction(tx.id, tx.userId, tx.type, tx.currency, tx.amount, tx.fee, tx.feeCurrency);
+            setTimeout(() => showTransactionActions(transactions, index + 1), 500);
+        } else if (btnId === 'reject') {
+            promptRejectReason(tx.id, tx.userId);
+            setTimeout(() => showTransactionActions(transactions, index + 1), 500);
+        } else {
+            // Skip
+            showTransactionActions(transactions, index + 1);
+        }
+    });
+}
+
+// ====== الموافقة على المعاملة ======
+async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
+    try {
+        // تحديث حالة المعاملة
+        await db.collection('transactions').doc(txId).update({
+            status: 'approved',
+            approvedAt: new Date().toISOString()
+        });
+        
+        if (type === 'deposit') {
+            // إضافة الرصيد للمستخدم
+            const userRef = db.collection('users').doc(targetUserId);
+            await userRef.update({
+                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
+            });
+            
+            await addNotification(targetUserId, `✅ Your deposit of ${amount} ${currency} has been approved!`, 'success');
+            
+        } else if (type === 'withdraw') {
+            // خصم الرصيد والرسوم
+            const userRef = db.collection('users').doc(targetUserId);
+            
+            // خصم المبلغ المسحوب
+            await userRef.update({
+                [`balances.${currency}`]: firebase.firestore.FieldValue.increment(-amount)
+            });
+            
+            // خصم الرسوم إذا موجودة
+            if (fee && feeCurrency) {
+                await userRef.update({
+                    [`balances.${feeCurrency}`]: firebase.firestore.FieldValue.increment(-fee)
+                });
+            }
+            
+            const feeText = fee ? ` (Fee: ${fee} ${feeCurrency})` : '';
+            await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
+        }
+        
+        showToast(`Transaction approved!`, 'success');
+        
+    } catch (error) {
+        console.error("Error approving transaction:", error);
+        showToast('Error approving transaction', 'error');
+    }
+}
+
+// ====== طلب سبب الرفض ======
+function promptRejectReason(txId, targetUserId) {
+    tg.showPopup({
+        title: '❌ Reject Transaction',
+        message: 'Please enter reason for rejection:',
+        buttons: [
+            { type: 'default', text: 'Invalid TXID' },
+            { type: 'default', text: 'Wrong amount' },
+            { type: 'default', text: 'Suspicious activity' },
+            { type: 'cancel', text: 'Cancel' }
+        ]
+    }, (btnId) => {
+        let reason = 'No reason provided';
+        if (btnId === 'ok') reason = 'Invalid TXID';
+        else if (btnId === 'ok_2') reason = 'Wrong amount';
+        else if (btnId === 'ok_3') reason = 'Suspicious activity';
+        else return;
+        
+        rejectTransaction(txId, targetUserId, reason);
+    });
+}
+
+// ====== رفض المعاملة ======
+async function rejectTransaction(txId, targetUserId, reason) {
+    try {
+        await db.collection('transactions').doc(txId).update({
+            status: 'rejected',
+            reason: reason,
+            rejectedAt: new Date().toISOString()
+        });
+        
+        await addNotification(targetUserId, `❌ Your transaction was rejected. Reason: ${reason}`, 'error');
+        
+        showToast(`Transaction rejected!`, 'success');
+        
+    } catch (error) {
+        console.error("Error rejecting transaction:", error);
+        showToast('Error rejecting transaction', 'error');
     }
 }
