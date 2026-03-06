@@ -1,4 +1,4 @@
-/* ====== الأساسيات ====== */
+/* ====== RESET & VARIABLES ====== */
 * {
     margin: 0;
     padding: 0;
@@ -7,7 +7,7 @@
 }
 
 :root {
-    /* الألوان الوردية الأساسية */
+    /* الألوان الوردية الرئيسية */
     --pink-1: #ff5ad9;
     --pink-2: #e128b6;
     --pink-3: #b0007a;
@@ -29,13 +29,22 @@
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
+    --info: #3b82f6;
     
     /* التدرجات */
     --gradient-pink: linear-gradient(135deg, var(--pink-1), var(--pink-2), var(--pink-3));
     --gradient-pink-reverse: linear-gradient(135deg, var(--pink-3), var(--pink-2), var(--pink-1));
     --gradient-pink-horizontal: linear-gradient(90deg, var(--pink-1), var(--pink-2), var(--pink-3));
+    --gradient-dark: linear-gradient(135deg, #1e1a2a, #2a1a2a);
+    
+    /* الظلال */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-pink: 0 4px 20px var(--pink-glow);
 }
 
+/* ====== BASE STYLES ====== */
 body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
@@ -44,9 +53,10 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    position: relative;
 }
 
-/* ====== حاوية التطبيق ====== */
+/* ====== APP CONTAINER ====== */
 .app-container {
     width: 100%;
     max-width: 428px;
@@ -58,13 +68,14 @@ body {
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-shadow: 0 0 50px var(--pink-glow);
+    border-radius: 0;
 }
 
 .app-container::-webkit-scrollbar {
     display: none;
 }
 
-/* ====== شاشة التحميل ====== */
+/* ====== SPLASH SCREEN ====== */
 .splash-screen {
     position: fixed;
     top: 0;
@@ -95,8 +106,8 @@ body {
 }
 
 .splash-logo {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     background: var(--gradient-pink);
     border-radius: 30px;
     display: flex;
@@ -105,6 +116,7 @@ body {
     margin: 0 auto 20px;
     box-shadow: 0 0 30px var(--pink-glow-strong);
     animation: pulse 2s ease-in-out infinite;
+    padding: 10px;
 }
 
 @keyframes pulse {
@@ -112,13 +124,21 @@ body {
     50% { transform: scale(1.05); box-shadow: 0 0 50px var(--pink-glow-strong); }
 }
 
+.refi-logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
 .splash-title {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     background: var(--gradient-pink-horizontal);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 20px;
+    letter-spacing: 1px;
 }
 
 .splash-spinner {
@@ -127,7 +147,7 @@ body {
     border: 3px solid rgba(255, 90, 217, 0.3);
     border-top-color: var(--pink-1);
     border-radius: 50%;
-    margin: 0 auto;
+    margin: 20px auto;
     animation: spin 1s linear infinite;
 }
 
@@ -135,7 +155,14 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ====== الهيدر ====== */
+.splash-version {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 20px;
+    opacity: 0.7;
+}
+
+/* ====== HEADER ====== */
 .header {
     display: flex;
     justify-content: space-between;
@@ -166,8 +193,8 @@ body {
 }
 
 .user-name {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--pink-1);
     margin-top: 2px;
     text-shadow: 0 0 10px var(--pink-glow);
@@ -186,17 +213,24 @@ body {
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .icon-btn:hover {
     color: var(--pink-1);
+    background: rgba(255, 90, 217, 0.1);
     transform: scale(1.1);
 }
 
 .badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -2px;
+    right: -2px;
     background: var(--gradient-pink);
     color: white;
     font-size: 10px;
@@ -205,18 +239,19 @@ body {
     min-width: 18px;
     text-align: center;
     animation: pulse 2s infinite;
+    font-weight: 600;
 }
 
-/* ====== بطاقة الرصيد ====== */
+/* ====== BALANCE CARD ====== */
 .balance-card {
-    background: linear-gradient(135deg, #1e1a2a, #2a1a2a);
+    background: var(--gradient-dark);
     margin: 15px 20px;
     padding: 25px 20px;
     border-radius: 30px;
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(255, 90, 217, 0.3);
-    box-shadow: 0 10px 30px rgba(255, 90, 217, 0.2);
+    box-shadow: var(--shadow-pink);
     animation: slideUp 0.5s ease 0.1s both;
 }
 
@@ -255,8 +290,8 @@ body {
 }
 
 .balance-amount {
-    font-size: 42px;
-    font-weight: 700;
+    font-size: 48px;
+    font-weight: 800;
     margin-bottom: 25px;
     position: relative;
     z-index: 1;
@@ -264,6 +299,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: glow 2s ease-in-out infinite;
+    line-height: 1.2;
 }
 
 @keyframes glow {
@@ -294,6 +330,7 @@ body {
     gap: 5px;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .action-btn i {
@@ -314,7 +351,7 @@ body {
     transform: rotate(360deg);
 }
 
-/* ====== عنوان القسم ====== */
+/* ====== SECTION HEADER ====== */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -344,14 +381,49 @@ body {
     align-items: center;
     gap: 5px;
     transition: all 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 20px;
 }
 
 .see-all-btn:hover {
-    color: var(--pink-2);
+    background: rgba(255, 90, 217, 0.1);
     transform: translateX(5px);
 }
 
-/* ====== قائمة الأصول ====== */
+.refresh-btn {
+    background: rgba(255, 90, 217, 0.1);
+    border: 1px solid rgba(255, 90, 217, 0.3);
+    color: var(--pink-1);
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--gradient-pink);
+    color: white;
+    transform: rotate(180deg);
+}
+
+.live-badge {
+    background: rgba(255, 90, 217, 0.2);
+    color: var(--pink-1);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    border: 1px solid rgba(255, 90, 217, 0.3);
+}
+
+.live-badge i {
+    font-size: 8px;
+    margin-right: 4px;
+    color: #10b981;
+}
+
+/* ====== ASSETS LIST ====== */
 .assets-list {
     padding: 0 20px;
     display: flex;
@@ -396,12 +468,15 @@ body {
     gap: 15px;
 }
 
-.asset-left i {
-    font-size: 32px;
+.asset-icon-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
     transition: all 0.3s ease;
 }
 
-.asset-item:hover .asset-left i {
+.asset-item:hover .asset-icon-img {
     transform: rotate(360deg);
 }
 
@@ -420,8 +495,16 @@ body {
 }
 
 .asset-change {
-    color: var(--success);
     font-size: 12px;
+    font-weight: 600;
+}
+
+.asset-change.positive {
+    color: var(--success);
+}
+
+.asset-change.negative {
+    color: var(--danger);
 }
 
 .asset-right {
@@ -429,7 +512,7 @@ body {
 }
 
 .asset-balance {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 16px;
     margin-bottom: 4px;
     color: var(--pink-1);
@@ -440,7 +523,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* ====== قائمة العملات العشر ====== */
+/* ====== TOP CRYPTO LIST ====== */
 .top-crypto-list {
     padding: 0 20px;
     display: flex;
@@ -473,12 +556,15 @@ body {
     gap: 12px;
 }
 
-.crypto-left i {
-    font-size: 28px;
+.crypto-icon-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
     transition: all 0.3s ease;
 }
 
-.crypto-item:hover .crypto-left i {
+.crypto-item:hover .crypto-icon-img {
     transform: scale(1.1);
 }
 
@@ -498,13 +584,14 @@ body {
 }
 
 .crypto-price {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
     margin-bottom: 2px;
 }
 
 .crypto-change {
     font-size: 11px;
+    font-weight: 600;
 }
 
 .crypto-change.positive {
@@ -515,7 +602,38 @@ body {
     color: var(--danger);
 }
 
-/* ====== القائمة السفلية ====== */
+/* ====== NEWS TICKER ====== */
+.news-ticker {
+    background: var(--bg-card);
+    margin: 0 20px 20px;
+    padding: 12px 16px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.news-ticker i {
+    color: var(--pink-1);
+    font-size: 18px;
+}
+
+.news-text {
+    color: var(--text-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: ticker 15s linear infinite;
+}
+
+@keyframes ticker {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* ====== BOTTOM NAVIGATION ====== */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -581,12 +699,12 @@ body {
     transform: scale(1.1);
 }
 
-/* ====== Hidden Class ====== */
+/* ====== HIDDEN CLASS ====== */
 .hidden {
     display: none !important;
 }
 
-/* ====== Back Button ====== */
+/* ====== BACK BUTTON ====== */
 .back-btn {
     background: var(--bg-card);
     border: none;
@@ -606,7 +724,7 @@ body {
     transform: scale(1.1);
 }
 
-/* ====== Swap Section ====== */
+/* ====== SWAP SECTION ====== */
 .swap-container {
     padding: 20px;
 }
@@ -680,7 +798,7 @@ body {
 
 .currency-selector {
     background: var(--bg-card);
-    padding: 10px 15px;
+    padding: 8px 15px;
     border-radius: 30px;
     display: flex;
     align-items: center;
@@ -698,6 +816,12 @@ body {
 
 .currency-selector span {
     font-weight: 600;
+}
+
+.currency-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
 }
 
 .swap-arrow {
@@ -775,7 +899,7 @@ body {
     padding: 18px;
     color: white;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -802,18 +926,18 @@ body {
 
 .confirm-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px var(--pink-glow);
+    box-shadow: var(--shadow-pink);
 }
 
-/* ====== Staking Section ====== */
+/* ====== STAKING SECTION ====== */
 .staking-header {
     padding: 0 20px;
     margin: 10px 0;
 }
 
 .staking-title {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     background: var(--gradient-pink-horizontal);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -843,6 +967,7 @@ body {
     text-align: center;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .stat-card:hover {
@@ -852,7 +977,7 @@ body {
 }
 
 .stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
     display: block;
     margin-bottom: 5px;
@@ -860,7 +985,7 @@ body {
 
 .stat-value {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--pink-1);
 }
 
@@ -896,25 +1021,33 @@ body {
 
 .plan-days {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 5px;
 }
 
 .plan-return {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     color: var(--pink-1);
     margin-bottom: 5px;
 }
 
 .plan-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
 }
 
-/* ====== Staking Missions ====== */
+/* ====== STAKING MISSIONS ====== */
 .staking-missions {
     margin: 20px 0;
+}
+
+.mission-badge {
+    background: var(--gradient-pink);
+    color: white;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
 }
 
 .missions-grid {
@@ -946,13 +1079,13 @@ body {
 }
 
 .mission-info p {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
 }
 
 .mission-reward {
     color: var(--pink-1);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
 }
 
@@ -963,14 +1096,14 @@ body {
     padding: 8px 15px;
     color: white;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .claim-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px var(--pink-glow);
+    box-shadow: var(--shadow-pink);
 }
 
 .claim-btn.completed {
@@ -984,7 +1117,7 @@ body {
     box-shadow: none;
 }
 
-/* ====== Stake Input ====== */
+/* ====== STAKE INPUT ====== */
 .stake-input-section {
     padding: 20px;
 }
@@ -994,7 +1127,7 @@ body {
     justify-content: space-between;
     margin-bottom: 10px;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .stake-input-group {
@@ -1033,7 +1166,7 @@ body {
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--pink-1);
 }
 
@@ -1055,15 +1188,84 @@ body {
     margin-bottom: 0;
 }
 
-/* ====== Referral Section ====== */
+.summary-row.highlight {
+    color: var(--pink-1);
+    font-weight: 700;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+/* ====== ACTIVE STAKES ====== */
+.active-stakes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px 5px;
+}
+
+.active-stakes-header h4 {
+    font-size: 16px;
+}
+
+.count-badge {
+    background: var(--bg-card);
+    color: var(--pink-1);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.active-stakes {
+    padding: 0 20px 20px;
+}
+
+.stake-item {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stake-item:hover {
+    border-color: var(--pink-1);
+    transform: translateX(5px);
+}
+
+.stake-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.stake-plan {
+    font-weight: 700;
+    color: var(--pink-1);
+}
+
+.stake-amount {
+    font-weight: 700;
+}
+
+.stake-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* ====== REFERRAL SECTION ====== */
 .referral-header {
     padding: 0 20px;
     margin: 10px 0;
 }
 
 .referral-title {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     background: var(--gradient-pink-horizontal);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1086,7 +1288,7 @@ body {
 }
 
 .link-label {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
     margin-bottom: 10px;
 }
@@ -1094,7 +1296,7 @@ body {
 .link-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .referral-link {
@@ -1102,14 +1304,13 @@ body {
     background: var(--bg-primary);
     padding: 12px;
     border-radius: 12px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--pink-1);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    border: none;
+    outline: none;
 }
 
-.copy-btn {
+.copy-btn, .share-btn {
     background: var(--gradient-pink);
     border: none;
     width: 40px;
@@ -1120,19 +1321,31 @@ body {
     transition: all 0.3s ease;
 }
 
-.copy-btn:hover {
+.copy-btn:hover, .share-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 5px 15px var(--pink-glow);
+    box-shadow: var(--shadow-pink);
 }
 
 .referral-description {
     padding: 0 20px;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 15px 0;
+    display: flex;
+    gap: 10px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin: 0 20px 20px;
 }
 
+.highlight {
+    color: var(--pink-1);
+    font-weight: 700;
+}
+
+/* ====== MILESTONES LIST ====== */
 .milestones-list {
     padding: 0 20px;
     display: flex;
@@ -1162,13 +1375,13 @@ body {
 }
 
 .milestone-referrals {
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 15px;
 }
 
 .milestone-reward {
     color: var(--pink-1);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .milestone-progress {
@@ -1200,81 +1413,12 @@ body {
 }
 
 .progress-text {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
     min-width: 45px;
 }
 
-/* ====== P2P Modal ====== */
-.p2p-modal {
-    background: linear-gradient(135deg, #1e1a2a, #2a1a2a);
-    border: 2px solid var(--pink-1);
-}
-
-.p2p-body {
-    text-align: center;
-    padding: 30px 20px !important;
-}
-
-.p2p-icon {
-    width: 100px;
-    height: 100px;
-    background: var(--gradient-pink);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    animation: pulse 2s infinite;
-}
-
-.p2p-icon i {
-    font-size: 48px;
-    color: white;
-}
-
-.p2p-title {
-    font-size: 28px;
-    font-weight: 700;
-    background: var(--gradient-pink-horizontal);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 15px;
-}
-
-.p2p-text {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 25px;
-    font-size: 14px;
-}
-
-.p2p-features {
-    text-align: left;
-    background: var(--bg-primary);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 25px;
-}
-
-.feature-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    color: var(--text-secondary);
-}
-
-.feature-item:last-child {
-    margin-bottom: 0;
-}
-
-.feature-item i {
-    color: var(--pink-1);
-    font-size: 16px;
-}
-
-/* ====== Modal Styles ====== */
+/* ====== MODAL STYLES ====== */
 .modal {
     display: none;
     position: fixed;
@@ -1310,6 +1454,8 @@ body {
     border-radius: 30px;
     border: 1px solid var(--border-color);
     animation: slideUpModal 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 @keyframes slideUpModal {
@@ -1329,6 +1475,10 @@ body {
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 10;
 }
 
 .modal-header h3 {
@@ -1357,7 +1507,7 @@ body {
     padding: 20px;
 }
 
-/* ====== Form Styles ====== */
+/* ====== FORM STYLES ====== */
 .form-group {
     margin-bottom: 20px;
 }
@@ -1366,10 +1516,42 @@ body {
     display: block;
     margin-bottom: 8px;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
-.form-select, .form-input {
+.currency-select-wrapper {
+    position: relative;
+}
+
+.form-select {
+    width: 100%;
+    padding: 14px 14px 14px 50px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    appearance: none;
+}
+
+.form-select:focus {
+    border-color: var(--pink-1);
+    box-shadow: 0 0 0 3px rgba(255, 90, 217, 0.1);
+}
+
+.select-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.form-input {
     width: 100%;
     padding: 14px;
     background: var(--bg-card);
@@ -1381,7 +1563,7 @@ body {
     transition: all 0.3s ease;
 }
 
-.form-select:focus, .form-input:focus {
+.form-input:focus {
     border-color: var(--pink-1);
     box-shadow: 0 0 0 3px rgba(255, 90, 217, 0.1);
 }
@@ -1406,6 +1588,7 @@ body {
     background: var(--bg-primary);
     padding: 10px;
     border-radius: 12px;
+    margin-bottom: 10px;
 }
 
 .address-container code {
@@ -1431,6 +1614,18 @@ body {
     transform: scale(1.1);
 }
 
+.address-note {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.address-note i {
+    color: var(--success);
+}
+
 .modal-btn {
     width: 100%;
     background: var(--gradient-pink);
@@ -1446,9 +1641,10 @@ body {
 
 .modal-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px var(--pink-glow);
+    box-shadow: var(--shadow-pink);
 }
 
+/* ====== FEE WARNING ====== */
 .fee-warning {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid var(--warning);
@@ -1466,7 +1662,98 @@ body {
     display: none;
 }
 
-/* ====== Toast Notification ====== */
+/* ====== WITHDRAW SUMMARY ====== */
+.withdraw-summary {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* ====== P2P MODAL ====== */
+.p2p-modal {
+    background: linear-gradient(135deg, #1e1a2a, #2a1a2a);
+    border: 2px solid var(--pink-1);
+}
+
+.p2p-body {
+    text-align: center;
+    padding: 30px 20px !important;
+}
+
+.p2p-icon {
+    width: 100px;
+    height: 100px;
+    background: var(--gradient-pink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: pulse 2s infinite;
+}
+
+.p2p-icon i {
+    font-size: 48px;
+    color: white;
+}
+
+.p2p-title {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--gradient-pink-horizontal);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+}
+
+.p2p-text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.p2p-features {
+    text-align: left;
+    background: var(--bg-primary);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+.feature-item i {
+    color: var(--pink-1);
+    font-size: 16px;
+}
+
+.p2p-countdown {
+    background: var(--bg-card);
+    padding: 12px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+}
+
+.countdown-timer {
+    color: var(--pink-1);
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+/* ====== TOAST NOTIFICATION ====== */
 .toast {
     position: fixed;
     bottom: 100px;
@@ -1480,7 +1767,7 @@ body {
     font-weight: 500;
     z-index: 2500;
     animation: slideUpToast 0.3s ease, fadeOut 0.3s ease 2.7s;
-    box-shadow: 0 5px 20px var(--pink-glow);
+    box-shadow: var(--shadow-pink);
 }
 
 @keyframes slideUpToast {
@@ -1514,48 +1801,68 @@ body {
     font-size: 18px;
 }
 
-/* ====== Active Stakes ====== */
-.active-stakes {
+/* ====== SCROLL TOP BUTTON ====== */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 22.5px;
+    background: var(--gradient-pink);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    box-shadow: var(--shadow-pink);
+    animation: bounce 2s infinite;
+}
+
+.scroll-top-btn.show {
+    display: flex;
+}
+
+.scroll-top-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ====== LOADING SPINNER ====== */
+.loading-spinner {
+    text-align: center;
     padding: 20px;
-}
-
-.stake-item {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.stake-item:hover {
-    border-color: var(--pink-1);
-    transform: translateX(5px);
-}
-
-.stake-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.stake-plan {
-    font-weight: 600;
-    color: var(--pink-1);
-}
-
-.stake-amount {
-    font-weight: 600;
-}
-
-.stake-details {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
     color: var(--text-secondary);
 }
 
-/* ====== Animations ====== */
+.loading-spinner i {
+    color: var(--pink-1);
+    margin-right: 8px;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 428px) {
+    .balance-amount {
+        font-size: 40px;
+    }
+    
+    .action-btn {
+        padding: 10px 3px;
+        font-size: 11px;
+    }
+    
+    .action-btn i {
+        font-size: 16px;
+    }
+    
+    .staking-title, .referral-title {
+        font-size: 24px;
+    }
+}
+
+/* ====== ANIMATIONS ====== */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -1576,18 +1883,11 @@ body {
     animation: pop 0.3s ease;
 }
 
-/* ====== Responsive ====== */
-@media (max-width: 428px) {
-    .balance-amount {
-        font-size: 36px;
-    }
-    
-    .action-btn {
-        padding: 10px 3px;
-        font-size: 11px;
-    }
-    
-    .action-btn i {
-        font-size: 16px;
-    }
-}
+/* ====== UTILITY CLASSES ====== */
+.text-pink { color: var(--pink-1); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
+.bg-pink { background: var(--gradient-pink); }
+.glow { box-shadow: var(--shadow-pink); }
+.rounded-full { border-radius: 9999px; }
