@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REFI Network • Wallet</title>
     
-    <!-- Font Awesome 6 للأيقونات العامة -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Telegram Web App SDK -->
@@ -14,9 +14,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
-    <!-- ربط ملف التنسيقات -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,17 +24,20 @@
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
                 <div class="splash-logo">
-                    <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/10234.png" alt="REFI Logo" class="refi-logo-img">
+                    <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" 
+                         alt="REFI Logo" 
+                         class="refi-logo-img"
+                         onerror="this.src='https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png'">
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v2.0.0</div>
+                <div class="splash-version">v3.0.0</div>
             </div>
         </div>
 
         <!-- المحتوى الرئيسي -->
         <main id="mainContent" style="display: none;">
-            <!-- قسم المحفظة (الرئيسي) -->
+            <!-- قسم المحفظة -->
             <div id="walletSection">
                 <!-- الهيدر -->
                 <div class="header">
@@ -87,12 +89,12 @@
                     </button>
                 </div>
 
-                <!-- قائمة الأصول الرئيسية -->
+                <!-- قائمة الأصول -->
                 <div class="assets-list" id="assetsList"></div>
 
                 <!-- العملات العشر مع الأسعار الحية -->
                 <div class="section-header" style="margin-top: 20px;">
-                    <h3>Top 10 Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
+                    <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
@@ -101,15 +103,6 @@
                     <div class="loading-spinner">
                         <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading prices...
                     </div>
-                </div>
-
-                <!-- آخر الأخبار -->
-                <div class="section-header">
-                    <h3>Market News</h3>
-                </div>
-                <div class="news-ticker">
-                    <i class="fa-regular fa-newspaper"></i>
-                    <div class="news-text" id="newsTicker">Loading news...</div>
                 </div>
             </div>
 
@@ -125,7 +118,6 @@
 
                 <div class="swap-container">
                     <div class="swap-card">
-                        <!-- أنت تدفع -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU PAY</span>
@@ -141,12 +133,10 @@
                             </div>
                         </div>
 
-                        <!-- سهم التحويل -->
                         <div class="swap-arrow">
                             <i class="fa-solid fa-arrow-down"></i>
                         </div>
 
-                        <!-- أنت تستلم -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU RECEIVE</span>
@@ -155,14 +145,13 @@
                             <div class="swap-input-group">
                                 <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
                                 <div class="currency-selector" onclick="toggleReceiveCurrency()">
-                                    <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/10234.png" class="currency-icon" id="receiveCurrencyIcon">
+                                    <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="currency-icon" id="receiveCurrencyIcon">
                                     <span id="receiveCurrency">REFI</span>
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- معلومات السواب -->
                         <div class="swap-info">
                             <div class="info-row">
                                 <span>Exchange Rate</span>
@@ -178,13 +167,11 @@
                             </div>
                         </div>
 
-                        <!-- ملاحظة -->
                         <div class="swap-note">
                             <i class="fa-solid fa-circle-info"></i>
                             <span>REFI to USDT requires 0.00016 BNB fee</span>
                         </div>
 
-                        <!-- زر التأكيد -->
                         <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
                             <i class="fa-regular fa-circle-check"></i>
                             Confirm Swap
@@ -223,22 +210,8 @@
                     </div>
                 </div>
 
-                <!-- عنوان الخطط -->
-                <div class="section-header" style="margin-top: 10px;">
-                    <h3>SELECT PLAN</h3>
-                </div>
-
                 <!-- خطط الستيكينغ -->
                 <div class="plans-grid" id="plansGrid"></div>
-
-                <!-- مهام الستيكينغ -->
-                <div class="staking-missions">
-                    <div class="section-header">
-                        <h3>STAKING MISSIONS</h3>
-                        <span class="mission-badge"><i class="fa-regular fa-gift"></i> BONUS</span>
-                    </div>
-                    <div class="missions-grid" id="stakingMissions"></div>
-                </div>
 
                 <!-- إدخال مبلغ الستيكينغ -->
                 <div class="stake-input-section">
@@ -251,7 +224,6 @@
                         <span class="currency-tag">USDT</span>
                     </div>
 
-                    <!-- ملخص الستيكينغ -->
                     <div class="stake-summary">
                         <div class="summary-row">
                             <span>Estimated Return</span>
@@ -267,7 +239,6 @@
                         </div>
                     </div>
 
-                    <!-- زر الستيكينغ -->
                     <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">
                         <i class="fa-regular fa-lock"></i>
                         Stake USDT
@@ -280,6 +251,15 @@
                     <span class="count-badge" id="activeStakesCount">0</span>
                 </div>
                 <div class="active-stakes" id="activeStakes"></div>
+
+                <!-- مهام الستيكينغ - في الأسفل -->
+                <div class="staking-missions">
+                    <div class="section-header">
+                        <h3>STAKING MISSIONS</h3>
+                        <span class="mission-badge"><i class="fa-regular fa-gift"></i> BONUS</span>
+                    </div>
+                    <div class="missions-grid" id="stakingMissions"></div>
+                </div>
             </div>
 
             <!-- قسم الإحالة -->
@@ -296,7 +276,6 @@
                     <span class="referral-title glow-text">EARN USDT</span>
                 </div>
 
-                <!-- إحصائيات الإحالة -->
                 <div class="referral-stats">
                     <div class="stat-card">
                         <span class="stat-label">TOTAL REFERRALS</span>
@@ -312,7 +291,6 @@
                     </div>
                 </div>
 
-                <!-- رابط الإحالة -->
                 <div class="referral-link-card">
                     <div class="link-label">Your Referral Link</div>
                     <div class="link-container">
@@ -326,27 +304,16 @@
                     </div>
                 </div>
 
-                <!-- وصف الإحالة -->
                 <div class="referral-description">
                     <i class="fa-regular fa-star" style="color: #ff5ad9;"></i>
                     <p>Share your link and get <span class="highlight">250,000 REFI</span> for every friend who joins. Complete milestones to earn massive USDT rewards!</p>
                 </div>
 
-                <!-- عنوان المهام -->
                 <div class="section-header">
                     <h3>Referral Milestones</h3>
                 </div>
 
-                <!-- قائمة المهام -->
                 <div class="milestones-list" id="milestonesList"></div>
-
-                <!-- سلم الإحالات -->
-                <div class="referral-leaderboard" id="referralLeaderboard" style="display: none;">
-                    <div class="section-header">
-                        <h3>Top Referrers</h3>
-                    </div>
-                    <div class="leaderboard-list" id="leaderboardList"></div>
-                </div>
             </div>
         </main>
 
@@ -389,7 +356,7 @@
                             <option value="USDT">USDT (Min: 10)</option>
                             <option value="BNB">BNB (Min: 0.02)</option>
                         </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/10234.png" class="select-icon" id="depositIcon">
+                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="select-icon" id="depositIcon">
                     </div>
                 </div>
                 <div class="form-group">
@@ -439,7 +406,7 @@
                             <option value="USDT">USDT (Fee: 0.00016 BNB)</option>
                             <option value="BNB">BNB (No fee)</option>
                         </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/10234.png" class="select-icon" id="withdrawIcon">
+                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="select-icon" id="withdrawIcon">
                     </div>
                 </div>
                 <div class="form-group">
@@ -455,7 +422,6 @@
                     USDT withdrawal requires 0.00016 BNB for fees
                 </div>
                 
-                <!-- ملخص السحب -->
                 <div class="withdraw-summary" id="withdrawSummary">
                     <div class="summary-row">
                         <span>You will receive:</span>
@@ -527,9 +493,7 @@
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body" id="stakingDetailsBody">
-                <!-- المحتوى يتعبأ ديناميكياً -->
-            </div>
+            <div class="modal-body" id="stakingDetailsBody"></div>
         </div>
     </div>
 
@@ -546,7 +510,6 @@
         <i class="fa-solid fa-arrow-up"></i>
     </button>
 
-    <!-- ربط ملف الجافاسكريبت -->
     <script src="app.js"></script>
 </body>
 </html>
