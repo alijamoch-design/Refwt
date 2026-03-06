@@ -2,16 +2,46 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REFI Wallet</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
-<body class="dark-theme">
-    <div id="app">
-        </div>
+<body>
+    <div id="loader" class="loader">جاري التحميل...</div>
+
+    <div class="app-wrapper">
+        <header class="header">
+            <div class="logo">REFI Wallet</div>
+            <div id="user-status" class="status-dot"></div>
+        </header>
+
+        <main id="content" class="main-content">
+            </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item" onclick="showTab('wallet')">
+                <span>👛</span>
+                <p>المحفظة</p>
+            </div>
+            <div class="nav-item" onclick="showTab('staking')">
+                <span>📈</span>
+                <p>استثمار</p>
+            </div>
+            <div class="nav-item" onclick="showTab('swap')">
+                <span>🔄</span>
+                <p>تبديل</p>
+            </div>
+            <div class="nav-item" onclick="showTab('referral')">
+                <span>🤝</span>
+                <p>الإحالة</p>
+            </div>
+        </nav>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
