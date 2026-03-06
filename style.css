@@ -65,7 +65,7 @@ body {
     display: none;
 }
 
-/* ====== شاشة التحميل ====== */
+/* ====== شاشة التحميل - تأثير النبض المتوهج ====== */
 .splash-screen {
     position: fixed;
     top: 0;
@@ -95,30 +95,92 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-.splash-logo {
-    width: 140px;
-    height: 140px;
-    background: var(--gradient-pink);
-    border-radius: 35px;
+/* تأثير النبض المتوهج */
+.splash-glow-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    box-shadow: 0 0 40px var(--pink-glow-strong);
-    animation: pulse 2s ease-in-out infinite;
-    padding: 15px;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 40px var(--pink-glow-strong); }
-    50% { transform: scale(1.05); box-shadow: 0 0 60px var(--pink-glow-strong); }
-}
-
-.refi-logo-img {
+.splash-glow-core {
     width: 100px;
     height: 100px;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
+    background: var(--gradient-pink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 0 60px var(--pink-glow-strong);
+    animation: corePulse 2s ease-in-out infinite;
+}
+
+.splash-glow-core i {
+    font-size: 48px;
+    color: white;
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.7));
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.splash-glow-circle {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255, 90, 217, 0.2);
+    animation: glowPulse 3s ease-out infinite;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px var(--pink-glow);
+}
+
+.splash-glow-circle.delay-1 {
+    width: 240px;
+    height: 240px;
+    animation-delay: 1s;
+    background: rgba(255, 90, 217, 0.15);
+}
+
+.splash-glow-circle.delay-2 {
+    width: 280px;
+    height: 280px;
+    animation-delay: 2s;
+    background: rgba(255, 90, 217, 0.1);
+}
+
+@keyframes glowPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+}
+
+@keyframes corePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 60px var(--pink-glow-strong);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 100px var(--pink-glow-strong);
+    }
 }
 
 .splash-title {
@@ -129,6 +191,7 @@ body {
     -webkit-text-fill-color: transparent;
     margin-bottom: 20px;
     letter-spacing: 1px;
+    text-shadow: 0 0 20px var(--pink-glow);
 }
 
 .splash-spinner {
@@ -959,6 +1022,25 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.plan-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 90, 217, 0.1) 0%, transparent 70%);
+    animation: rotate 10s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.plan-card:hover::before {
+    opacity: 1;
 }
 
 .plan-card:hover {
@@ -989,6 +1071,12 @@ body {
 .plan-label {
     font-size: 11px;
     color: var(--text-secondary);
+}
+
+.plan-min {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 8px;
 }
 
 /* ====== Stake Input ====== */
@@ -1109,6 +1197,11 @@ body {
     transform: translateX(5px);
 }
 
+.stake-item.complete {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+}
+
 .stake-header {
     display: flex;
     justify-content: space-between;
@@ -1168,6 +1261,19 @@ body {
     transform: translateX(5px);
 }
 
+.mission-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mission-info i {
+    font-size: 20px;
+    color: var(--pink-1);
+    width: 30px;
+    text-align: center;
+}
+
 .mission-info h4 {
     font-size: 14px;
     margin-bottom: 5px;
@@ -1182,6 +1288,8 @@ body {
     color: var(--pink-1);
     font-weight: 700;
     font-size: 14px;
+    min-width: 60px;
+    text-align: right;
 }
 
 .claim-btn {
@@ -1327,6 +1435,14 @@ body {
 .milestone-referrals {
     font-weight: 700;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.milestone-referrals i {
+    color: var(--pink-1);
+    font-size: 16px;
 }
 
 .milestone-reward {
@@ -1822,5 +1938,34 @@ body {
     
     .staking-title, .referral-title {
         font-size: 24px;
+    }
+    
+    .splash-glow-container {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .splash-glow-core {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .splash-glow-core i {
+        font-size: 40px;
+    }
+    
+    .splash-glow-circle {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .splash-glow-circle.delay-1 {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .splash-glow-circle.delay-2 {
+        width: 210px;
+        height: 210px;
     }
 }
