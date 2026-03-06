@@ -4,23 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REFI Network • Wallet</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome 6 -->
+    
+    <!-- Font Awesome 6 للأيقونات العامة -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- أيقونات العملات المشفرة الأصلية -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/font/cryptocurrency-icons.css">
+    
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- ربط ملف التنسيقات -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Main Content -->
-        <main id="mainContent">
-            <!-- Wallet Section (Default) -->
+        <!-- شاشة التحميل -->
+        <div class="splash-screen" id="splashScreen">
+            <div class="splash-content">
+                <div class="splash-logo">
+                    <i class="cc REFI" style="font-size: 64px;"></i>
+                </div>
+                <h1 class="splash-title">REFI Network</h1>
+                <div class="splash-spinner"></div>
+            </div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <main id="mainContent" style="display: none;">
+            <!-- قسم المحفظة (الرئيسي) -->
             <div id="walletSection">
-                <!-- Header -->
+                <!-- الهيدر -->
                 <div class="header">
                     <div class="welcome-text">
                         <span class="welcome-title">Welcome back,</span>
@@ -37,8 +55,9 @@
                     </div>
                 </div>
 
-                <!-- Balance Card -->
+                <!-- بطاقة الرصيد -->
                 <div class="balance-card">
+                    <div class="balance-glow"></div>
                     <div class="balance-label">Total Balance</div>
                     <div class="balance-amount" id="totalBalance">$0.00</div>
                     <div class="balance-actions">
@@ -54,26 +73,33 @@
                             <i class="fa-regular fa-clock"></i>
                             <span>History</span>
                         </button>
-                        <button class="action-btn" onclick="showReceiveModal()">
-                            <i class="fa-regular fa-qrcode"></i>
-                            <span>Receive</span>
+                        <!-- تم تغيير Receive إلى P2P -->
+                        <button class="action-btn" onclick="showP2P()">
+                            <i class="fa-solid fa-handshake"></i>
+                            <span>P2P</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- My Assets Section -->
+                <!-- عنوان الأصول -->
                 <div class="section-header">
                     <h3>My Assets</h3>
-                    <button class="see-all-btn" onclick="showAllAssets()">See All <i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="see-all-btn" onclick="showAllAssets()">
+                        See All <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
 
-                <!-- Assets List -->
-                <div class="assets-list" id="assetsList">
-                    <!-- Will be populated by JavaScript -->
+                <!-- قائمة الأصول الرئيسية -->
+                <div class="assets-list" id="assetsList"></div>
+
+                <!-- العملات العشر مع أيقوناتها الأصلية -->
+                <div class="section-header" style="margin-top: 20px;">
+                    <h3>Top 10 Cryptocurrencies</h3>
                 </div>
+                <div class="top-crypto-list" id="topCryptoList"></div>
             </div>
 
-            <!-- Swap Section (Hidden by default) -->
+            <!-- قسم السواب -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -85,13 +111,14 @@
 
                 <div class="swap-container">
                     <div class="swap-card">
+                        <!-- أنت تدفع -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU PAY</span>
                                 <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
                             </div>
                             <div class="swap-input-group">
-                                <input type="number" id="payAmount" placeholder="0" oninput="calculateSwap()">
+                                <input type="number" id="payAmount" placeholder="0" value="1" oninput="calculateSwap()">
                                 <div class="currency-selector" onclick="togglePayCurrency()">
                                     <span id="payCurrency">USDT</span>
                                     <i class="fa-solid fa-chevron-down"></i>
@@ -99,17 +126,19 @@
                             </div>
                         </div>
 
+                        <!-- سهم التحويل -->
                         <div class="swap-arrow">
                             <i class="fa-solid fa-arrow-down"></i>
                         </div>
 
+                        <!-- أنت تستلم -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU RECEIVE</span>
                                 <span class="balance-text" id="receiveBalance">Balance: 0 REFI</span>
                             </div>
                             <div class="swap-input-group">
-                                <input type="number" id="receiveAmount" placeholder="0" readonly disabled>
+                                <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
                                 <div class="currency-selector" onclick="toggleReceiveCurrency()">
                                     <span id="receiveCurrency">REFI</span>
                                     <i class="fa-solid fa-chevron-down"></i>
@@ -117,6 +146,7 @@
                             </div>
                         </div>
 
+                        <!-- معلومات السواب -->
                         <div class="swap-info">
                             <div class="info-row">
                                 <span>Exchange Rate</span>
@@ -128,17 +158,22 @@
                             </div>
                         </div>
 
-                        <p class="swap-note">
+                        <!-- ملاحظة -->
+                        <div class="swap-note">
                             <i class="fa-solid fa-circle-info"></i>
-                            Swaps between USDT and REFI are fixed. REFI to USDT requires a small BNB fee for processing.
-                        </p>
+                            <span>REFI to USDT requires 0.00016 BNB fee</span>
+                        </div>
 
-                        <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">Confirm Swap</button>
+                        <!-- زر التأكيد -->
+                        <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
+                            <i class="fa-regular fa-circle-check"></i>
+                            Confirm Swap
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Staking Section (Hidden by default) -->
+            <!-- قسم الستيكينغ -->
             <div id="stakingSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -149,9 +184,10 @@
                 </div>
 
                 <div class="staking-header">
-                    <span class="staking-title">USDT REWARDS</span>
+                    <span class="staking-title glow-text">USDT REWARDS</span>
                 </div>
 
+                <!-- إحصائيات الستيكينغ -->
                 <div class="staking-stats">
                     <div class="stat-card">
                         <span class="stat-label">TOTAL STAKED</span>
@@ -167,24 +203,23 @@
                     </div>
                 </div>
 
+                <!-- عنوان الخطط -->
                 <div class="section-header" style="margin-top: 10px;">
                     <h3>SELECT PLAN</h3>
                 </div>
 
-                <div class="plans-grid" id="plansGrid">
-                    <!-- Plans will be populated by JavaScript -->
-                </div>
+                <!-- خطط الستيكينغ -->
+                <div class="plans-grid" id="plansGrid"></div>
 
-                <!-- Staking Missions -->
+                <!-- مهام الستيكينغ -->
                 <div class="staking-missions">
                     <div class="section-header">
                         <h3>STAKING MISSIONS</h3>
                     </div>
-                    <div class="missions-grid" id="stakingMissions">
-                        <!-- Missions will be populated by JavaScript -->
-                    </div>
+                    <div class="missions-grid" id="stakingMissions"></div>
                 </div>
 
+                <!-- إدخال مبلغ الستيكينغ -->
                 <div class="stake-input-section">
                     <div class="input-label">
                         <span>AMOUNT TO STAKE</span>
@@ -195,6 +230,7 @@
                         <span class="currency-tag">USDT</span>
                     </div>
 
+                    <!-- ملخص الستيكينغ -->
                     <div class="stake-summary">
                         <div class="summary-row">
                             <span>Estimated Return</span>
@@ -206,11 +242,18 @@
                         </div>
                     </div>
 
-                    <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">Stake USDT</button>
+                    <!-- زر الستيكينغ -->
+                    <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">
+                        <i class="fa-regular fa-lock"></i>
+                        Stake USDT
+                    </button>
                 </div>
+
+                <!-- الستيكات النشطة -->
+                <div class="active-stakes" id="activeStakes" style="padding: 20px;"></div>
             </div>
 
-            <!-- Referral Section (Hidden by default) -->
+            <!-- قسم الإحالة -->
             <div id="referralSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -221,9 +264,10 @@
                 </div>
 
                 <div class="referral-header">
-                    <span class="referral-title">EARN USDT</span>
+                    <span class="referral-title glow-text">EARN USDT</span>
                 </div>
 
+                <!-- إحصائيات الإحالة -->
                 <div class="referral-stats">
                     <div class="stat-card">
                         <span class="stat-label">TOTAL REFERRALS</span>
@@ -239,6 +283,7 @@
                     </div>
                 </div>
 
+                <!-- رابط الإحالة -->
                 <div class="referral-link-card">
                     <div class="link-label">Your Referral Link</div>
                     <div class="link-container">
@@ -249,22 +294,24 @@
                     </div>
                 </div>
 
+                <!-- وصف الإحالة -->
                 <p class="referral-description">
+                    <i class="fa-regular fa-star" style="color: #ff5ad9;"></i>
                     Share your link and get 250,000 REFI for every friend who joins. Complete milestones to earn massive USDT rewards!
                 </p>
 
+                <!-- عنوان المهام -->
                 <div class="section-header">
                     <h3>Referral Milestones</h3>
                 </div>
 
-                <div class="milestones-list" id="milestonesList">
-                    <!-- Milestones will be populated by JavaScript -->
-                </div>
+                <!-- قائمة المهام -->
+                <div class="milestones-list" id="milestonesList"></div>
             </div>
         </main>
 
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
+        <!-- القائمة السفلية -->
+        <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" onclick="showWallet()">
                 <i class="fa-solid fa-wallet"></i>
                 <span>Wallet</span>
@@ -284,8 +331,7 @@
         </nav>
     </div>
 
-    <!-- Modals -->
-    <!-- Deposit Modal -->
+    <!-- نافذة الإيداع -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -320,12 +366,15 @@
                         </button>
                     </div>
                 </div>
-                <button class="modal-btn" onclick="submitDeposit()">Submit Deposit</button>
+                <button class="modal-btn" onclick="submitDeposit()">
+                    <i class="fa-regular fa-circle-down"></i>
+                    Submit Deposit
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Withdraw Modal -->
+    <!-- نافذة السحب -->
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -355,11 +404,62 @@
                     <i class="fa-solid fa-circle-exclamation"></i>
                     USDT withdrawal requires 0.00016 BNB for fees
                 </div>
-                <button class="modal-btn" onclick="submitWithdraw()">Submit Withdrawal</button>
+                <button class="modal-btn" onclick="submitWithdraw()">
+                    <i class="fa-regular fa-circle-up"></i>
+                    Submit Withdrawal
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- نافذة P2P Coming Soon -->
+    <div id="p2pModal" class="modal">
+        <div class="modal-content p2p-modal">
+            <div class="modal-header">
+                <h3>P2P Trading</h3>
+                <button class="close-btn" onclick="closeModal('p2pModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body p2p-body">
+                <div class="p2p-icon">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <h2 class="p2p-title">Coming Soon!</h2>
+                <p class="p2p-text">
+                    We're working hard to bring you the best P2P trading experience. 
+                    Stay tuned for exciting updates!
+                </p>
+                <div class="p2p-features">
+                    <div class="feature-item">
+                        <i class="fa-regular fa-circle-check"></i>
+                        <span>Trade directly with others</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-regular fa-circle-check"></i>
+                        <span>Best exchange rates</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-regular fa-circle-check"></i>
+                        <span>Secure escrow system</span>
+                    </div>
+                </div>
+                <button class="modal-btn" onclick="closeModal('p2pModal')">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- إشعار منبثق -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <i class="fa-regular fa-circle-check"></i>
+            <span id="toastMessage">Message</span>
+        </div>
+    </div>
+
+    <!-- ربط ملف الجافاسكريبت -->
     <script src="app.js"></script>
 </body>
 </html>
