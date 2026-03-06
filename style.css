@@ -26,8 +26,10 @@
     --text-tertiary: #6b6b80;
     --border-color: #2a2a35;
     --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.1);
     --warning: #f59e0b;
     --danger: #ef4444;
+    --info: #3b82f6;
     
     /* التدرجات */
     --gradient-pink: linear-gradient(135deg, var(--pink-1), var(--pink-2), var(--pink-3));
@@ -36,6 +38,7 @@
     
     /* الظلال */
     --shadow-pink: 0 4px 20px var(--pink-glow);
+    --shadow-glow: 0 0 30px var(--pink-glow);
 }
 
 body {
@@ -59,6 +62,7 @@ body {
     overflow-x: hidden;
     scrollbar-width: none;
     box-shadow: 0 0 50px var(--pink-glow);
+    scroll-behavior: smooth;
 }
 
 .app-container::-webkit-scrollbar {
@@ -95,7 +99,6 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-/* تأثير النبض المتوهج */
 .splash-glow-container {
     position: relative;
     width: 200px;
@@ -222,6 +225,12 @@ body {
     align-items: center;
     padding: 20px 20px 10px 20px;
     animation: slideDown 0.5s ease;
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
 }
 
 @keyframes slideDown {
@@ -280,6 +289,10 @@ body {
     transform: scale(1.1);
 }
 
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
 .badge {
     position: absolute;
     top: -2px;
@@ -306,6 +319,11 @@ body {
     border: 1px solid rgba(255, 90, 217, 0.3);
     box-shadow: var(--shadow-pink);
     animation: slideUp 0.5s ease 0.1s both;
+    transition: transform 0.3s ease;
+}
+
+.balance-card:hover {
+    transform: translateY(-2px);
 }
 
 @keyframes slideUp {
@@ -383,6 +401,26 @@ body {
     gap: 5px;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.action-btn:active::after {
+    width: 100px;
+    height: 100px;
 }
 
 .action-btn i {
@@ -451,12 +489,19 @@ body {
     border-radius: 18px;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .refresh-btn:hover {
     background: var(--gradient-pink);
     color: white;
     transform: rotate(180deg);
+}
+
+.refresh-btn:active {
+    transform: rotate(180deg) scale(0.95);
 }
 
 .live-badge {
@@ -473,6 +518,7 @@ body {
     font-size: 8px;
     margin-right: 4px;
     color: #10b981;
+    animation: pulse 2s infinite;
 }
 
 /* ====== قائمة الأصول ====== */
@@ -494,6 +540,25 @@ body {
     transition: all 0.3s ease;
     cursor: pointer;
     animation: slideIn 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.asset-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 90, 217, 0.1) 0%, transparent 70%);
+    transition: width 0.5s, height 0.5s;
+    border-radius: 50%;
+}
+
+.asset-item:hover::before {
+    width: 200%;
+    height: 200%;
 }
 
 @keyframes slideIn {
@@ -594,6 +659,7 @@ body {
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     cursor: pointer;
+    animation: fadeIn 0.3s ease;
 }
 
 .crypto-item:hover {
@@ -694,6 +760,24 @@ body {
     padding: 8px 15px;
     border-radius: 20px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--gradient-pink-horizontal);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.nav-item:hover::after {
+    width: 30px;
 }
 
 .nav-item i {
@@ -711,9 +795,17 @@ body {
     text-shadow: 0 0 10px var(--pink-glow);
 }
 
+.nav-item.active::after {
+    width: 30px;
+}
+
 .nav-item:hover {
     color: var(--pink-1);
     transform: translateY(-2px);
+}
+
+.nav-item:active {
+    transform: translateY(0) scale(0.95);
 }
 
 /* ====== Hidden Class ====== */
@@ -741,6 +833,10 @@ body {
     transform: scale(1.1);
 }
 
+.back-btn:active {
+    transform: scale(0.95);
+}
+
 /* ====== Swap Section ====== */
 .swap-container {
     padding: 20px;
@@ -752,6 +848,19 @@ body {
     padding: 20px;
     border: 1px solid var(--border-color);
     animation: scaleIn 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.swap-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 90, 217, 0.03) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
 }
 
 @keyframes scaleIn {
@@ -772,6 +881,8 @@ body {
     margin: 10px 0;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .swap-input-card:focus-within {
@@ -831,6 +942,10 @@ body {
     border-color: transparent;
 }
 
+.currency-selector:active {
+    transform: scale(0.95);
+}
+
 .currency-selector span {
     font-weight: 600;
 }
@@ -841,27 +956,39 @@ body {
     border-radius: 50%;
 }
 
-.swap-arrow {
-    text-align: center;
-    margin: 10px 0;
+/* زر قلب الزوج (جديد) */
+.swap-flip-container {
+    display: flex;
+    justify-content: center;
+    margin: 5px 0;
+    position: relative;
+    z-index: 2;
 }
 
-.swap-arrow i {
+.swap-flip-btn {
     background: var(--bg-card);
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
     color: var(--pink-1);
-    border: 1px solid var(--border-color);
-    animation: bounce 2s infinite;
+    font-size: 20px;
+    box-shadow: 0 0 20px var(--pink-glow);
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(5px); }
+.swap-flip-btn:hover {
+    background: var(--gradient-pink);
+    color: white;
+    transform: rotate(180deg) scale(1.1);
+}
+
+.swap-flip-btn:active {
+    transform: rotate(180deg) scale(0.95);
 }
 
 .swap-info {
@@ -891,21 +1018,37 @@ body {
     font-weight: 500;
 }
 
+.info-row.highlight span:last-child {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.fee-free {
+    color: var(--success) !important;
+    background: var(--success-bg);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
 .swap-note {
-    background: rgba(255, 90, 217, 0.1);
-    border: 1px solid rgba(255, 90, 217, 0.2);
     border-radius: 12px;
     padding: 12px;
     font-size: 13px;
-    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 8px;
     margin: 15px 0;
 }
 
-.swap-note i {
-    color: var(--pink-1);
+.swap-note.success {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.swap-note.success i {
+    color: var(--success);
 }
 
 .confirm-btn {
@@ -921,6 +1064,7 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    z-index: 1;
 }
 
 .confirm-btn::before {
@@ -934,6 +1078,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
+    z-index: -1;
 }
 
 .confirm-btn:hover::before {
@@ -944,6 +1089,10 @@ body {
 .confirm-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-pink);
+}
+
+.confirm-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* ====== Staking Section ====== */
@@ -985,12 +1134,35 @@ body {
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 90, 217, 0.1) 0%, transparent 70%);
+    transition: width 0.5s, height 0.5s;
+    border-radius: 50%;
+}
+
+.stat-card:hover::before {
+    width: 200%;
+    height: 200%;
 }
 
 .stat-card:hover {
     border-color: var(--pink-1);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px var(--pink-glow);
+}
+
+.stat-card:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .stat-label {
@@ -1047,6 +1219,10 @@ body {
     border-color: var(--pink-1);
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 5px 15px var(--pink-glow);
+}
+
+.plan-card:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .plan-card.selected {
@@ -1190,6 +1366,7 @@ body {
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    animation: slideIn 0.3s ease;
 }
 
 .stake-item:hover {
@@ -1199,7 +1376,7 @@ body {
 
 .stake-item.complete {
     border-color: var(--success);
-    background: rgba(16, 185, 129, 0.05);
+    background: var(--success-bg);
 }
 
 .stake-header {
@@ -1254,6 +1431,7 @@ body {
     justify-content: space-between;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    animation: slideIn 0.3s ease;
 }
 
 .mission-card:hover {
@@ -1302,6 +1480,26 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.claim-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.claim-btn:active::after {
+    width: 50px;
+    height: 50px;
 }
 
 .claim-btn:hover {
@@ -1309,10 +1507,19 @@ body {
     box-shadow: var(--shadow-pink);
 }
 
+.claim-btn:active {
+    transform: scale(0.95);
+}
+
 .claim-btn.completed {
     background: var(--success);
     cursor: not-allowed;
     opacity: 0.7;
+}
+
+.claim-btn.completed:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 /* ====== Referral Section ====== */
@@ -1343,6 +1550,12 @@ body {
     padding: 20px;
     margin: 20px;
     border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.referral-link-card:hover {
+    border-color: var(--pink-1);
+    box-shadow: var(--shadow-pink);
 }
 
 .link-label {
@@ -1377,11 +1590,18 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .copy-btn:hover, .share-btn:hover {
     transform: scale(1.1);
     box-shadow: var(--shadow-pink);
+}
+
+.copy-btn:active, .share-btn:active {
+    transform: scale(0.95);
 }
 
 .referral-description {
@@ -1418,6 +1638,7 @@ body {
     padding: 15px;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    animation: slideIn 0.3s ease;
 }
 
 .milestone-item:hover {
@@ -1482,6 +1703,308 @@ body {
     font-size: 11px;
     color: var(--text-secondary);
     min-width: 45px;
+}
+
+/* ====== History Modal (جديد) ====== */
+.history-modal {
+    max-height: 80vh;
+}
+
+.history-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+}
+
+.history-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.history-tab {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 15px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.history-tab:hover {
+    background: rgba(255, 90, 217, 0.1);
+    color: var(--pink-1);
+}
+
+.history-tab.active {
+    background: var(--gradient-pink);
+    color: white;
+    border-color: transparent;
+}
+
+.history-list {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.history-item {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    animation: slideIn 0.3s ease;
+}
+
+.history-item:hover {
+    border-color: var(--pink-1);
+    transform: translateX(5px);
+}
+
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.history-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-type i {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-type.deposit i {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.history-type.withdraw i {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.history-type.referral i {
+    background: rgba(255, 90, 217, 0.1);
+    color: var(--pink-1);
+}
+
+.history-type.staking i {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+}
+
+.history-type span {
+    font-weight: 600;
+}
+
+.history-status {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.history-status.completed {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.history-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.history-status.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.history-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.history-amount {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.history-date {
+    font-size: 11px;
+}
+
+/* ====== Notifications Modal (جديد) ====== */
+.notifications-modal {
+    max-height: 80vh;
+}
+
+.notifications-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--text-tertiary);
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.empty-state span {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.notification-item {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-item:hover {
+    border-color: var(--pink-1);
+    transform: translateX(5px);
+}
+
+.notification-item.unread {
+    background: linear-gradient(135deg, rgba(255, 90, 217, 0.05), rgba(176, 0, 122, 0.05));
+    border-left: 3px solid var(--pink-1);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.notification-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-title i {
+    color: var(--pink-1);
+}
+
+.notification-time {
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.notification-message {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ====== Currency Selector Modal (جديد) ====== */
+.currency-modal {
+    max-height: 80vh;
+}
+
+.currency-search {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.currency-search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+}
+
+.currency-search input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 15px 15px 15px 45px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.currency-search input:focus {
+    border-color: var(--pink-1);
+    box-shadow: 0 0 0 3px rgba(255, 90, 217, 0.1);
+}
+
+.currency-list {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.currency-list-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.currency-list-item:hover {
+    background: var(--bg-card);
+    border-color: var(--pink-1);
+    transform: translateX(5px);
+}
+
+.currency-list-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.currency-list-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.currency-list-info p {
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
 /* ====== Modal Styles ====== */
@@ -1561,12 +2084,19 @@ body {
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-btn:hover {
     background: var(--pink-1);
     color: white;
     transform: rotate(90deg);
+}
+
+.close-btn:active {
+    transform: rotate(90deg) scale(0.95);
 }
 
 .modal-body {
@@ -1600,6 +2130,7 @@ body {
     outline: none;
     transition: all 0.3s ease;
     appearance: none;
+    cursor: pointer;
 }
 
 .form-select:focus {
@@ -1615,6 +2146,7 @@ body {
     width: 24px;
     height: 24px;
     border-radius: 50%;
+    pointer-events: none;
 }
 
 .form-input {
@@ -1673,11 +2205,18 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .copy-btn-small:hover {
     background: var(--pink-2);
     transform: scale(1.1);
+}
+
+.copy-btn-small:active {
+    transform: scale(0.95);
 }
 
 .address-note {
@@ -1703,6 +2242,26 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.modal-btn:active::after {
+    width: 100px;
+    height: 100px;
 }
 
 .modal-btn:hover {
@@ -1710,22 +2269,29 @@ body {
     box-shadow: var(--shadow-pink);
 }
 
-/* ====== Fee Warning ====== */
-.fee-warning {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid var(--warning);
+.modal-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ====== Fee Info (جديد) ====== */
+.fee-info {
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 20px;
-    color: var(--warning);
     font-size: 13px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.fee-warning.hidden {
-    display: none;
+.fee-info.success {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.fee-info.success i {
+    color: var(--success);
 }
 
 /* ====== Withdraw Summary ====== */
@@ -1882,10 +2448,19 @@ body {
     z-index: 1500;
     box-shadow: var(--shadow-pink);
     animation: bounce 2s infinite;
+    transition: all 0.3s ease;
 }
 
 .scroll-top-btn.show {
     display: flex;
+}
+
+.scroll-top-btn:hover {
+    transform: scale(1.1);
+}
+
+.scroll-top-btn:active {
+    transform: scale(0.95);
 }
 
 /* ====== Loading Spinner ====== */
@@ -1919,6 +2494,15 @@ body {
 
 .pop {
     animation: pop 0.3s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
 }
 
 /* ====== Responsive ====== */
@@ -1969,3 +2553,12 @@ body {
         height: 210px;
     }
 }
+
+/* ====== Utility Classes ====== */
+.text-pink { color: var(--pink-1); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
+.bg-pink { background: var(--gradient-pink); }
+.glow { box-shadow: var(--shadow-pink); }
+.rounded-full { border-radius: 9999px; }
