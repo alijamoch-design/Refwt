@@ -20,14 +20,16 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- شاشة التحميل مع لوجو REFI -->
+        <!-- شاشة التحميل بتأثير احترافي -->
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
-                <div class="splash-logo">
-                    <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" 
-                         alt="REFI Logo" 
-                         class="refi-logo-img"
-                         onerror="this.src='https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png'">
+                <div class="splash-glow-container">
+                    <div class="splash-glow-circle"></div>
+                    <div class="splash-glow-circle delay-1"></div>
+                    <div class="splash-glow-circle delay-2"></div>
+                    <div class="splash-glow-core">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
@@ -92,7 +94,7 @@
                 <!-- قائمة الأصول -->
                 <div class="assets-list" id="assetsList"></div>
 
-                <!-- العملات العشر مع الأسعار الحية -->
+                <!-- العملات مع الأسعار الحية -->
                 <div class="section-header" style="margin-top: 20px;">
                     <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
@@ -145,7 +147,7 @@
                             <div class="swap-input-group">
                                 <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
                                 <div class="currency-selector" onclick="toggleReceiveCurrency()">
-                                    <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="currency-icon" id="receiveCurrencyIcon">
+                                    <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="currency-icon" id="receiveCurrencyIcon">
                                     <span id="receiveCurrency">REFI</span>
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </div>
@@ -252,7 +254,7 @@
                 </div>
                 <div class="active-stakes" id="activeStakes"></div>
 
-                <!-- مهام الستيكينغ - في الأسفل -->
+                <!-- مهام الستيكينغ -->
                 <div class="staking-missions">
                     <div class="section-header">
                         <h3>STAKING MISSIONS</h3>
@@ -356,7 +358,7 @@
                             <option value="USDT">USDT (Min: 10)</option>
                             <option value="BNB">BNB (Min: 0.02)</option>
                         </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="select-icon" id="depositIcon">
+                        <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="depositIcon">
                     </div>
                 </div>
                 <div class="form-group">
@@ -406,7 +408,7 @@
                             <option value="USDT">USDT (Fee: 0.00016 BNB)</option>
                             <option value="BNB">BNB (No fee)</option>
                         </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/9065.png" class="select-icon" id="withdrawIcon">
+                        <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
                     </div>
                 </div>
                 <div class="form-group">
