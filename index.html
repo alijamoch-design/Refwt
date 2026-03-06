@@ -2,86 +2,302 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FEFI Network • Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>REFI Network • Wallet</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- Main Content -->
         <main id="mainContent">
-            <!-- Header -->
-            <div class="header">
-                <div class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span id="userId">Loading...</span>
+            <!-- Wallet Section (Default) -->
+            <div id="walletSection">
+                <!-- Header -->
+                <div class="header">
+                    <div class="welcome-text">
+                        <span class="welcome-title">Welcome back,</span>
+                        <span class="user-name" id="userId">REFI User</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="showNotifications()">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="badge">3</span>
+                        </button>
+                        <button class="icon-btn" onclick="showSettings()">
+                            <i class="fa-regular fa-user"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="notifications">
-                    <i class="fas fa-bell"></i>
+
+                <!-- Balance Card -->
+                <div class="balance-card">
+                    <div class="balance-label">Total Balance</div>
+                    <div class="balance-amount" id="totalBalance">$0.00</div>
+                    <div class="balance-actions">
+                        <button class="action-btn" onclick="showDepositModal()">
+                            <i class="fa-regular fa-circle-down"></i>
+                            <span>Deposit</span>
+                        </button>
+                        <button class="action-btn" onclick="showWithdrawModal()">
+                            <i class="fa-regular fa-circle-up"></i>
+                            <span>Withdraw</span>
+                        </button>
+                        <button class="action-btn" onclick="showHistory()">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>History</span>
+                        </button>
+                        <button class="action-btn" onclick="showReceiveModal()">
+                            <i class="fa-regular fa-qrcode"></i>
+                            <span>Receive</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My Assets Section -->
+                <div class="section-header">
+                    <h3>My Assets</h3>
+                    <button class="see-all-btn" onclick="showAllAssets()">See All <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <!-- Assets List -->
+                <div class="assets-list" id="assetsList">
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
 
-            <!-- Total Balance Card -->
-            <div class="balance-card">
-                <div class="balance-label">Total Balance</div>
-                <div class="balance-amount" id="totalBalance">$0.00</div>
-                <div class="balance-actions">
-                    <button class="action-btn" onclick="showDepositModal()">
-                        <i class="fas fa-arrow-down"></i> Deposit
+            <!-- Swap Section (Hidden by default) -->
+            <div id="swapSection" class="hidden">
+                <div class="section-header">
+                    <button class="back-btn" onclick="showWallet()">
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <button class="action-btn" onclick="showWithdrawModal()">
-                        <i class="fas fa-arrow-up"></i> Withdraw
-                    </button>
+                    <h3>Swap</h3>
+                    <div style="width: 30px;"></div>
+                </div>
+
+                <div class="swap-container">
+                    <div class="swap-card">
+                        <div class="swap-input-card">
+                            <div class="swap-label">
+                                <span>YOU PAY</span>
+                                <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
+                            </div>
+                            <div class="swap-input-group">
+                                <input type="number" id="payAmount" placeholder="0" oninput="calculateSwap()">
+                                <div class="currency-selector" onclick="togglePayCurrency()">
+                                    <span id="payCurrency">USDT</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swap-arrow">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </div>
+
+                        <div class="swap-input-card">
+                            <div class="swap-label">
+                                <span>YOU RECEIVE</span>
+                                <span class="balance-text" id="receiveBalance">Balance: 0 REFI</span>
+                            </div>
+                            <div class="swap-input-group">
+                                <input type="number" id="receiveAmount" placeholder="0" readonly disabled>
+                                <div class="currency-selector" onclick="toggleReceiveCurrency()">
+                                    <span id="receiveCurrency">REFI</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swap-info">
+                            <div class="info-row">
+                                <span>Exchange Rate</span>
+                                <span>1 USDT = 500,000 REFI</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Network Fee</span>
+                                <span id="swapFee">Free</span>
+                            </div>
+                        </div>
+
+                        <p class="swap-note">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Swaps between USDT and REFI are fixed. REFI to USDT requires a small BNB fee for processing.
+                        </p>
+
+                        <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">Confirm Swap</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Top 10 Cryptocurrencies -->
-            <div class="section-title">
-                <h3>Top 10 Cryptocurrencies</h3>
+            <!-- Staking Section (Hidden by default) -->
+            <div id="stakingSection" class="hidden">
+                <div class="section-header">
+                    <button class="back-btn" onclick="showWallet()">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h3>Staking</h3>
+                    <div style="width: 30px;"></div>
+                </div>
+
+                <div class="staking-header">
+                    <span class="staking-title">USDT REWARDS</span>
+                </div>
+
+                <div class="staking-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">TOTAL STAKED</span>
+                        <span class="stat-value" id="totalStaked">0 USDT</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">REWARDS EARNED</span>
+                        <span class="stat-value" id="rewardsEarned">0.00 USDT</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">AVG. RETURN</span>
+                        <span class="stat-value" id="avgReturn">65%</span>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 10px;">
+                    <h3>SELECT PLAN</h3>
+                </div>
+
+                <div class="plans-grid" id="plansGrid">
+                    <!-- Plans will be populated by JavaScript -->
+                </div>
+
+                <!-- Staking Missions -->
+                <div class="staking-missions">
+                    <div class="section-header">
+                        <h3>STAKING MISSIONS</h3>
+                    </div>
+                    <div class="missions-grid" id="stakingMissions">
+                        <!-- Missions will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="stake-input-section">
+                    <div class="input-label">
+                        <span>AMOUNT TO STAKE</span>
+                        <span class="balance-text" id="stakeBalance">Balance: 0 USDT</span>
+                    </div>
+                    <div class="stake-input-group">
+                        <input type="number" id="stakeAmount" placeholder="0.00" oninput="calculateStakingReturn()">
+                        <span class="currency-tag">USDT</span>
+                    </div>
+
+                    <div class="stake-summary">
+                        <div class="summary-row">
+                            <span>Estimated Return</span>
+                            <span id="estimatedReturn">0.00 USDT</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Lock-up Period</span>
+                            <span id="lockPeriod">3 Days</span>
+                        </div>
+                    </div>
+
+                    <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">Stake USDT</button>
+                </div>
             </div>
-            <div class="crypto-list" id="cryptoList">
-                <!-- Will be populated by JavaScript -->
+
+            <!-- Referral Section (Hidden by default) -->
+            <div id="referralSection" class="hidden">
+                <div class="section-header">
+                    <button class="back-btn" onclick="showWallet()">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h3>Referrals</h3>
+                    <div style="width: 30px;"></div>
+                </div>
+
+                <div class="referral-header">
+                    <span class="referral-title">EARN USDT</span>
+                </div>
+
+                <div class="referral-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">TOTAL REFERRALS</span>
+                        <span class="stat-value" id="totalReferrals">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">REFI EARNED</span>
+                        <span class="stat-value" id="refiEarned">0 REFI</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">USDT EARNED</span>
+                        <span class="stat-value" id="usdtEarned">0.00 USDT</span>
+                    </div>
+                </div>
+
+                <div class="referral-link-card">
+                    <div class="link-label">Your Referral Link</div>
+                    <div class="link-container">
+                        <span class="referral-link" id="referralLink">Loading...</span>
+                        <button class="copy-btn" onclick="copyReferralLink()">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="referral-description">
+                    Share your link and get 250,000 REFI for every friend who joins. Complete milestones to earn massive USDT rewards!
+                </p>
+
+                <div class="section-header">
+                    <h3>Referral Milestones</h3>
+                </div>
+
+                <div class="milestones-list" id="milestonesList">
+                    <!-- Milestones will be populated by JavaScript -->
+                </div>
             </div>
         </main>
 
-        <!-- Navigation Bar -->
+        <!-- Bottom Navigation -->
         <nav class="bottom-nav">
-            <button class="nav-item active" onclick="showSection('wallet')">
-                <i class="fas fa-wallet"></i>
+            <button class="nav-item active" onclick="showWallet()">
+                <i class="fa-solid fa-wallet"></i>
                 <span>Wallet</span>
             </button>
-            <button class="nav-item" onclick="showSection('referral')">
-                <i class="fas fa-users"></i>
-                <span>Referral</span>
-            </button>
-            <button class="nav-item" onclick="showSection('swap')">
-                <i class="fas fa-exchange-alt"></i>
+            <button class="nav-item" onclick="showSwap()">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
                 <span>Swap</span>
             </button>
-            <button class="nav-item" onclick="showSection('staking')">
-                <i class="fas fa-lock"></i>
+            <button class="nav-item" onclick="showStaking()">
+                <i class="fa-solid fa-lock"></i>
                 <span>Staking</span>
+            </button>
+            <button class="nav-item" onclick="showReferral()">
+                <i class="fa-solid fa-users"></i>
+                <span>Referral</span>
             </button>
         </nav>
     </div>
 
     <!-- Modals -->
-    
     <!-- Deposit Modal -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Deposit Funds</h3>
-                <button onclick="closeModal('depositModal')">&times;</button>
+                <button class="close-btn" onclick="closeModal('depositModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label>Select Currency</label>
-                    <select id="depositCurrency" onchange="updateDepositMin()">
+                    <select id="depositCurrency" class="form-select" onchange="updateDepositMin()">
                         <option value="REFI">REFI (Min: 500,000)</option>
                         <option value="USDT">USDT (Min: 10)</option>
                         <option value="BNB">BNB (Min: 0.02)</option>
@@ -89,20 +305,22 @@
                 </div>
                 <div class="form-group">
                     <label>Amount</label>
-                    <input type="number" id="depositAmount" placeholder="Enter amount">
+                    <input type="number" id="depositAmount" class="form-input" placeholder="Enter amount">
                 </div>
                 <div class="form-group">
                     <label>Transaction ID</label>
-                    <input type="text" id="txnId" placeholder="Enter transaction ID">
+                    <input type="text" id="txnId" class="form-input" placeholder="Enter transaction ID">
                 </div>
-                <div class="deposit-address">
+                <div class="deposit-address-card">
                     <p>Send to this address:</p>
-                    <code>0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
-                    <button onclick="copyAddress()" class="copy-btn">
-                        <i class="far fa-copy"></i> Copy
-                    </button>
+                    <div class="address-container">
+                        <code>0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
+                        <button class="copy-btn-small" onclick="copyAddress()">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
-                <button class="submit-btn" onclick="submitDeposit()">Submit Deposit</button>
+                <button class="modal-btn" onclick="submitDeposit()">Submit Deposit</button>
             </div>
         </div>
     </div>
@@ -112,12 +330,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Withdraw Funds</h3>
-                <button onclick="closeModal('withdrawModal')">&times;</button>
+                <button class="close-btn" onclick="closeModal('withdrawModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label>Select Currency</label>
-                    <select id="withdrawCurrency" onchange="checkWithdrawFee()">
+                    <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
                         <option value="REFI">REFI (No fee)</option>
                         <option value="USDT">USDT (Fee: 0.00016 BNB)</option>
                         <option value="BNB">BNB (No fee)</option>
@@ -125,16 +345,17 @@
                 </div>
                 <div class="form-group">
                     <label>Amount</label>
-                    <input type="number" id="withdrawAmount" placeholder="Enter amount">
+                    <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount">
                 </div>
                 <div class="form-group">
                     <label>Wallet Address</label>
-                    <input type="text" id="walletAddress" placeholder="Enter your wallet address">
+                    <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address">
                 </div>
                 <div id="feeWarning" class="fee-warning hidden">
-                    ⚠️ USDT withdrawal requires 0.00016 BNB for fees
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    USDT withdrawal requires 0.00016 BNB for fees
                 </div>
-                <button class="submit-btn" onclick="submitWithdraw()">Submit Withdrawal</button>
+                <button class="modal-btn" onclick="submitWithdraw()">Submit Withdrawal</button>
             </div>
         </div>
     </div>
