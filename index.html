@@ -20,7 +20,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- شاشة التحميل بتأثير احترافي -->
+        <!-- شاشة التحميل بتأثير النبض المتوهج -->
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
                 <div class="splash-glow-container">
@@ -33,7 +33,7 @@
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v3.0.0</div>
+                <div class="splash-version">v4.0.0</div>
             </div>
         </div>
 
@@ -48,13 +48,11 @@
                         <span class="user-name" id="userId">REFI User</span>
                     </div>
                     <div class="header-actions">
-                        <button class="icon-btn" onclick="showNotifications()">
+                        <button class="icon-btn" onclick="showNotifications()" id="notificationBtn">
                             <i class="fa-regular fa-bell"></i>
                             <span class="badge" id="notificationBadge">0</span>
                         </button>
-                        <button class="icon-btn" onclick="showSettings()">
-                            <i class="fa-regular fa-user"></i>
-                        </button>
+                        <!-- تم إزالة زر Settings نهائياً -->
                     </div>
                 </div>
 
@@ -108,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- قسم السواب -->
+            <!-- قسم السواب المحسن -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -120,6 +118,7 @@
 
                 <div class="swap-container">
                     <div class="swap-card">
+                        <!-- أنت تدفع -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU PAY</span>
@@ -127,7 +126,7 @@
                             </div>
                             <div class="swap-input-group">
                                 <input type="number" id="payAmount" placeholder="0" value="1" oninput="calculateSwap()">
-                                <div class="currency-selector" onclick="togglePayCurrency()">
+                                <div class="currency-selector" onclick="showCurrencySelector('pay')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" class="currency-icon" id="payCurrencyIcon">
                                     <span id="payCurrency">USDT</span>
                                     <i class="fa-solid fa-chevron-down"></i>
@@ -135,10 +134,14 @@
                             </div>
                         </div>
 
-                        <div class="swap-arrow">
-                            <i class="fa-solid fa-arrow-down"></i>
+                        <!-- زر قلب الزوج (جديد) -->
+                        <div class="swap-flip-container">
+                            <button class="swap-flip-btn" onclick="flipSwapPair()">
+                                <i class="fa-solid fa-arrow-down-arrow-up"></i>
+                            </button>
                         </div>
 
+                        <!-- أنت تستلم -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU RECEIVE</span>
@@ -146,7 +149,7 @@
                             </div>
                             <div class="swap-input-group">
                                 <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
-                                <div class="currency-selector" onclick="toggleReceiveCurrency()">
+                                <div class="currency-selector" onclick="showCurrencySelector('receive')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="currency-icon" id="receiveCurrencyIcon">
                                     <span id="receiveCurrency">REFI</span>
                                     <i class="fa-solid fa-chevron-down"></i>
@@ -154,14 +157,15 @@
                             </div>
                         </div>
 
+                        <!-- معلومات السواب -->
                         <div class="swap-info">
                             <div class="info-row">
                                 <span>Exchange Rate</span>
                                 <span>1 USDT = 500,000 REFI</span>
                             </div>
-                            <div class="info-row">
+                            <div class="info-row highlight">
                                 <span>Network Fee</span>
-                                <span id="swapFee">Free</span>
+                                <span class="fee-free">0 BNB (FREE)</span>
                             </div>
                             <div class="info-row">
                                 <span>REFI Price</span>
@@ -169,11 +173,13 @@
                             </div>
                         </div>
 
-                        <div class="swap-note">
-                            <i class="fa-solid fa-circle-info"></i>
-                            <span>REFI to USDT requires 0.00016 BNB fee</span>
+                        <!-- ملاحظة (تم تحديثها) -->
+                        <div class="swap-note success">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>✅ All swaps are FREE! No fees charged.</span>
                         </div>
 
+                        <!-- زر التأكيد -->
                         <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
                             <i class="fa-regular fa-circle-check"></i>
                             Confirm Swap
@@ -405,7 +411,7 @@
                     <div class="currency-select-wrapper">
                         <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
                             <option value="REFI">REFI (No fee)</option>
-                            <option value="USDT">USDT (Fee: 0.00016 BNB)</option>
+                            <option value="USDT">USDT (No fee)</option>
                             <option value="BNB">BNB (No fee)</option>
                         </select>
                         <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
@@ -419,19 +425,21 @@
                     <label>Wallet Address</label>
                     <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address">
                 </div>
-                <div id="feeWarning" class="fee-warning hidden">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    USDT withdrawal requires 0.00016 BNB for fees
+                
+                <!-- تم إزالة رسوم USDT -->
+                <div id="feeInfo" class="fee-info success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>✅ All withdrawals are FREE! No fees charged.</span>
                 </div>
                 
-                <div class="withdraw-summary" id="withdrawSummary">
+                <div class="withdraw-summary">
                     <div class="summary-row">
                         <span>You will receive:</span>
                         <span id="receiveAmount_">0.00</span>
                     </div>
                     <div class="summary-row">
                         <span>Network fee:</span>
-                        <span id="networkFee">0.00 BNB</span>
+                        <span class="fee-free">0 BNB (FREE)</span>
                     </div>
                 </div>
                 
@@ -439,6 +447,55 @@
                     <i class="fa-regular fa-circle-up"></i>
                     Submit Withdrawal
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التاريخ (جديد) -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content history-modal">
+            <div class="modal-header">
+                <h3>Transaction History</h3>
+                <button class="close-btn" onclick="closeModal('historyModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="history-tabs">
+                    <button class="history-tab active" onclick="filterHistory('all')">All</button>
+                    <button class="history-tab" onclick="filterHistory('deposit')">Deposits</button>
+                    <button class="history-tab" onclick="filterHistory('withdraw')">Withdrawals</button>
+                    <button class="history-tab" onclick="filterHistory('referral')">Referrals</button>
+                    <button class="history-tab" onclick="filterHistory('staking')">Staking</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- سيتم تعبئتها بواسطة JavaScript -->
+                    <div class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading history...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الإشعارات (جديد) -->
+    <div id="notificationsModal" class="modal">
+        <div class="modal-content notifications-modal">
+            <div class="modal-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeModal('notificationsModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="notifications-list" id="notificationsList">
+                    <!-- سيتم تعبئتها بواسطة JavaScript -->
+                    <div class="empty-state">
+                        <i class="fa-regular fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                        <span>We'll notify you when something arrives</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -496,6 +553,25 @@
                 </button>
             </div>
             <div class="modal-body" id="stakingDetailsBody"></div>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار العملة (جديد) -->
+    <div id="currencySelectorModal" class="modal currency-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Currency</h3>
+                <button class="close-btn" onclick="closeModal('currencySelectorModal')">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="currency-search">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
+                </div>
+                <div class="currency-list" id="currencyList"></div>
+            </div>
         </div>
     </div>
 
