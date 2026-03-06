@@ -1,4 +1,4 @@
-// Firebase Configuration
+// ====== Firebase Configuration ======
 const firebaseConfig = {
     apiKey: "AIzaSyCnnmuZNJxkWTw-GjaP0fz6UpS3NZLF0n8",
     authDomain: "realfinanc-22bfd.firebaseapp.com",
@@ -9,29 +9,28 @@ const firebaseConfig = {
     appId: "1:631107346327:web:2a5405b81783aee7596ed2"
 };
 
-// Initialize Firebase
-let firebaseApp, db, auth;
+// ====== Initialize Firebase ======
+let firebaseApp, db;
 try {
     firebaseApp = firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
-    auth = firebase.auth();
     console.log("🔥 Firebase initialized successfully");
 } catch (error) {
     console.error("Firebase initialization error:", error);
 }
 
-// Constants
-const ADMIN_ID = 1653918641;
+// ====== Constants ======
+const ADMIN_ID = "1653918641";
 const DEPOSIT_ADDRESS = "0xbf70420f57342c6Bd4267430D4D3b7E946f09450";
 const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
 const REFERRAL_BONUS = 250000; // REFI per referral
 
 // Staking Plans
 const STAKING_PLANS = [
-    { id: '3days', days: 3, return: 40, name: '3 Days', reward: 5 },
-    { id: '7days', days: 7, return: 50, name: '7 Days', reward: 20 },
-    { id: '15days', days: 15, return: 70, name: '15 Days', reward: 30 },
-    { id: '30days', days: 30, return: 100, name: '30 Days', reward: 50 }
+    { id: '3days', days: 3, return: 40, name: '3 Days' },
+    { id: '7days', days: 7, return: 50, name: '7 Days' },
+    { id: '15days', days: 15, return: 70, name: '15 Days' },
+    { id: '30days', days: 30, return: 100, name: '30 Days' }
 ];
 
 // Staking Missions
@@ -51,27 +50,44 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 1000, unit: 'USDT', claimed: false }
 ];
 
-// Fixed prices for top cryptocurrencies
+// Fixed prices for cryptocurrencies
 const CRYPTO_PRICES = {
     'REFI': 0.000002,
     'USDT': 1.00,
     'BNB': 310.00,
     'BTC': 43250.00,
     'ETH': 2250.00,
+    'SOL': 95.00,
     'XRP': 0.55,
     'ADA': 0.35,
-    'SOL': 95.00,
     'DOGE': 0.08,
+    'SHIB': 0.00001,
+    'PEPE': 0.000001,
+    'TON': 2.15,
     'DOT': 6.50
 };
 
-// State management
+// Top 10 Cryptocurrencies list
+const TOP_CRYPTOS = [
+    { symbol: 'BTC', name: 'Bitcoin', price: 43250.00, change: '+2.5%' },
+    { symbol: 'ETH', name: 'Ethereum', price: 2250.00, change: '+2.4%' },
+    { symbol: 'BNB', name: 'Binance Coin', price: 310.00, change: '+1.8%' },
+    { symbol: 'SOL', name: 'Solana', price: 95.00, change: '+3.2%' },
+    { symbol: 'XRP', name: 'Ripple', price: 0.55, change: '-0.5%' },
+    { symbol: 'ADA', name: 'Cardano', price: 0.35, change: '+1.2%' },
+    { symbol: 'DOGE', name: 'Dogecoin', price: 0.08, change: '+5.5%' },
+    { symbol: 'TON', name: 'Toncoin', price: 2.15, change: '+1.5%' },
+    { symbol: 'SHIB', name: 'Shiba Inu', price: 0.00001, change: '+8.5%' },
+    { symbol: 'PEPE', name: 'Pepe', price: 0.000001, change: '+15.5%' }
+];
+
+// ====== State Management ======
 let currentUser = null;
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
 let swapMode = 'usdt-to-refi'; // 'usdt-to-refi' or 'refi-to-usdt'
 
-// Initialize Telegram Web App
+// ====== Initialize Telegram Web App ======
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
@@ -81,17 +97,27 @@ tg.enableClosingConfirmation();
 const userId = tg.initDataUnsafe?.user?.id?.toString() || 'guest_' + Math.random().toString(36).substr(2, 9);
 document.getElementById('userId').textContent = tg.initDataUnsafe?.user?.first_name || 'REFI User';
 
-// Initialize app
+// ====== Initialize App ======
 document.addEventListener('DOMContentLoaded', () => {
+    // Show splash screen for 2 seconds
+    setTimeout(() => {
+        document.getElementById('splashScreen').classList.add('hidden');
+        document.getElementById('mainContent').style.display = 'block';
+    }, 2000);
+    
     loadUserData();
-    renderAssets();
+    renderTopCryptos();
     renderStakingPlans();
     renderStakingMissions();
-    renderReferralMilestones();
     updateTotalBalance();
+    
+    // Add admin crown if user is admin
+    if (isAdmin()) {
+        addAdminCrown();
+    }
 });
 
-// Load user data from localStorage and Firebase
+// ====== Load User Data ======
 async function loadUserData() {
     try {
         // Load from localStorage first
@@ -108,11 +134,13 @@ async function loadUserData() {
                     BNB: 0,
                     BTC: 0,
                     ETH: 0,
+                    SOL: 0,
                     XRP: 0,
                     ADA: 0,
-                    SOL: 0,
                     DOGE: 0,
-                    DOT: 0
+                    SHIB: 0,
+                    PEPE: 0,
+                    TON: 0
                 },
                 referralCode: generateReferralCode(),
                 referredBy: null,
@@ -147,12 +175,12 @@ async function loadUserData() {
     }
 }
 
-// Generate referral code
+// ====== Generate Referral Code ======
 function generateReferralCode() {
     return 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase() + userId.substring(0, 4);
 }
 
-// Update UI
+// ====== Update UI ======
 function updateUI() {
     updateTotalBalance();
     updateStakingStats();
@@ -161,15 +189,15 @@ function updateUI() {
     renderAssets();
 }
 
-// Render assets list
+// ====== Render Assets ======
 function renderAssets() {
     const assetsList = document.getElementById('assetsList');
     if (!assetsList || !userData) return;
     
     const assets = [
-        { symbol: 'REFI', name: 'REFI Network', change: '+0.5%', icon: 'refi' },
-        { symbol: 'USDT', name: 'Tether', change: '0%', icon: 'usdt' },
-        { symbol: 'BNB', name: 'BNB', change: '+1.2%', icon: 'bnb' }
+        { symbol: 'REFI', name: 'REFI Network', change: '+0.5%' },
+        { symbol: 'USDT', name: 'Tether', change: '0%' },
+        { symbol: 'BNB', name: 'BNB', change: '+1.2%' }
     ];
     
     assetsList.innerHTML = assets.map(asset => {
@@ -180,9 +208,7 @@ function renderAssets() {
         return `
             <div class="asset-item">
                 <div class="asset-left">
-                    <div class="asset-icon icon-${asset.icon}">
-                        ${asset.symbol.charAt(0)}
-                    </div>
+                    <i class="cc ${asset.symbol}" style="font-size: 32px;"></i>
                     <div class="asset-info">
                         <h4>${asset.name}</h4>
                         <p>
@@ -200,88 +226,32 @@ function renderAssets() {
     }).join('');
 }
 
-// Format balance
-function formatBalance(balance, symbol) {
-    if (symbol === 'REFI') {
-        return balance.toLocaleString() + ' REFI';
-    } else if (symbol === 'USDT') {
-        return '$' + balance.toFixed(2);
-    } else if (symbol === 'BNB') {
-        return balance.toFixed(4) + ' BNB';
-    }
-    return balance.toString();
+// ====== Render Top Cryptos ======
+function renderTopCryptos() {
+    const topCryptoList = document.getElementById('topCryptoList');
+    if (!topCryptoList) return;
+    
+    topCryptoList.innerHTML = TOP_CRYPTOS.map(crypto => {
+        const isPositive = crypto.change.startsWith('+');
+        return `
+            <div class="crypto-item" onclick="showToast('${crypto.name} price: $${crypto.price}', 'info')">
+                <div class="crypto-left">
+                    <i class="cc ${crypto.symbol}" style="font-size: 32px;"></i>
+                    <div class="crypto-info">
+                        <h4>${crypto.name}</h4>
+                        <p>${crypto.symbol}</p>
+                    </div>
+                </div>
+                <div class="crypto-right">
+                    <div class="crypto-price">$${formatNumber(crypto.price)}</div>
+                    <div class="crypto-change ${isPositive ? 'positive' : 'negative'}">${crypto.change}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-// Format number
-function formatNumber(num) {
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num.toFixed(2);
-}
-
-// Update total balance
-function updateTotalBalance() {
-    if (!userData) return;
-    
-    let total = 0;
-    total += userData.balances.USDT || 0;
-    total += (userData.balances.REFI || 0) * CRYPTO_PRICES.REFI;
-    total += (userData.balances.BNB || 0) * CRYPTO_PRICES.BNB;
-    
-    document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
-}
-
-// Navigation functions
-function showWallet() {
-    document.getElementById('walletSection').classList.remove('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(1)').classList.add('active');
-    
-    renderAssets();
-    updateTotalBalance();
-}
-
-function showSwap() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.remove('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(2)').classList.add('active');
-    
-    updateSwapBalances();
-}
-
-function showStaking() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.remove('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
-    
-    updateStakingUI();
-}
-
-function showReferral() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.remove('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
-    
-    updateReferralUI();
-}
-
-// Render staking plans
+// ====== Render Staking Plans ======
 function renderStakingPlans() {
     const plansGrid = document.getElementById('plansGrid');
     if (!plansGrid) return;
@@ -295,7 +265,7 @@ function renderStakingPlans() {
     `).join('');
 }
 
-// Render staking missions
+// ====== Render Staking Missions ======
 function renderStakingMissions() {
     const missionsGrid = document.getElementById('stakingMissions');
     if (!missionsGrid || !userData) return;
@@ -319,7 +289,7 @@ function renderStakingMissions() {
     }).join('');
 }
 
-// Render referral milestones
+// ====== Render Referral Milestones ======
 function renderReferralMilestones() {
     const milestonesList = document.getElementById('milestonesList');
     if (!milestonesList || !userData) return;
@@ -350,32 +320,188 @@ function renderReferralMilestones() {
     }).join('');
 }
 
-// Select staking plan
+// ====== Format Balance ======
+function formatBalance(balance, symbol) {
+    if (symbol === 'REFI') {
+        return balance.toLocaleString() + ' REFI';
+    } else if (symbol === 'USDT') {
+        return '$' + balance.toFixed(2);
+    } else if (symbol === 'BNB') {
+        return balance.toFixed(4) + ' BNB';
+    }
+    return balance.toString();
+}
+
+// ====== Format Number ======
+function formatNumber(num) {
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    if (num < 0.0001) return num.toFixed(8);
+    if (num < 0.01) return num.toFixed(6);
+    return num.toFixed(2);
+}
+
+// ====== Update Total Balance ======
+function updateTotalBalance() {
+    if (!userData) return;
+    
+    let total = 0;
+    total += userData.balances.USDT || 0;
+    total += (userData.balances.REFI || 0) * CRYPTO_PRICES.REFI;
+    total += (userData.balances.BNB || 0) * CRYPTO_PRICES.BNB;
+    total += (userData.balances.BTC || 0) * CRYPTO_PRICES.BTC;
+    total += (userData.balances.ETH || 0) * CRYPTO_PRICES.ETH;
+    
+    document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
+}
+
+// ====== Update Staking Stats ======
+function updateStakingStats() {
+    if (!userData) return;
+    
+    const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
+    document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
+    
+    // Calculate rewards
+    const rewards = userData.staking.reduce((sum, stake) => {
+        if (new Date(stake.endDate) < new Date() && !stake.claimed) {
+            return sum + (stake.amount * stake.plan.return / 100);
+        }
+        return sum;
+    }, 0);
+    
+    document.getElementById('rewardsEarned').textContent = rewards.toFixed(2) + ' USDT';
+    document.getElementById('stakeBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
+    
+    // Calculate average return
+    if (userData.staking.length > 0) {
+        const avgReturn = userData.staking.reduce((sum, stake) => sum + stake.plan.return, 0) / userData.staking.length;
+        document.getElementById('avgReturn').textContent = avgReturn.toFixed(0) + '%';
+    }
+}
+
+// ====== Update Referral Stats ======
+function updateReferralStats() {
+    if (!userData) return;
+    
+    document.getElementById('totalReferrals').textContent = userData.referralCount || 0;
+    document.getElementById('refiEarned').textContent = (userData.referralCount * REFERRAL_BONUS).toLocaleString() + ' REFI';
+    document.getElementById('usdtEarned').textContent = userData.totalUsdtEarned?.toFixed(2) + ' USDT' || '0.00 USDT';
+    
+    const baseUrl = window.location.href.split('?')[0];
+    document.getElementById('referralLink').textContent = `${baseUrl}?ref=${userData.referralCode}`;
+}
+
+// ====== Update Swap Balances ======
+function updateSwapBalances() {
+    if (!userData) return;
+    
+    if (swapMode === 'usdt-to-refi') {
+        document.getElementById('payBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
+        document.getElementById('receiveBalance').textContent = `Balance: ${userData.balances.REFI?.toLocaleString() || '0'} REFI`;
+    } else {
+        document.getElementById('payBalance').textContent = `Balance: ${userData.balances.REFI?.toLocaleString() || '0'} REFI`;
+        document.getElementById('receiveBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
+    }
+}
+
+// ====== Navigation Functions ======
+function showWallet() {
+    document.getElementById('walletSection').classList.remove('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+    
+    renderAssets();
+    updateTotalBalance();
+    animateElement('.balance-card', 'pop');
+}
+
+function showSwap() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.remove('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    
+    updateSwapBalances();
+    calculateSwap();
+    animateElement('.swap-card', 'scaleIn');
+}
+
+function showStaking() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.remove('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    
+    updateStakingStats();
+    renderStakingMissions();
+    animateElement('.staking-stats', 'slideUp');
+}
+
+function showReferral() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.remove('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
+    
+    updateReferralStats();
+    renderReferralMilestones();
+    animateElement('.referral-link-card', 'pop');
+}
+
+// ====== Animate Element ======
+function animateElement(selector, animationClass) {
+    const element = document.querySelector(selector);
+    if (element) {
+        element.classList.add(animationClass);
+        setTimeout(() => {
+            element.classList.remove(animationClass);
+        }, 500);
+    }
+}
+
+// ====== Select Staking Plan ======
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
     document.getElementById('lockPeriod').textContent = selectedStakingPlan.name;
     calculateStakingReturn();
+    animateElement('.plan-card.selected', 'pop');
 }
 
-// Calculate staking return
+// ====== Calculate Staking Return ======
 function calculateStakingReturn() {
     const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;
     const return_amount = (amount * selectedStakingPlan.return) / 100;
     document.getElementById('estimatedReturn').textContent = return_amount.toFixed(2) + ' USDT';
 }
 
-// Stake USDT
+// ====== Stake USDT ======
 function stakeUSDT() {
     const amount = parseFloat(document.getElementById('stakeAmount').value);
     
     if (!amount || amount <= 0) {
-        showNotification('Please enter a valid amount', 'error');
+        showToast('Please enter a valid amount', 'error');
+        animateElement('#stakeAmount', 'shake');
         return;
     }
     
     if (!userData.balances.USDT || userData.balances.USDT < amount) {
-        showNotification('Insufficient USDT balance', 'error');
+        showToast('Insufficient USDT balance', 'error');
+        animateElement('#stakeAmount', 'shake');
         return;
     }
     
@@ -395,7 +521,6 @@ function stakeUSDT() {
     // Check staking missions
     userData.stakingMissions = userData.stakingMissions.map(mission => {
         if (mission.id === selectedStakingPlan.id && !mission.claimed) {
-            // Mark as completed but not claimed yet
             mission.completed = true;
         }
         return mission;
@@ -404,11 +529,14 @@ function stakeUSDT() {
     // Save
     saveUserData();
     
-    showNotification(`Successfully staked ${amount} USDT for ${selectedStakingPlan.days} days!`, 'success');
-    updateStakingUI();
+    showToast(`Successfully staked ${amount} USDT for ${selectedStakingPlan.days} days!`, 'success');
+    document.getElementById('stakeAmount').value = '';
+    updateStakingStats();
+    renderStakingMissions();
+    animateElement('.confirm-btn', 'pop');
 }
 
-// Claim staking mission
+// ====== Claim Staking Mission ======
 function claimStakingMission(missionId) {
     const mission = userData.stakingMissions.find(m => m.id === missionId);
     
@@ -418,7 +546,7 @@ function claimStakingMission(missionId) {
     const hasStaked = userData.staking.some(s => s.plan.id === missionId);
     
     if (!hasStaked) {
-        showNotification(`You need to complete a ${mission.plan} stake first!`, 'error');
+        showToast(`You need to complete a ${mission.plan} stake first!`, 'error');
         return;
     }
     
@@ -427,19 +555,20 @@ function claimStakingMission(missionId) {
     mission.claimed = true;
     
     saveUserData();
-    showNotification(`Claimed ${mission.reward} USDT!`, 'success');
+    showToast(`Claimed ${mission.reward} USDT!`, 'success');
     renderStakingMissions();
     updateUI();
+    animateElement('.mission-card', 'pop');
 }
 
-// Claim referral milestone
+// ====== Claim Referral Milestone ======
 function claimReferralMilestone(referrals) {
     const milestone = userData.referralMilestones.find(m => m.referrals === referrals);
     
     if (!milestone || milestone.claimed) return;
     
     if (userData.referralCount < referrals) {
-        showNotification(`You need ${referrals} referrals to claim this!`, 'error');
+        showToast(`You need ${referrals} referrals to claim this!`, 'error');
         return;
     }
     
@@ -449,12 +578,14 @@ function claimReferralMilestone(referrals) {
     milestone.claimed = true;
     
     saveUserData();
-    showNotification(`Claimed ${milestone.reward} USDT!`, 'success');
-    updateReferralUI();
+    showToast(`Claimed ${milestone.reward} USDT!`, 'success');
+    updateReferralStats();
+    renderReferralMilestones();
     updateUI();
+    animateElement('.milestone-item', 'pop');
 }
 
-// Swap functions
+// ====== Toggle Pay Currency ======
 function togglePayCurrency() {
     if (swapMode === 'usdt-to-refi') {
         swapMode = 'refi-to-usdt';
@@ -467,24 +598,14 @@ function togglePayCurrency() {
     }
     calculateSwap();
     updateSwapBalances();
+    animateElement('.currency-selector', 'pop');
 }
 
 function toggleReceiveCurrency() {
     togglePayCurrency();
 }
 
-function updateSwapBalances() {
-    if (!userData) return;
-    
-    if (swapMode === 'usdt-to-refi') {
-        document.getElementById('payBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
-        document.getElementById('receiveBalance').textContent = `Balance: ${userData.balances.REFI?.toLocaleString() || '0'} REFI`;
-    } else {
-        document.getElementById('payBalance').textContent = `Balance: ${userData.balances.REFI?.toLocaleString() || '0'} REFI`;
-        document.getElementById('receiveBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
-    }
-}
-
+// ====== Calculate Swap ======
 function calculateSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
     
@@ -499,18 +620,20 @@ function calculateSwap() {
     }
 }
 
+// ====== Confirm Swap ======
 function confirmSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value);
     
     if (!payAmount || payAmount <= 0) {
-        showNotification('Please enter a valid amount', 'error');
+        showToast('Please enter a valid amount', 'error');
+        animateElement('#payAmount', 'shake');
         return;
     }
     
     if (swapMode === 'usdt-to-refi') {
         // USDT to REFI
         if (!userData.balances.USDT || userData.balances.USDT < payAmount) {
-            showNotification('Insufficient USDT balance', 'error');
+            showToast('Insufficient USDT balance', 'error');
             return;
         }
         
@@ -518,17 +641,17 @@ function confirmSwap() {
         userData.balances.USDT -= payAmount;
         userData.balances.REFI += receiveAmount;
         
-        showNotification(`Swapped $${payAmount} USDT to ${receiveAmount.toLocaleString()} REFI`, 'success');
+        showToast(`Swapped $${payAmount} USDT to ${receiveAmount.toLocaleString()} REFI`, 'success');
     } else {
         // REFI to USDT
         if (!userData.balances.REFI || userData.balances.REFI < payAmount) {
-            showNotification('Insufficient REFI balance', 'error');
+            showToast('Insufficient REFI balance', 'error');
             return;
         }
         
         // Check BNB fee
         if (!userData.balances.BNB || userData.balances.BNB < 0.00016) {
-            showNotification('You need 0.00016 BNB for swap fee', 'error');
+            showToast('You need 0.00016 BNB for swap fee', 'error');
             return;
         }
         
@@ -537,60 +660,32 @@ function confirmSwap() {
         userData.balances.USDT += receiveAmount;
         userData.balances.BNB -= 0.00016;
         
-        showNotification(`Swapped ${payAmount.toLocaleString()} REFI to $${receiveAmount.toFixed(2)} USDT`, 'success');
+        showToast(`Swapped ${payAmount.toLocaleString()} REFI to $${receiveAmount.toFixed(2)} USDT`, 'success');
     }
     
     saveUserData();
-    document.getElementById('payAmount').value = '';
-    document.getElementById('receiveAmount').value = '';
+    document.getElementById('payAmount').value = '1';
+    calculateSwap();
     updateSwapBalances();
     updateUI();
+    animateElement('#swapBtn', 'pop');
 }
 
-// Update staking stats
-function updateStakingStats() {
-    if (!userData) return;
-    
-    const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
-    document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
-    
-    // Calculate rewards (simplified)
-    const rewards = userData.staking.reduce((sum, stake) => {
-        if (new Date(stake.endDate) < new Date() && !stake.claimed) {
-            return sum + (stake.amount * stake.plan.return / 100);
-        }
-        return sum;
-    }, 0);
-    
-    document.getElementById('rewardsEarned').textContent = rewards.toFixed(2) + ' USDT';
-    document.getElementById('stakeBalance').textContent = `Balance: $${userData.balances.USDT?.toFixed(2) || '0.00'} USDT`;
+// ====== P2P Function ======
+function showP2P() {
+    document.getElementById('p2pModal').classList.add('show');
+    animateElement('.p2p-icon', 'pulse');
 }
 
-// Update referral stats
-function updateReferralStats() {
-    if (!userData) return;
-    
-    document.getElementById('totalReferrals').textContent = userData.referralCount || 0;
-    document.getElementById('refiEarned').textContent = (userData.referralCount * REFERRAL_BONUS).toLocaleString() + ' REFI';
-    document.getElementById('usdtEarned').textContent = userData.totalUsdtEarned?.toFixed(2) + ' USDT' || '0.00 USDT';
-    
-    const baseUrl = window.location.href.split('?')[0];
-    document.getElementById('referralLink').textContent = `${baseUrl}?ref=${userData.referralCode}`;
+// ====== Copy Referral Link ======
+function copyReferralLink() {
+    const link = document.getElementById('referralLink').textContent;
+    navigator.clipboard.writeText(link);
+    showToast('Referral link copied!', 'success');
+    animateElement('.copy-btn', 'pop');
 }
 
-// Update staking UI
-function updateStakingUI() {
-    updateStakingStats();
-    renderStakingMissions();
-}
-
-// Update referral UI
-function updateReferralUI() {
-    updateReferralStats();
-    renderReferralMilestones();
-}
-
-// Check for referral in URL
+// ====== Check Referral in URL ======
 function checkReferral() {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
@@ -627,24 +722,20 @@ function checkReferral() {
         }
         
         saveUserData();
+        showToast('Welcome! You were referred by someone!', 'success');
     }
 }
 
-// Copy referral link
-function copyReferralLink() {
-    const link = document.getElementById('referralLink').textContent;
-    navigator.clipboard.writeText(link);
-    showNotification('Referral link copied!', 'success');
-}
-
-// Modal functions
+// ====== Modal Functions ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
+    animateElement('.modal-content', 'slideUpModal');
 }
 
 function showWithdrawModal() {
     document.getElementById('withdrawModal').classList.add('show');
     checkWithdrawFee();
+    animateElement('.modal-content', 'slideUpModal');
 }
 
 function closeModal(modalId) {
@@ -653,7 +744,8 @@ function closeModal(modalId) {
 
 function copyAddress() {
     navigator.clipboard.writeText(DEPOSIT_ADDRESS);
-    showNotification('Address copied to clipboard!', 'success');
+    showToast('Address copied to clipboard!', 'success');
+    animateElement('.copy-btn-small', 'pop');
 }
 
 function updateDepositMin() {
@@ -680,7 +772,7 @@ function checkWithdrawFee() {
     }
 }
 
-// Submit deposit
+// ====== Submit Deposit ======
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -688,12 +780,12 @@ async function submitDeposit() {
     
     // Validation
     if (!amount || amount <= 0) {
-        showNotification('Please enter a valid amount', 'error');
+        showToast('Please enter a valid amount', 'error');
         return;
     }
     
     if (!txnId) {
-        showNotification('Please enter transaction ID', 'error');
+        showToast('Please enter transaction ID', 'error');
         return;
     }
     
@@ -706,7 +798,7 @@ async function submitDeposit() {
     }
     
     if (amount < minAmount) {
-        showNotification(`Minimum deposit is ${minAmount} ${currency}`, 'error');
+        showToast(`Minimum deposit is ${minAmount} ${currency}`, 'error');
         return;
     }
     
@@ -729,8 +821,12 @@ async function submitDeposit() {
         userData.transactions.push(depositRequest);
         saveUserData();
         
-        showNotification('Deposit request submitted! Waiting for admin approval.', 'success');
+        showToast('Deposit request submitted! Waiting for admin approval.', 'success');
         closeModal('depositModal');
+        
+        // Clear form
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('txnId').value = '';
         
         // Notify admin via Telegram
         if (tg.sendData) {
@@ -743,31 +839,31 @@ async function submitDeposit() {
         }
     } catch (error) {
         console.error("Deposit error:", error);
-        showNotification('Failed to submit deposit request', 'error');
+        showToast('Failed to submit deposit request', 'error');
     }
 }
 
-// Submit withdraw
+// ====== Submit Withdraw ======
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
     const address = document.getElementById('walletAddress').value;
     
     if (!amount || amount <= 0 || !address) {
-        showNotification('Please fill all fields', 'error');
+        showToast('Please fill all fields', 'error');
         return;
     }
     
     // Check balance
     if (!userData.balances[currency] || userData.balances[currency] < amount) {
-        showNotification(`Insufficient ${currency} balance`, 'error');
+        showToast(`Insufficient ${currency} balance`, 'error');
         return;
     }
     
     // Check BNB fee for USDT withdrawal
     if (currency === 'USDT') {
         if (!userData.balances.BNB || userData.balances.BNB < 0.00016) {
-            showNotification('You need 0.00016 BNB for withdrawal fee', 'error');
+            showToast('You need 0.00016 BNB for withdrawal fee', 'error');
             return;
         }
         
@@ -796,8 +892,12 @@ async function submitWithdraw() {
         userData.transactions.push(withdrawRequest);
         saveUserData();
         
-        showNotification('Withdrawal request submitted! Waiting for admin approval.', 'success');
+        showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
         closeModal('withdrawModal');
+        
+        // Clear form
+        document.getElementById('withdrawAmount').value = '';
+        document.getElementById('walletAddress').value = '';
         
         // Notify admin
         if (tg.sendData) {
@@ -810,11 +910,11 @@ async function submitWithdraw() {
         }
     } catch (error) {
         console.error("Withdraw error:", error);
-        showNotification('Failed to submit withdrawal request', 'error');
+        showToast('Failed to submit withdrawal request', 'error');
     }
 }
 
-// Save user data
+// ====== Save User Data ======
 function saveUserData() {
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
@@ -824,51 +924,55 @@ function saveUserData() {
     }
 }
 
-// Show notification
-function showNotification(message, type = 'info') {
-    tg.showPopup({
-        title: type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info',
-        message: message,
-        buttons: [{ type: 'ok' }]
-    });
+// ====== Show Toast ======
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.classList.remove('hidden');
+    
+    // Change icon based on type
+    const icon = toast.querySelector('i');
+    if (type === 'success') {
+        icon.className = 'fa-regular fa-circle-check';
+    } else if (type === 'error') {
+        icon.className = 'fa-regular fa-circle-xmark';
+    } else {
+        icon.className = 'fa-regular fa-circle-info';
+    }
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3000);
 }
 
-// Show history
+// ====== History ======
 function showHistory() {
-    // Implement history view
-    showNotification('History feature coming soon!', 'info');
+    showToast('Transaction history coming soon!', 'info');
 }
 
-// Show receive modal
-function showReceiveModal() {
-    // Implement receive modal
-    showNotification('Receive feature coming soon!', 'info');
-}
-
-// Show all assets
+// ====== Show All Assets ======
 function showAllAssets() {
-    // Implement all assets view
-    showNotification('All assets view coming soon!', 'info');
+    showToast('All assets view coming soon!', 'info');
 }
 
-// Show notifications
+// ====== Notifications ======
 function showNotifications() {
-    showNotification('No new notifications', 'info');
+    showToast('No new notifications', 'info');
 }
 
-// Show settings
+// ====== Settings ======
 function showSettings() {
-    showNotification('Settings coming soon!', 'info');
+    showToast('Settings coming soon!', 'info');
 }
 
-// Admin panel (only for admin)
+// ====== Admin Functions ======
 function isAdmin() {
-    return userId === ADMIN_ID.toString();
+    return userId === ADMIN_ID;
 }
 
-// Check for admin
-if (isAdmin()) {
-    // Add admin badge to header
+function addAdminCrown() {
     setTimeout(() => {
         const header = document.querySelector('.header-actions');
         if (header) {
@@ -883,7 +987,7 @@ if (isAdmin()) {
 
 function showAdminPanel() {
     if (!isAdmin()) {
-        showNotification('Access denied', 'error');
+        showToast('Access denied', 'error');
         return;
     }
     
@@ -893,19 +997,30 @@ function showAdminPanel() {
                 const pending = [];
                 snapshot.forEach(doc => pending.push({ id: doc.id, ...doc.data() }));
                 
-                let message = 'Pending Transactions:\n\n';
-                pending.forEach(tx => {
-                    message += `${tx.type.toUpperCase()}: ${tx.amount} ${tx.currency} - User: ${tx.userId}\n`;
-                });
-                message += pending.length === 0 ? 'No pending transactions' : '';
+                let message = '📋 PENDING TRANSACTIONS:\n\n';
+                if (pending.length === 0) {
+                    message += 'No pending transactions';
+                } else {
+                    pending.forEach(tx => {
+                        message += `${tx.type.toUpperCase()}: ${tx.amount} ${tx.currency}\n`;
+                        message += `User: ${tx.userId}\n`;
+                        message += `ID: ${tx.txnId || tx.address}\n`;
+                        message += `Date: ${new Date(tx.timestamp).toLocaleString()}\n`;
+                        message += '──────────────────\n';
+                    });
+                }
                 
                 tg.showPopup({
-                    title: 'Admin Panel',
+                    title: '👑 Admin Panel',
                     message: message,
                     buttons: [
-                        { type: 'default', text: 'Approve All' },
-                        { type: 'cancel' }
+                        { type: 'default', text: 'Refresh' },
+                        { type: 'cancel', text: 'Close' }
                     ]
+                }, (btnId) => {
+                    if (btnId === 'ok') {
+                        showAdminPanel();
+                    }
                 });
             });
     }
