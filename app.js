@@ -69,6 +69,7 @@ const translations = {
         'swap.exchangeRate': 'Exchange Rate',
         'swap.networkFee': 'Network Fee',
         'swap.free': '0 BNB (FREE)',
+        'swap.bnbNotAllowed': 'BNB cannot be received via swap. You can only deposit BNB.',
         
         // الستيكينغ
         'staking.title': 'USDT REWARDS',
@@ -199,6 +200,7 @@ const translations = {
         'swap.exchangeRate': 'سعر الصرف',
         'swap.networkFee': 'رسوم الشبكة',
         'swap.free': '0 BNB (مجاناً)',
+        'swap.bnbNotAllowed': 'لا يمكن استلام BNB عن طريق التحويل. يمكنك فقط إيداع BNB.',
         
         // الستيكينغ
         'staking.title': 'مكافآت USDT',
@@ -464,11 +466,11 @@ const TOP_CRYPTOS = [
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
-// جميع العملات المتاحة للاختيار في السواب
+// جميع العملات المتاحة للاختيار في السواب (BNB موجود للدفع فقط)
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
     { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
-    { symbol: 'BNB', name: 'Binance Coin', icon: CMC_ICONS.BNB },
+    { symbol: 'BNB', name: 'Binance Coin', icon: CMC_ICONS.BNB }, // للدفع فقط
     { symbol: 'ETH', name: 'Ethereum', icon: CMC_ICONS.ETH },
     { symbol: 'SOL', name: 'Solana', icon: CMC_ICONS.SOL },
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
@@ -865,8 +867,6 @@ function setupRealtimeListeners() {
                             userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
                             localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
                             updateUI();
-                        } else if (tx.type === 'withdraw') {
-                            // السحب تم خصمه مسبقاً
                         }
                     } else if (tx.status === 'rejected') {
                         const reason = tx.reason || t('messages.error');
@@ -1707,7 +1707,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 20. SWAP FUNCTIONS - COMPLETELY FIXED ======
+// ====== 20. SWAP FUNCTIONS - مع منع BNB في الاستلام ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -1741,28 +1741,31 @@ function selectCurrency(symbol) {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     if (currentCurrencySelector === 'pay') {
+        // اختيار عملة الدفع - الكل مسموح
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
         // ضبط وضع التحويل حسب العملات
         if (symbol === 'USDT') {
-            // إذا كان الدفع USDT، الاستلام REFI افتراضياً
             document.getElementById('receiveCurrency').textContent = 'REFI';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
             swapMode = 'to-refi';
         } else if (symbol === 'REFI') {
-            // إذا كان الدفع REFI، الاستلام USDT افتراضياً
             document.getElementById('receiveCurrency').textContent = 'USDT';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
             swapMode = 'to-usdt';
         } else {
-            // إذا كانت عملة أخرى، الاستلام REFI افتراضياً
             document.getElementById('receiveCurrency').textContent = 'REFI';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
             swapMode = 'to-refi';
         }
     } else {
-        // اختيار عملة الاستلام
+        // اختيار عملة الاستلام - BNB ممنوع
+        if (symbol === 'BNB') {
+            showToast(t('swap.bnbNotAllowed'), 'warning');
+            return;
+        }
+        
         document.getElementById('receiveCurrency').textContent = symbol;
         document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
         
@@ -1832,6 +1835,12 @@ function filterCurrencies() {
 function flipSwapPair() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
+    // منع قلب الزوج إذا كان الاستلام سيصبح BNB
+    if (payCurrency === 'BNB') {
+        showToast(t('swap.bnbNotAllowed'), 'warning');
+        return;
+    }
     
     document.getElementById('payCurrency').textContent = receiveCurrency;
     document.getElementById('receiveCurrency').textContent = payCurrency;
@@ -2381,7 +2390,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 23. ADMIN FUNCTIONS - FIXED ======
+// ====== 23. ADMIN FUNCTIONS - FIXED (رفض الطلبات) ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -2558,47 +2567,52 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
 }
 
-// ✅ دالة رفض المعاملة (محدثة)
+// ✅ دالة رفض المعاملة (محدثة - تعمل الآن)
 async function rejectTransaction(txId, targetUserId) {
-    // نافذة لاختيار سبب الرفض
-    if (tg?.showPopup) {
-        tg.showPopup({
-            title: 'Reject Transaction',
-            message: 'Please select a reason:',
-            buttons: [
-                { type: 'default', text: 'Invalid TXID', id: 'invalid' },
-                { type: 'default', text: 'Wrong amount', id: 'amount' },
-                { type: 'default', text: 'Suspicious', id: 'suspicious' },
-                { type: 'cancel', text: 'Cancel' }
-            ]
-        }, async (btnId) => {
-            if (!btnId || btnId === 'cancel') return;
-            
-            let reason = 'No reason provided';
-            if (btnId === 'invalid') reason = 'Invalid transaction ID';
-            if (btnId === 'amount') reason = 'Incorrect amount';
-            if (btnId === 'suspicious') reason = 'Suspicious activity detected';
-            
-            await executeRejection(txId, targetUserId, reason);
-        });
-    } else {
-        // إذا لم يكن Telegram متاحاً
-        const reason = prompt("Enter rejection reason:", "Invalid transaction");
-        if (!reason) return;
-        await executeRejection(txId, targetUserId, reason);
-    }
-}
-
-async function executeRejection(txId, targetUserId, reason) {
     try {
         // الحصول على بيانات المعاملة
         const txDoc = await db.collection('transactions').doc(txId).get();
+        if (!txDoc.exists) {
+            showToast('Transaction not found', 'error');
+            return;
+        }
+        
         const txData = txDoc.data();
         
+        // طلب سبب الرفض
+        let reason = '';
+        if (tg?.showPopup) {
+            // استخدام popup في تلغرام
+            const result = await new Promise((resolve) => {
+                tg.showPopup({
+                    title: 'رفض المعاملة',
+                    message: 'اختر سبب الرفض:',
+                    buttons: [
+                        { type: 'default', text: 'هاش غير صالح', id: 'invalid' },
+                        { type: 'default', text: 'مبلغ خاطئ', id: 'amount' },
+                        { type: 'default', text: 'نشاط مشبوه', id: 'suspicious' },
+                        { type: 'cancel', text: 'إلغاء' }
+                    ]
+                }, (buttonId) => resolve(buttonId));
+            });
+            
+            if (!result || result === 'cancel') return;
+            
+            if (result === 'invalid') reason = 'Invalid transaction hash';
+            else if (result === 'amount') reason = 'Incorrect amount';
+            else if (result === 'suspicious') reason = 'Suspicious activity detected';
+        } else {
+            // استخدام prompt في المتصفح
+            reason = prompt("Enter rejection reason:", "Invalid transaction");
+            if (!reason) return;
+        }
+        
+        // تحديث حالة المعاملة إلى مرفوضة
         await db.collection('transactions').doc(txId).update({
             status: 'rejected',
             reason: reason,
-            rejectedAt: new Date().toISOString()
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: 'admin'
         });
         
         // إذا كانت سحب، نعيد المبلغ للمستخدم
@@ -2611,11 +2625,24 @@ async function executeRejection(txId, targetUserId, reason) {
             }
             
             await db.collection('users').doc(targetUserId).update(updates);
+            
+            // تحديث البيانات المحلية إذا كان المستخدم هو نفسه
+            if (targetUserId === userId) {
+                userData.balances[txData.currency] = (userData.balances[txData.currency] || 0) + txData.amount;
+                if (txData.fee) {
+                    userData.balances[txData.feeCurrency] = (userData.balances[txData.feeCurrency] || 0) + txData.fee;
+                }
+                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                updateUI();
+            }
         }
         
+        // إرسال إشعار للمستخدم
         await addNotification(targetUserId, t('notif.depositRejected', { reason }), 'error');
         
         showToast('Transaction rejected!', 'success');
+        
+        // تحديث لوحة الأدمن
         showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
         
     } catch (error) {
@@ -2824,3 +2851,5 @@ window.copyToClipboard = copyToClipboard;
 console.log("✅ REFI Network v10.0 - Professional Edition Loaded");
 console.log("✅ Languages: English / العربية");
 console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation with SOL/TRX support");
+console.log("✅ BNB receive disabled in swap");
+console.log("✅ Rejection fixed");
