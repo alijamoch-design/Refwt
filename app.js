@@ -179,12 +179,13 @@ const ALL_ASSETS = [
 // ====== State Management ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
-let swapDirection = 'to-refi'; // 'to-refi' أو 'to-usdt'
+let swapDirection = 'to-refi';
 let livePrices = {};
 let unreadNotifications = 0;
 let currentCurrencySelector = 'pay';
 let currentHistoryFilter = 'all';
 let realtimeListener = null;
+let appInitialized = false;
 
 // ====== Initialize Telegram Web App ======
 const tg = window.Telegram.WebApp;
@@ -196,31 +197,60 @@ const userId = tg.initDataUnsafe?.user?.id?.toString() || 'guest_' + Math.random
 const userName = tg.initDataUnsafe?.user?.first_name || 'REFI User';
 document.getElementById('userId').textContent = userName;
 
-// ====== Initialize App ======
-document.addEventListener('DOMContentLoaded', async () => {
-    // شاشة التحميل
-    setTimeout(() => {
-        document.getElementById('splashScreen').classList.add('hidden');
-        document.getElementById('mainContent').style.display = 'block';
-    }, 2000);
+// ====== Initialize App with guaranteed splash screen hide ======
+document.addEventListener('DOMContentLoaded', () => {
+    // تأكيد إخفاء شاشة التحميل بعد 3 ثواني كحد أقصى
+    const forceHideSplash = setTimeout(() => {
+        hideSplashScreen();
+    }, 3000);
     
-    await loadUserData();
-    await loadPricesOnce();
-    renderStakingPlans();
-    renderAssets();
-    renderTopCryptos();
-    updateTotalBalance();
-    updateReferralStats();
-    setupScrollListener();
-    setupFinancialRealtimeListener();
-    
-    if (isAdmin()) {
-        console.log("👑 Admin detected, adding crown");
-        addAdminCrown();
-    } else {
-        console.log("👤 Regular user, userId:", userId);
-    }
+    // بدء التطبيق
+    initApp().finally(() => {
+        clearTimeout(forceHideSplash);
+        hideSplashScreen();
+    });
 });
+
+async function initApp() {
+    if (appInitialized) return;
+    
+    try {
+        console.log("🚀 Initializing app...");
+        
+        await loadUserData();
+        await loadPricesOnce();
+        renderStakingPlans();
+        renderAssets();
+        renderTopCryptos();
+        updateTotalBalance();
+        updateReferralStats();
+        setupScrollListener();
+        setupFinancialRealtimeListener();
+        
+        if (isAdmin()) {
+            console.log("👑 Admin detected, adding crown");
+            addAdminCrown();
+        }
+        
+        appInitialized = true;
+        console.log("✅ App initialized successfully");
+        
+    } catch (error) {
+        console.error("❌ Error initializing app:", error);
+        showToast('Error loading some data', 'warning');
+    }
+}
+
+function hideSplashScreen() {
+    const splash = document.getElementById('splashScreen');
+    if (splash && !splash.classList.contains('hidden')) {
+        splash.classList.add('hidden');
+    }
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) {
+        mainContent.style.display = 'block';
+    }
+}
 
 // ====== Load User Data with better error handling ======
 async function loadUserData() {
@@ -281,8 +311,9 @@ async function loadUserData() {
         
     } catch (error) {
         console.error("Error in loadUserData:", error);
-        showToast('Error loading data, but creating new user', 'warning');
-        await createNewUser();
+        if (!userData) {
+            await createNewUser();
+        }
     }
 }
 
@@ -319,7 +350,6 @@ async function createNewUser() {
         
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         console.log("✅ New user created successfully");
-        showToast('Welcome to REFI Network!', 'success');
         
     } catch (error) {
         console.error("Error creating new user:", error);
@@ -419,7 +449,6 @@ async function fetchLivePrices() {
         
     } catch (error) {
         console.error("Error fetching prices:", error);
-        showToast('Failed to fetch prices', 'error');
         setDefaultPrices();
     }
 }
@@ -1356,7 +1385,6 @@ function showCurrencySelector(type) {
     
     let currencies = SWAP_CURRENCIES;
     
-    // للـ RECEIVE: نعرض فقط USDT و REFI (لأن باقي العملات لا يمكن استقبالها)
     if (type === 'receive') {
         currencies = SWAP_CURRENCIES.filter(c => c.symbol === 'USDT' || c.symbol === 'REFI');
     }
@@ -1376,33 +1404,24 @@ function showCurrencySelector(type) {
 
 // ====== Select Currency ======
 function selectCurrency(symbol) {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    
     if (currentCurrencySelector === 'pay') {
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        // إذا كانت عملة الدفع هي USDT، نجعل الاستقبال REFI
         if (symbol === 'USDT') {
             document.getElementById('receiveCurrency').textContent = 'REFI';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
             swapDirection = 'to-refi';
-        }
-        // إذا كانت عملة الدفع هي REFI، نجعل الاستقبال USDT
-        else if (symbol === 'REFI') {
+        } else if (symbol === 'REFI') {
             document.getElementById('receiveCurrency').textContent = 'USDT';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
             swapDirection = 'to-usdt';
-        }
-        // باقي العملات: نوجهها إلى REFI (ثابت)
-        else {
+        } else {
             document.getElementById('receiveCurrency').textContent = 'REFI';
             document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
             swapDirection = 'to-refi';
         }
     } else {
-        // عند اختيار عملة الاستقبال
         if (symbol === 'USDT' || symbol === 'REFI') {
             document.getElementById('receiveCurrency').textContent = symbol;
             document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
@@ -1420,18 +1439,13 @@ function selectCurrency(symbol) {
 
 // ====== Swap Direction (للأزرار ⬇️ و ⬆️) ======
 function swapDirection(direction) {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    
     if (direction === 'down') {
-        // تحويل USDT → REFI
         document.getElementById('payCurrency').textContent = 'USDT';
         document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
         document.getElementById('receiveCurrency').textContent = 'REFI';
         document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
         swapDirection = 'to-refi';
     } else if (direction === 'up') {
-        // تحويل REFI → USDT
         document.getElementById('payCurrency').textContent = 'REFI';
         document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
         document.getElementById('receiveCurrency').textContent = 'USDT';
