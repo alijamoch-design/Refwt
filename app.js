@@ -69,7 +69,7 @@ const translations = {
         'swap.exchangeRate': 'Exchange Rate',
         'swap.networkFee': 'Network Fee',
         'swap.free': '0 BNB (FREE)',
-        'swap.bnbNotAllowed': 'BNB cannot be received via swap. You can only deposit BNB.',
+        'swap.bnbNotAllowed': 'BNB temporarily unavailable',
         
         // الستيكينغ
         'staking.title': 'USDT REWARDS',
@@ -200,7 +200,7 @@ const translations = {
         'swap.exchangeRate': 'سعر الصرف',
         'swap.networkFee': 'رسوم الشبكة',
         'swap.free': '0 BNB (مجاناً)',
-        'swap.bnbNotAllowed': 'لا يمكن استلام BNB عن طريق التحويل. يمكنك فقط إيداع BNB.',
+        'swap.bnbNotAllowed': 'BNB غير متاح حالياً',
         
         // الستيكينغ
         'staking.title': 'مكافآت USDT',
@@ -491,6 +491,9 @@ const ALL_ASSETS = [
     { symbol: 'TRX', name: 'TRON' },
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
+
+// متغير لتتبع الصفحة الحالية
+let currentPage = 'wallet';
 
 // ====== 7. STATE MANAGEMENT ======
 let userData = null;
@@ -808,23 +811,26 @@ async function addNotification(userId, message, type = 'info') {
     }
 }
 
-// ====== 12. SETUP REALTIME LISTENERS ======
+// ====== 12. REALTIME LISTENERS - محسن للاستجابة الفورية ======
 function setupRealtimeListeners() {
     if (!db) return;
     
-    // الاستماع لتغييرات المستخدم
+    console.log("👂 Setting up realtime listeners for financial transactions...");
+    
+    // الاستماع لتغييرات المستخدم (الأرصدة والإشعارات)
     db.collection('users').doc(userId).onSnapshot((doc) => {
         if (doc.exists) {
             const fbData = doc.data();
+            let needsUpdate = false;
             
-            // تحديث الأرصدة فقط
-            if (fbData.balances) {
+            // تحديث الأرصدة إذا تغيرت
+            if (fbData.balances && JSON.stringify(fbData.balances) !== JSON.stringify(userData.balances)) {
+                console.log("💰 Balance updated from Firebase");
                 userData.balances = fbData.balances;
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                updateUI();
+                needsUpdate = true;
             }
             
-            // تحديث الإشعارات
+            // تحديث الإشعارات إذا تغيرت
             if (fbData.notifications) {
                 const oldCount = unreadNotifications;
                 userData.notifications = fbData.notifications;
@@ -832,59 +838,92 @@ function setupRealtimeListeners() {
                 
                 if (oldCount !== unreadNotifications) {
                     updateNotificationBadge();
+                    needsUpdate = true;
                 }
+            }
+            
+            if (needsUpdate) {
+                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                updateUI();
             }
         }
     });
     
-    // الاستماع للمعاملات الجديدة
+    // ✅ استماع مباشر للمعاملات - تحديث فوري
     db.collection('transactions')
         .where('userId', '==', userId)
         .orderBy('timestamp', 'desc')
         .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
+                const tx = change.doc.data();
+                console.log(`🔄 Transaction ${change.type}:`, tx.status, tx.amount, tx.currency);
+                
                 if (change.type === 'added' || change.type === 'modified') {
-                    const tx = change.doc.data();
-                    
-                    // ✅ تحديث حالة المعاملات
+                    // البحث عن المعاملة في البيانات المحلية
                     const existingIndex = userData.transactions.findIndex(t => 
                         t.timestamp === tx.timestamp && t.type === tx.type
                     );
                     
                     if (existingIndex >= 0) {
+                        // تحديث المعاملة الموجودة
+                        const oldStatus = userData.transactions[existingIndex].status;
                         userData.transactions[existingIndex] = tx;
-                    } else {
-                        userData.transactions.push(tx);
-                    }
-                    
-                    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                    
-                    // ✅ معالجة الموافقة أو الرفض
-                    if (tx.status === 'approved' || tx.status === 'completed') {
-                        addNotification(userId, t('notif.depositApproved', { amount: tx.amount, currency: tx.currency }), 'success');
                         
-                        if (tx.type === 'deposit') {
-                            userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
-                            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                            updateUI();
-                        }
-                    } else if (tx.status === 'rejected') {
-                        const reason = tx.reason || t('messages.error');
-                        addNotification(userId, t('notif.depositRejected', { reason }), 'error');
-                        
-                        // ✅ إعادة الرصيد في حالة رفض السحب
-                        if (tx.type === 'withdraw') {
-                            userData.balances.USDT = (userData.balances.USDT || 0) + tx.amount;
-                            if (tx.fee) {
-                                userData.balances.BNB = (userData.balances.BNB || 0) + tx.fee;
+                        // إذا تغيرت الحالة من pending إلى approved/rejected
+                        if (oldStatus !== tx.status) {
+                            console.log(`📢 Transaction status changed: ${oldStatus} → ${tx.status}`);
+                            
+                            // ✅ تحديث الرصيد فوراً عند الموافقة على إيداع
+                            if (tx.status === 'approved' && tx.type === 'deposit') {
+                                userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                                showToast(t('notif.depositApproved', { amount: tx.amount, currency: tx.currency }), 'success');
                             }
-                            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                            updateUI();
+                            
+                            // ✅ إعادة الرصيد عند رفض سحب
+                            if (tx.status === 'rejected' && tx.type === 'withdraw') {
+                                userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                                if (tx.fee) {
+                                    userData.balances[tx.feeCurrency] = (userData.balances[tx.feeCurrency] || 0) + tx.fee;
+                                }
+                                showToast(t('notif.withdrawRejected', { reason: tx.reason || 'Unknown' }), 'error');
+                            }
+                            
+                            // ✅ إرسال إشعار للمستخدم
+                            if (tx.status === 'approved' && tx.type === 'withdraw') {
+                                showToast(t('notif.withdrawApproved', { amount: tx.amount }), 'success');
+                            }
+                            
+                            if (tx.status === 'rejected' && tx.type === 'deposit') {
+                                showToast(t('notif.depositRejected', { reason: tx.reason || 'Unknown' }), 'error');
+                            }
+                            
+                            // ✅ تحديث صفحة History إذا كانت مفتوحة
+                            if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+                                renderHistory(currentHistoryFilter);
+                            }
+                        }
+                    } else {
+                        // إضافة معاملة جديدة
+                        userData.transactions.push(tx);
+                        
+                        // إذا كانت معاملة جديدة مكتملة (مثل تحويل)
+                        if (tx.status === 'completed') {
+                            if (tx.type === 'swap') {
+                                showToast(t('success.swapCompleted', { 
+                                    fromAmount: tx.amount, 
+                                    fromCurrency: tx.currency,
+                                    toAmount: tx.details?.split(' ')[2] || '',
+                                    toCurrency: tx.details?.split(' ')[3] || ''
+                                }), 'success');
+                            }
                         }
                     }
+                    
+                    // حفظ التغييرات محلياً
+                    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                    updateUI();
                 }
             });
-            updateUI();
         });
 }
 
@@ -1375,6 +1414,7 @@ function setupScrollListener() {
 
 // ====== 18. NAVIGATION FUNCTIONS ======
 function showWallet() {
+    currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
     document.getElementById('swapSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
@@ -1389,6 +1429,7 @@ function showWallet() {
 }
 
 function showSwap() {
+    currentPage = 'swap';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.remove('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
@@ -1403,6 +1444,7 @@ function showSwap() {
 }
 
 function showStaking() {
+    currentPage = 'staking';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.remove('hidden');
@@ -1417,6 +1459,7 @@ function showStaking() {
 }
 
 function showReferral() {
+    currentPage = 'referral';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
@@ -2550,6 +2593,8 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
             });
+            
+            // إرسال إشعار للمستخدم
             await addNotification(targetUserId, t('notif.depositApproved', { amount, currency }), 'success');
             
         } else if (type === 'withdraw') {
@@ -2585,20 +2630,20 @@ async function rejectTransaction(txId, targetUserId) {
             // استخدام popup في تلغرام
             const result = await new Promise((resolve) => {
                 tg.showPopup({
-                    title: 'رفض المعاملة',
-                    message: 'اختر سبب الرفض:',
+                    title: 'Reject Transaction',
+                    message: 'Please select a reason:',
                     buttons: [
-                        { type: 'default', text: 'هاش غير صالح', id: 'invalid' },
-                        { type: 'default', text: 'مبلغ خاطئ', id: 'amount' },
-                        { type: 'default', text: 'نشاط مشبوه', id: 'suspicious' },
-                        { type: 'cancel', text: 'إلغاء' }
+                        { type: 'default', text: 'Invalid TXID', id: 'invalid' },
+                        { type: 'default', text: 'Wrong amount', id: 'amount' },
+                        { type: 'default', text: 'Suspicious', id: 'suspicious' },
+                        { type: 'cancel', text: 'Cancel' }
                     ]
                 }, (buttonId) => resolve(buttonId));
             });
             
             if (!result || result === 'cancel') return;
             
-            if (result === 'invalid') reason = 'Invalid transaction hash';
+            if (result === 'invalid') reason = 'Invalid transaction ID';
             else if (result === 'amount') reason = 'Incorrect amount';
             else if (result === 'suspicious') reason = 'Suspicious activity detected';
         } else {
@@ -2625,16 +2670,6 @@ async function rejectTransaction(txId, targetUserId) {
             }
             
             await db.collection('users').doc(targetUserId).update(updates);
-            
-            // تحديث البيانات المحلية إذا كان المستخدم هو نفسه
-            if (targetUserId === userId) {
-                userData.balances[txData.currency] = (userData.balances[txData.currency] || 0) + txData.amount;
-                if (txData.fee) {
-                    userData.balances[txData.feeCurrency] = (userData.balances[txData.feeCurrency] || 0) + txData.fee;
-                }
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                updateUI();
-            }
         }
         
         // إرسال إشعار للمستخدم
@@ -2666,6 +2701,7 @@ function showWithdrawModal() {
 }
 
 function showHistory() {
+    currentPage = 'history';
     document.getElementById('historyModal').classList.add('show');
     renderHistory('all');
     animateElement('.modal-content', 'slideUpModal');
@@ -2740,6 +2776,11 @@ function showStakingDetails(type) {
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('show');
+    
+    // إذا كان إغلاق History modal، نعيد تعيين currentPage
+    if (modalId === 'historyModal') {
+        currentPage = 'wallet';
+    }
 }
 
 function copyToClipboard(text) {
@@ -2853,3 +2894,4 @@ console.log("✅ Languages: English / العربية");
 console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation with SOL/TRX support");
 console.log("✅ BNB receive disabled in swap");
 console.log("✅ Rejection fixed");
+console.log("✅ Real-time updates for financial transactions");
