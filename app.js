@@ -249,7 +249,7 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-gem' }
 ];
 
-// ====== قائمة العملات العشر ======
+// ====== قائمة العملات العشر (للعرض فقط) ======
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
@@ -263,7 +263,7 @@ const TOP_CRYPTOS = [
     { symbol: 'PEPE', name: 'Pepe' }
 ];
 
-// ====== جميع العملات المتاحة للاختيار في السواب ======
+// ====== جميع العملات المتاحة للاختيار في السواب (8 عملات قابلة للإيداع) ======
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
     { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
@@ -272,33 +272,25 @@ const SWAP_CURRENCIES = [
     { symbol: 'SOL', name: 'Solana', icon: CMC_ICONS.SOL },
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
     { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE },
-    { symbol: 'BONK', name: 'Bonk', icon: CMC_ICONS.BONK },
-    { symbol: 'TRUMP', name: 'Trump Coin', icon: CMC_ICONS.TRUMP },
     { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX }
 ];
 
-// ====== قائمة جميع العملات للعرض في المحفظة ======
+// ====== قائمة الأصول (فقط 8 عملات قابلة للإيداع) ======
 const ALL_ASSETS = [
     { symbol: 'REFI', name: 'REFI Network' },
     { symbol: 'USDT', name: 'Tether' },
     { symbol: 'BNB', name: 'BNB' },
-    { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
-    { symbol: 'SOL', name: 'Solana' },
-    { symbol: 'TRX', name: 'TRON' },
-    { symbol: 'ADA', name: 'Cardano' },
-    { symbol: 'DOGE', name: 'Dogecoin' },
-    { symbol: 'TON', name: 'Toncoin' },
     { symbol: 'SHIB', name: 'Shiba Inu' },
     { symbol: 'PEPE', name: 'Pepe' },
-    { symbol: 'BONK', name: 'Bonk' },
-    { symbol: 'TRUMP', name: 'Trump Coin' }
+    { symbol: 'SOL', name: 'Solana' },
+    { symbol: 'TRX', name: 'TRON' }
 ];
 
 // ====== State Management ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
-let swapMode = 'to-refi';
+let swapMode = 'to-usdt';
 let livePrices = {};
 let unreadNotifications = 0;
 let currentCurrencySelector = 'pay';
@@ -338,9 +330,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ====== Load User Data from Cache ======
+// ====== Load User Data from Cache (مع معالجة الأخطاء) ======
 async function loadUserDataFromCache() {
     try {
+        if (!dbInstance) {
+            await initIndexedDB();
+        }
+        
         const cachedUser = await getFromIndexedDB(STORES.USERS, userId);
         
         if (cachedUser) {
@@ -348,15 +344,72 @@ async function loadUserDataFromCache() {
             console.log("📦 Loaded user data from cache");
             updateUI();
         } else {
-            await loadUserDataFromFirebase();
+            const localData = localStorage.getItem(`user_${userId}`);
+            if (localData) {
+                userData = JSON.parse(localData);
+                console.log("📦 Loaded from localStorage backup");
+                updateUI();
+            } else {
+                await loadUserDataFromFirebase();
+            }
         }
         
         setTimeout(() => syncUserWithFirebase(), 1000);
         
     } catch (error) {
         console.error("Error loading from cache:", error);
-        await loadUserDataFromFirebase();
+        
+        try {
+            const localData = localStorage.getItem(`user_${userId}`);
+            if (localData) {
+                userData = JSON.parse(localData);
+                console.log("📦 Loaded from localStorage after error");
+                updateUI();
+                showToast('Loaded from backup', 'info');
+            } else {
+                await createNewUser();
+            }
+        } catch (e) {
+            console.error("Even localStorage failed:", e);
+            await createNewUser();
+        }
     }
+}
+
+// ====== Create New User ======
+async function createNewUser() {
+    userData = {
+        userId: userId,
+        userName: userName,
+        balances: {
+            REFI: 0,
+            USDT: 0,
+            BNB: 0,
+            ETH: 0,
+            SHIB: 0,
+            PEPE: 0,
+            SOL: 0,
+            TRX: 0
+        },
+        referralCode: generateReferralCode(),
+        referredBy: null,
+        referrals: [],
+        referralCount: 0,
+        staking: [],
+        stakingMissions: STAKING_MISSIONS.map(m => ({ ...m, claimed: false })),
+        referralMilestones: REFERRAL_MILESTONES.map(m => ({ ...m, claimed: false })),
+        transactions: [],
+        notifications: [],
+        totalRefiEarned: 0,
+        totalUsdtEarned: 0,
+        lastSync: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+    };
+    
+    await saveToIndexedDB(STORES.USERS, userData);
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    updateUI();
+    showToast('Welcome to REFI Network!', 'success');
 }
 
 // ====== Load User Data from Firebase ======
@@ -369,40 +422,7 @@ async function loadUserDataFromFirebase() {
         if (userDoc.exists) {
             userData = userDoc.data();
         } else {
-            userData = {
-                userId: userId,
-                userName: userName,
-                balances: {
-                    REFI: 0,
-                    USDT: 0,
-                    BNB: 0,
-                    BTC: 0,
-                    ETH: 0,
-                    SOL: 0,
-                    ADA: 0,
-                    DOGE: 0,
-                    SHIB: 0,
-                    PEPE: 0,
-                    TON: 0,
-                    BONK: 0,
-                    TRUMP: 0,
-                    TRX: 0
-                },
-                referralCode: generateReferralCode(),
-                referredBy: null,
-                referrals: [],
-                referralCount: 0,
-                staking: [],
-                stakingMissions: STAKING_MISSIONS.map(m => ({ ...m, claimed: false })),
-                referralMilestones: REFERRAL_MILESTONES.map(m => ({ ...m, claimed: false })),
-                transactions: [],
-                notifications: [],
-                totalRefiEarned: 0,
-                totalUsdtEarned: 0,
-                lastSync: new Date().toISOString(),
-                createdAt: new Date().toISOString()
-            };
-            
+            await createNewUser();
             await db.collection('users').doc(userId).set(userData);
         }
         
@@ -637,16 +657,10 @@ function getCurrencyName(symbol) {
         REFI: 'REFI Network',
         USDT: 'Tether',
         BNB: 'BNB',
-        BTC: 'Bitcoin',
         ETH: 'Ethereum',
         SOL: 'Solana',
-        ADA: 'Cardano',
-        DOGE: 'Dogecoin',
         SHIB: 'Shiba Inu',
         PEPE: 'Pepe',
-        TON: 'Toncoin',
-        BONK: 'Bonk',
-        TRUMP: 'Trump Coin',
         TRX: 'TRON'
     };
     return names[symbol] || symbol;
@@ -654,7 +668,7 @@ function getCurrencyName(symbol) {
 
 // ====== Format Balance ======
 function formatBalance(balance, symbol) {
-    if (symbol === 'REFI' || symbol === 'SHIB' || symbol === 'PEPE' || symbol === 'BONK') {
+    if (symbol === 'REFI' || symbol === 'SHIB' || symbol === 'PEPE') {
         return balance.toLocaleString() + ' ' + symbol;
     } else if (symbol === 'USDT') {
         return '$' + balance.toFixed(2);
@@ -999,7 +1013,6 @@ function updateTotalBalance() {
     total += userData.balances.USDT || 0;
     total += (userData.balances.REFI || 0) * REFI_PRICE;
     total += (userData.balances.BNB || 0) * (livePrices.BNB?.price || 0);
-    total += (userData.balances.BTC || 0) * (livePrices.BTC?.price || 0);
     total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
     total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
     total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
@@ -1410,16 +1423,15 @@ function selectCurrency(symbol) {
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        document.getElementById('receiveCurrency').textContent = 'REFI';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-        swapMode = 'to-refi';
+        document.getElementById('receiveCurrency').textContent = 'USDT';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+        swapMode = 'to-usdt';
     } else {
-        if (symbol === 'REFI') {
+        if (symbol === 'USDT' || symbol === 'REFI') {
             document.getElementById('receiveCurrency').textContent = symbol;
             document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
-            swapMode = 'to-refi';
         } else {
-            showToast('You can only receive REFI', 'warning');
+            showToast('You can only receive USDT or REFI', 'warning');
             return;
         }
     }
@@ -1444,12 +1456,12 @@ function updateSwapNote() {
         swapNote.textContent = 'You can swap REFI to USDT at fixed rate';
         swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
     } else {
-        swapNote.textContent = `You can swap ${payCurrency} to REFI at market rate`;
+        swapNote.textContent = `You can swap ${payCurrency} to USDT at market rate`;
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
         if (payPrice > 0) {
-            const rate = payPrice / REFI_PRICE;
-            swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(0)} REFI`;
+            const rate = payPrice;
+            swapRate.textContent = `1 ${payCurrency} = $${rate.toFixed(6)}`;
         } else {
             swapRate.textContent = `Rate will be calculated based on current market price`;
         }
@@ -1489,7 +1501,7 @@ function flipSwapPair() {
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(receiveCurrency);
         document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(payCurrency);
         
-        swapMode = swapMode === 'to-refi' ? 'to-usdt' : 'to-refi';
+        swapMode = swapMode === 'to-usdt' ? 'to-refi' : 'to-usdt';
     } else {
         showToast('Cannot flip this pair', 'warning');
         return;
@@ -1517,8 +1529,8 @@ function calculateSwap() {
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
         if (payPrice > 0) {
-            const receiveAmount = (payAmount * payPrice) / REFI_PRICE;
-            document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
+            const receiveAmount = payAmount * payPrice;
+            document.getElementById('receiveAmount').value = receiveAmount.toFixed(2);
         } else {
             document.getElementById('receiveAmount').value = '0';
         }
@@ -1780,7 +1792,7 @@ function updateDepositInfo() {
     addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || '✓ Blockchain confirmation 1-5 minutes'}</span>`;
     
     const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
-    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE' || currency === 'BONK') {
+    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE') {
         amountInput.placeholder = `Min ${minAmount.toLocaleString()} ${currency}`;
     } else {
         amountInput.placeholder = `Min ${minAmount} ${currency}`;
