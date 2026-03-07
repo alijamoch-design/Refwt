@@ -82,7 +82,7 @@ const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
 const REFERRAL_BONUS = 250000; // REFI per referral
 const REFI_PRICE = 0.000002; // سعر REFI الثابت
 
-// ====== معرفات العملات في CoinGecko ======
+// ====== معرفات العملات في CoinGecko (محدثة مع TRUMP) ======
 const CRYPTO_IDS = {
     BTC: 'bitcoin',
     ETH: 'ethereum',
@@ -94,8 +94,8 @@ const CRYPTO_IDS = {
     DOGE: 'dogecoin',
     SHIB: 'shiba-inu',
     PEPE: 'pepe',
-    TRX: 'tron'
-    // TRUMP ليس له سعر في CoinGecko
+    TRX: 'tron',
+    TRUMP: 'official-trump' // ✅ إضافة TRUMP
 };
 
 // ====== خطط الستيكينغ ======
@@ -155,7 +155,7 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-gem' }
 ];
 
-// ====== قائمة العملات للعرض (مع إضافة TRUMP) ======
+// ====== قائمة العملات للعرض (مع TRUMP) ======
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
@@ -167,7 +167,7 @@ const TOP_CRYPTOS = [
     { symbol: 'ADA', name: 'Cardano' },
     { symbol: 'DOGE', name: 'Dogecoin' },
     { symbol: 'TON', name: 'Toncoin' },
-    { symbol: 'TRUMP', name: 'Trump Coin' } // ✅ إضافة TRUMP
+    { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
 // ====== جميع العملات المتاحة للاختيار في السواب ======
@@ -245,15 +245,9 @@ async function initApp() {
         setupRealtimeListeners();
         
         // ✅ التحقق من المشرف وإضافة التاج (مع تأخير للتأكد من تحميل DOM)
-        if (isAdmin()) {
-            console.log("👑 Admin detected, adding crown");
-            // تأخير قصير للتأكد من وجود الهيدر
-            setTimeout(() => {
-                addAdminCrown();
-            }, 1000);
-        } else {
-            console.log("👤 Regular user, userId:", userId);
-        }
+        setTimeout(() => {
+            checkAdminAndAddCrown();
+        }, 1500);
         
         appInitialized = true;
         console.log("✅ App initialized successfully");
@@ -678,7 +672,11 @@ function renderTopCryptos() {
     }
     
     topCryptoList.innerHTML = TOP_CRYPTOS.map(crypto => {
-        const priceData = livePrices[crypto.symbol] || { price: 0, change: 0 };
+        let priceData = livePrices[crypto.symbol] || { price: 0, change: 0 };
+        
+        // ✅ TRUMP أصبح له سعر من API الآن
+        // لا حاجة لسعر افتراضي
+        
         const changeClass = priceData.change >= 0 ? 'positive' : 'negative';
         const changeSymbol = priceData.change >= 0 ? '+' : '';
         
@@ -983,6 +981,7 @@ function updateTotalBalance() {
     total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
     total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
     total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
+    total += (userData.balances.TRUMP || 0) * (livePrices.TRUMP?.price || 5.00);
     
     document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
 }
@@ -1934,9 +1933,19 @@ function showStakingDetails(type) {
     modal.classList.add('show');
 }
 
-// ====== Admin Functions with guaranteed crown ======
-function isAdmin() {
-    return userId === ADMIN_ID;
+// ====== التحقق من المشرف وإضافة التاج (حل جذري) ======
+function checkAdminAndAddCrown() {
+    console.log("🔍 Checking admin status...");
+    console.log("User ID:", userId);
+    console.log("Admin ID:", ADMIN_ID);
+    console.log("Is admin?", userId === ADMIN_ID);
+    
+    if (userId === ADMIN_ID) {
+        console.log("👑 Admin confirmed! Adding crown...");
+        addAdminCrown();
+    } else {
+        console.log("👤 Regular user, no crown needed");
+    }
 }
 
 // ✅ دالة قوية لإضافة التاج مع إعادة محاولة
@@ -2206,4 +2215,9 @@ async function rejectTransaction(txId, targetUserId) {
             showToast('Error rejecting transaction', 'error');
         }
     });
+}
+
+// ====== Helper function for admin check ======
+function isAdmin() {
+    return userId === ADMIN_ID;
 }
