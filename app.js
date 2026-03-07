@@ -216,12 +216,19 @@ const userId = tg.initDataUnsafe?.user?.id?.toString() || 'guest_' + Math.random
 const userName = tg.initDataUnsafe?.user?.first_name || 'REFI User';
 document.getElementById('userId').textContent = userName;
 
-// ====== Initialize App with guaranteed splash screen hide ======
+// ====== ✅ الحل الجذري: إضافة التاج فوراً وبشكل مستقل ======
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. إضافة التاج فوراً (قبل أي شيء)
+    setTimeout(() => {
+        checkAdminAndAddCrown();
+    }, 300); // بعد 300ms فقط
+    
+    // 2. إخفاء شاشة التحميل بعد 3 ثواني كحد أقصى
     const forceHideSplash = setTimeout(() => {
         hideSplashScreen();
     }, 3000);
     
+    // 3. بدء التطبيق
     initApp().finally(() => {
         clearTimeout(forceHideSplash);
         hideSplashScreen();
@@ -244,11 +251,6 @@ async function initApp() {
         setupScrollListener();
         setupRealtimeListeners();
         
-        // ✅ التحقق من المشرف وإضافة التاج (مع تأخير للتأكد من تحميل DOM)
-        setTimeout(() => {
-            checkAdminAndAddCrown();
-        }, 1500);
-        
         appInitialized = true;
         console.log("✅ App initialized successfully");
         
@@ -266,6 +268,67 @@ function hideSplashScreen() {
     if (mainContent) {
         mainContent.style.display = 'block';
     }
+}
+
+// ====== التحقق من المشرف وإضافة التاج (حل جذري) ======
+function checkAdminAndAddCrown() {
+    console.log("🔍 Checking admin status...");
+    console.log("User ID:", userId);
+    console.log("Admin ID:", ADMIN_ID);
+    console.log("Is admin?", userId === ADMIN_ID);
+    
+    if (userId === ADMIN_ID) {
+        console.log("👑 Admin confirmed! Adding crown...");
+        addAdminCrown();
+    } else {
+        console.log("👤 Regular user, no crown needed");
+    }
+}
+
+// ✅ دالة قوية لإضافة التاج مع إعادة محاولة
+function addAdminCrown() {
+    console.log("👑 Attempting to add admin crown...");
+    
+    const tryAddCrown = () => {
+        const header = document.querySelector('.header-actions');
+        if (!header) {
+            console.log("❌ Header not found");
+            return false;
+        }
+        
+        // إزالة أي تاج موجود مسبقاً
+        const existingCrown = document.getElementById('adminCrownBtn');
+        if (existingCrown) existingCrown.remove();
+        
+        const adminBtn = document.createElement('button');
+        adminBtn.id = 'adminCrownBtn';
+        adminBtn.className = 'icon-btn';
+        adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
+        adminBtn.onclick = showAdminPanel;
+        adminBtn.title = 'Admin Panel';
+        header.appendChild(adminBtn);
+        
+        console.log("✅ Admin crown added successfully!");
+        return true;
+    };
+    
+    // محاولة فورية
+    if (tryAddCrown()) return;
+    
+    // إعادة محاولة كل 500ms لمدة 5 ثواني
+    let attempts = 0;
+    const maxAttempts = 10;
+    const interval = setInterval(() => {
+        attempts++;
+        console.log(`🔄 Crown attempt ${attempts}/${maxAttempts}`);
+        
+        if (tryAddCrown() || attempts >= maxAttempts) {
+            clearInterval(interval);
+            if (attempts >= maxAttempts) {
+                console.log("❌ Failed to add crown after max attempts");
+            }
+        }
+    }, 500);
 }
 
 // ====== Load User Data ======
@@ -1933,65 +1996,9 @@ function showStakingDetails(type) {
     modal.classList.add('show');
 }
 
-// ====== التحقق من المشرف وإضافة التاج (حل جذري) ======
-function checkAdminAndAddCrown() {
-    console.log("🔍 Checking admin status...");
-    console.log("User ID:", userId);
-    console.log("Admin ID:", ADMIN_ID);
-    console.log("Is admin?", userId === ADMIN_ID);
-    
-    if (userId === ADMIN_ID) {
-        console.log("👑 Admin confirmed! Adding crown...");
-        addAdminCrown();
-    } else {
-        console.log("👤 Regular user, no crown needed");
-    }
-}
-
-// ✅ دالة قوية لإضافة التاج مع إعادة محاولة
-function addAdminCrown() {
-    console.log("👑 Attempting to add admin crown...");
-    
-    const tryAddCrown = () => {
-        const header = document.querySelector('.header-actions');
-        if (!header) {
-            console.log("❌ Header not found");
-            return false;
-        }
-        
-        // إزالة أي تاج موجود مسبقاً
-        const existingCrown = document.getElementById('adminCrownBtn');
-        if (existingCrown) existingCrown.remove();
-        
-        const adminBtn = document.createElement('button');
-        adminBtn.id = 'adminCrownBtn';
-        adminBtn.className = 'icon-btn';
-        adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
-        adminBtn.onclick = showAdminPanel;
-        adminBtn.title = 'Admin Panel';
-        header.appendChild(adminBtn);
-        
-        console.log("✅ Admin crown added successfully!");
-        return true;
-    };
-    
-    // محاولة فورية
-    if (tryAddCrown()) return;
-    
-    // إعادة محاولة كل 500ms لمدة 5 ثواني
-    let attempts = 0;
-    const maxAttempts = 10;
-    const interval = setInterval(() => {
-        attempts++;
-        console.log(`🔄 Crown attempt ${attempts}/${maxAttempts}`);
-        
-        if (tryAddCrown() || attempts >= maxAttempts) {
-            clearInterval(interval);
-            if (attempts >= maxAttempts) {
-                console.log("❌ Failed to add crown after max attempts");
-            }
-        }
-    }, 500);
+// ====== Helper function for admin check ======
+function isAdmin() {
+    return userId === ADMIN_ID;
 }
 
 function showAdminPanel() {
@@ -2215,9 +2222,4 @@ async function rejectTransaction(txId, targetUserId) {
             showToast('Error rejecting transaction', 'error');
         }
     });
-}
-
-// ====== Helper function for admin check ======
-function isAdmin() {
-    return userId === ADMIN_ID;
 }
