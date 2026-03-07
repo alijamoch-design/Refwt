@@ -1,5 +1,5 @@
 // ============================================
-// REFI WALLET - PROFESSIONAL VERSION 10.0
+// REFI WALLET - PROFESSIONAL VERSION 11.0
 // Built on the solid foundation of VIP Mining
 // All features: Deposits, Withdrawals, Swaps, Staking, Referrals
 // Optimized storage: localStorage for speed, Firebase for financials only
@@ -53,6 +53,7 @@ const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
 const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
 const REFERRAL_BONUS = 250000; // REFI per referral
 const REFI_PRICE = 0.000002; // سعر REFI الثابت
+const MIN_TX_LENGTH = 64; // الحد الأدنى لطول TXID
 
 // أيقونات العملات
 const CMC_ICONS = {
@@ -103,9 +104,6 @@ const WITHDRAWAL_FEES = {
     USDT: 0.00016,
     BNB: 0.0005
 };
-
-// الحد الأدنى لطول TXID
-const MIN_TX_LENGTH = 64;
 
 // معرفات العملات في CoinGecko
 const CRYPTO_IDS = {
@@ -272,6 +270,8 @@ let selectedStakingPlan = STAKING_PLANS[0];
 let swapDirection = 'to-refi';
 let appInitialized = false;
 let lastFirebaseSaveTime = Date.now();
+let currentCurrencySelector = 'pay';
+let currentHistoryFilter = 'all';
 
 // ============================================
 // 5. INITIALIZATION
@@ -1100,7 +1100,7 @@ async function submitDeposit() {
     const txnId = document.getElementById('txnId').value.trim();
     
     // 1. تعطيل الزر مؤقتاً
-    const submitBtn = document.querySelector('.modal-btn');
+    const submitBtn = document.querySelector('#depositModal .modal-btn');
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
@@ -1110,20 +1110,20 @@ async function submitDeposit() {
         // 2. التحقق من المدخلات
         if (!amount || amount <= 0) {
             showToast('Please enter a valid amount', 'error');
-            enableSubmitButton(submitBtn);
+            enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
         if (!txnId) {
             showToast('Please enter transaction ID', 'error');
-            enableSubmitButton(submitBtn);
+            enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
         // 3. التحقق من الطول (TXID عادة 64+ حرف)
         if (txnId.length < MIN_TX_LENGTH) {
             showToast('Invalid transaction ID (too short)', 'error');
-            enableSubmitButton(submitBtn);
+            enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
@@ -1131,7 +1131,7 @@ async function submitDeposit() {
         const usedBefore = walletData.usedTransactions.includes(txnId.toLowerCase());
         if (usedBefore) {
             showToast('This transaction ID has already been used', 'error');
-            enableSubmitButton(submitBtn);
+            enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
@@ -1139,7 +1139,7 @@ async function submitDeposit() {
         const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
         if (amount < minAmount) {
             showToast(`Minimum deposit is ${minAmount} ${currency}`, 'error');
-            enableSubmitButton(submitBtn);
+            enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
@@ -1183,20 +1183,24 @@ async function submitDeposit() {
         closeModal('depositModal');
         
         // 10. تفعيل الزر مرة أخرى
-        enableSubmitButton(submitBtn);
+        enableSubmitButton(submitBtn, 'deposit');
         
     } catch (error) {
         console.error("Deposit error:", error);
         showToast('Failed to submit deposit request', 'error');
-        enableSubmitButton(submitBtn);
+        enableSubmitButton(submitBtn, 'deposit');
     }
 }
 
-function enableSubmitButton(btn) {
+function enableSubmitButton(btn, type) {
     setTimeout(() => {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-regular fa-circle-down"></i> Submit Deposit';
+            if (type === 'deposit') {
+                btn.innerHTML = '<i class="fa-regular fa-circle-down"></i> Submit Deposit';
+            } else if (type === 'withdraw') {
+                btn.innerHTML = '<i class="fa-regular fa-circle-up"></i> Submit Withdrawal';
+            }
         }
     }, 1000);
 }
@@ -1258,14 +1262,14 @@ async function submitWithdraw() {
         // 2. التحقق من المدخلات
         if (!amount || amount <= 0 || !address) {
             showToast('Please fill all fields', 'error');
-            enableWithdrawButton(submitBtn);
+            enableSubmitButton(submitBtn, 'withdraw');
             return;
         }
         
         // 3. التحقق من الرصيد
         if (!userData.balances[currency] || userData.balances[currency] < amount) {
             showToast(`Insufficient ${currency} balance`, 'error');
-            enableWithdrawButton(submitBtn);
+            enableSubmitButton(submitBtn, 'withdraw');
             return;
         }
         
@@ -1273,7 +1277,7 @@ async function submitWithdraw() {
         const fee = WITHDRAWAL_FEES[currency] || 0;
         if (fee > 0 && (!userData.balances.BNB || userData.balances.BNB < fee)) {
             showToast(`You need ${fee} BNB for withdrawal fee`, 'error');
-            enableWithdrawButton(submitBtn);
+            enableSubmitButton(submitBtn, 'withdraw');
             return;
         }
         
@@ -1322,22 +1326,13 @@ async function submitWithdraw() {
         showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
         closeModal('withdrawModal');
         
-        enableWithdrawButton(submitBtn);
+        enableSubmitButton(submitBtn, 'withdraw');
         
     } catch (error) {
         console.error("Withdraw error:", error);
         showToast('Failed to submit withdrawal request', 'error');
-        enableWithdrawButton(submitBtn);
+        enableSubmitButton(submitBtn, 'withdraw');
     }
-}
-
-function enableWithdrawButton(btn) {
-    setTimeout(() => {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-regular fa-circle-up"></i> Submit Withdrawal';
-        }
-    }, 1000);
 }
 
 // ============================================
@@ -2358,4 +2353,4 @@ window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Wallet v10.0 loaded successfully!");
+console.log("✅ REFI Wallet v11.0 loaded successfully!");
