@@ -2031,16 +2031,33 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== 21. DEPOSIT FUNCTIONS - مع التحقق من الهاش ======
+// ====== 21. DEPOSIT FUNCTIONS - مع التحقق من الهاش (مع دعم SOL/TRX) ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
     const depositIcon = document.getElementById('depositIcon');
     const addressNote = document.getElementById('depositAddressNote');
+    const hashHint = document.getElementById('hashFormatHint');
     
     if (depositIcon) depositIcon.src = getCurrencyIcon(currency);
     depositAddress.textContent = DEPOSIT_ADDRESSES[currency] || DEPOSIT_ADDRESSES.REFI;
     addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || '✓ Blockchain confirmation 1-5 minutes'}</span>`;
+    
+    // إضافة تلميح عن تنسيق الهاش حسب العملة
+    let formatText = '';
+    const bscNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE'];
+    const solanaNetworks = ['SOL', 'TRUMP'];
+    const tronNetworks = ['TRX'];
+    
+    if (bscNetworks.includes(currency)) {
+        formatText = 'BSC/ETH format: 0x... (66 characters)';
+    } else if (solanaNetworks.includes(currency)) {
+        formatText = 'Solana format: 86-88 characters (no 0x required)';
+    } else if (tronNetworks.includes(currency)) {
+        formatText = 'TRON format: 64 characters (no 0x required)';
+    }
+    
+    if (hashHint) hashHint.textContent = formatText;
     
     const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
     const amountInput = document.getElementById('depositAmount');
@@ -2064,9 +2081,10 @@ function copyDepositAddress() {
     animateElement('.copy-address-btn', 'pop');
 }
 
-// ✅ التحقق من صحة الهاش
+// ✅ التحقق من صحة الهاش (مع دعم SOL/TRX)
 function validateTransactionHashInput() {
     const hashInput = document.getElementById('txnId');
+    const currency = document.getElementById('depositCurrency').value;
     const hintEl = document.getElementById('hashValidationHint');
     const submitBtn = document.getElementById('submitDepositBtn');
     
@@ -2080,23 +2098,47 @@ function validateTransactionHashInput() {
         return;
     }
     
-    // التحقق من الطول والبداية
-    const isValidFormat = hash.startsWith('0x') && hash.length === 66;
-    const isValidChars = /^[0-9a-fA-Fx]+$/.test(hash);
+    // قائمة العملات التي تتطلب تحقق صارم (BSC/ETH)
+    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE'];
+    
+    // قائمة العملات المعفاة (تحقق بسيط)
+    const exemptNetworks = ['SOL', 'TRUMP', 'TRX'];
+    
+    let isValid = false;
+    let message = '';
+    
+    // التحقق الصارم لـ BSC/ETH
+    if (strictNetworks.includes(currency)) {
+        isValid = hash.startsWith('0x') && hash.length === 66;
+        message = isValid ? 
+            '✓ Valid BSC/ETH transaction hash' : 
+            'Invalid format. Must start with 0x and be 66 characters';
+    }
+    
+    // التحقق البسيط لـ Solana و TRON (معفاة)
+    if (exemptNetworks.includes(currency)) {
+        // فقط تأكد أنه ليس فارغاً وطوله معقول
+        isValid = hash.length >= 10 && hash.length <= 100;
+        message = isValid ?
+            `✓ ${currency} transaction hash accepted (will be verified manually)` :
+            'Transaction hash seems too short';
+    }
+    
+    // التحقق من التكرار (لجميع العملات)
     const isUsed = userData.usedHashes?.includes(hash.toLowerCase());
     
-    if (!isValidFormat || !isValidChars) {
-        hintEl.textContent = t('error.invalidHash');
+    if (!isValid) {
+        hintEl.textContent = message;
         hintEl.className = 'hash-validation-hint invalid';
         hintEl.style.display = 'block';
         submitBtn.disabled = true;
     } else if (isUsed) {
-        hintEl.textContent = t('error.hashUsed');
+        hintEl.textContent = 'This transaction hash has already been used';
         hintEl.className = 'hash-validation-hint invalid';
         hintEl.style.display = 'block';
         submitBtn.disabled = true;
     } else {
-        hintEl.textContent = '✓ Valid transaction hash';
+        hintEl.textContent = message || '✓ Valid transaction hash';
         hintEl.className = 'hash-validation-hint valid';
         hintEl.style.display = 'block';
         submitBtn.disabled = false;
@@ -2118,12 +2160,18 @@ async function submitDeposit() {
         return;
     }
     
-    // التحقق النهائي من الهاش
-    if (!txnId.startsWith('0x') || txnId.length !== 66) {
-        showToast(t('error.invalidHash'), 'error');
-        return;
+    // قائمة العملات التي تتطلب تحقق صارم (BSC/ETH)
+    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE'];
+    
+    // التحقق من الهاش للعملات الصارمة فقط
+    if (strictNetworks.includes(currency)) {
+        if (!txnId.startsWith('0x') || txnId.length !== 66) {
+            showToast(t('error.invalidHash'), 'error');
+            return;
+        }
     }
     
+    // التحقق من التكرار للجميع
     if (userData.usedHashes?.includes(txnId.toLowerCase())) {
         showToast(t('error.hashUsed'), 'error');
         return;
@@ -2775,4 +2823,4 @@ window.copyToClipboard = copyToClipboard;
 
 console.log("✅ REFI Network v10.0 - Professional Edition Loaded");
 console.log("✅ Languages: English / العربية");
-console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation");
+console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation with SOL/TRX support");
