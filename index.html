@@ -28,7 +28,7 @@
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v6.5.0</div>
+                <div class="splash-version">v7.0.0</div>
             </div>
         </div>
 
@@ -99,23 +99,26 @@
                 </div>
             </div>
 
-            <!-- قسم السواب -->
+            <!-- قسم السواب المحسّن (مع زر MAX) -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <h3>Swap</h3>
+                    <h3>Swap to REFI</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="swap-container">
                     <div class="swap-card">
-                        <!-- أنت تدفع -->
+                        <!-- أنت تدفع (مع زر MAX) -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU PAY</span>
-                                <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
+                                <div class="balance-with-max">
+                                    <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
+                                    <button class="max-btn" onclick="setMaxAmount()">MAX</button>
+                                </div>
                             </div>
                             <div class="swap-input-group">
                                 <input type="number" id="payAmount" placeholder="0" value="1" oninput="calculateSwap()">
@@ -127,16 +130,12 @@
                             </div>
                         </div>
 
-                        <!-- زر قلب الزوج -->
-                        <div class="swap-flip-container">
-                            <button class="swap-flip-btn" onclick="flipSwapPair()">
-                                <i class="fa-solid fa-arrow-down-wide-short"></i>
-                                <span id="swapPairText">USDT ⟷ REFI</span>
-                                <i class="fa-solid fa-arrow-up-wide-short"></i>
-                            </button>
+                        <!-- سهم التحويل -->
+                        <div class="swap-arrow">
+                            <i class="fa-solid fa-arrow-down"></i>
                         </div>
 
-                        <!-- أنت تستلم -->
+                        <!-- أنت تستلم (ثابت: REFI) -->
                         <div class="swap-input-card">
                             <div class="swap-label">
                                 <span>YOU RECEIVE</span>
@@ -167,7 +166,7 @@
                         <!-- ملاحظة السواب -->
                         <div class="swap-note info">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span id="swapNote">You can swap any token to USDT or REFI</span>
+                            <span id="swapNote">You can swap any token to REFI</span>
                         </div>
 
                         <!-- زر التأكيد -->
