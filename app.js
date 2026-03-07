@@ -1,9 +1,49 @@
 // ============================================
-// REFI WALLET - PROFESSIONAL VERSION 11.0
+// REFI WALLET - PROFESSIONAL VERSION 12.0
 // Built on the solid foundation of VIP Mining
 // All features: Deposits, Withdrawals, Swaps, Staking, Referrals
 // Optimized storage: localStorage for speed, Firebase for financials only
 // ============================================
+
+// ============================================
+// 0. FORCE HIDE SPLASH SCREEN (الحل الجذري)
+// ============================================
+(function forceHideSplash() {
+    // دالة إخفاء شاشة التحميل
+    const hideSplash = () => {
+        try {
+            const splash = document.getElementById('splashScreen');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (splash) {
+                splash.classList.add('hidden');
+                console.log("✅ Splash screen hidden");
+            }
+            
+            if (mainContent) {
+                mainContent.style.display = 'block';
+            }
+        } catch (e) {
+            console.error("Error hiding splash:", e);
+        }
+    };
+    
+    // تنفيذ فوري
+    hideSplash();
+    
+    // تنفيذ بعد 1 ثانية (احتياط)
+    setTimeout(hideSplash, 1000);
+    
+    // تنفيذ بعد 3 ثواني (احتياط أخير)
+    setTimeout(hideSplash, 3000);
+    
+    // مراقبة تحميل DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideSplash);
+    } else {
+        hideSplash();
+    }
+})();
 
 // ============================================
 // 1. TELEGRAM WEBAPP INITIALIZATION
@@ -274,43 +314,41 @@ let currentCurrencySelector = 'pay';
 let currentHistoryFilter = 'all';
 
 // ============================================
-// 5. INITIALIZATION
+// 5. SAFE INITIALIZATION (بدون تعليق)
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    // إضافة التاج للمشرف فوراً
+document.addEventListener('DOMContentLoaded', function safeInit() {
+    console.log("📱 DOM loaded, starting safe initialization...");
+    
+    // إخفاء شاشة التحميل مرة أخرى للتأكد
+    try {
+        const splash = document.getElementById('splashScreen');
+        if (splash) splash.classList.add('hidden');
+        document.getElementById('mainContent').style.display = 'block';
+    } catch (e) {
+        console.error("Error in safe init:", e);
+    }
+    
+    // بدء التطبيق مع معالجة الأخطاء
     setTimeout(() => {
-        checkAdminAndAddCrown();
-    }, 300);
-    
-    // إخفاء شاشة التحميل بعد 3 ثواني كحد أقصى
-    const forceHideSplash = setTimeout(() => {
-        hideSplashScreen();
-    }, 3000);
-    
-    // بدء التطبيق
-    initApp().finally(() => {
-        clearTimeout(forceHideSplash);
-        hideSplashScreen();
-    });
+        try {
+            initApp();
+        } catch (error) {
+            console.error("❌ Fatal error in initApp:", error);
+            // في حالة الخطأ، نضمن ظهور المحتوى
+            document.getElementById('mainContent').style.display = 'block';
+        }
+    }, 100);
 });
 
-function hideSplashScreen() {
-    const splash = document.getElementById('splashScreen');
-    if (splash && !splash.classList.contains('hidden')) {
-        splash.classList.add('hidden');
-    }
-    const mainContent = document.getElementById('mainContent');
-    if (mainContent) {
-        mainContent.style.display = 'block';
-    }
-}
-
+// ============================================
+// 6. APP INITIALIZATION (معالج الأخطاء)
+// ============================================
 async function initApp() {
     if (appInitialized) return;
     
+    console.log("🚀 Initializing REFI Wallet...");
+    
     try {
-        console.log("🚀 Initializing REFI Wallet...");
-        
         await setupUser();
         await loadUserData();
         await loadPricesOnce();
@@ -330,6 +368,8 @@ async function initApp() {
         
     } catch (error) {
         console.error("❌ Error initializing app:", error);
+        // حتى لو فشل، نضمن ظهور المحتوى
+        document.getElementById('mainContent').style.display = 'block';
     }
 }
 
@@ -375,7 +415,7 @@ function getReferralLink() {
 }
 
 // ============================================
-// 6. DATA LOADING & SAVING (localStorage first)
+// 7. DATA LOADING & SAVING (localStorage first)
 // ============================================
 async function loadUserData() {
     console.log("📂 Loading user data...");
@@ -482,7 +522,7 @@ async function syncToFirebase() {
 }
 
 // ============================================
-// 7. PRICE LOADING (once per session)
+// 8. PRICE LOADING (once per session)
 // ============================================
 async function loadPricesOnce() {
     try {
@@ -568,15 +608,19 @@ function refreshPrices() {
 }
 
 // ============================================
-// 8. UI RENDERING FUNCTIONS
+// 9. UI RENDERING FUNCTIONS
 // ============================================
 function updateUI() {
-    renderAssets();
-    updateTotalBalance();
-    updateStakingStats();
-    updateReferralStats();
-    updateSwapBalances();
-    updateNotificationBadge();
+    try {
+        renderAssets();
+        updateTotalBalance();
+        updateStakingStats();
+        updateReferralStats();
+        updateSwapBalances();
+        updateNotificationBadge();
+    } catch (error) {
+        console.error("Error updating UI:", error);
+    }
 }
 
 function renderAssets() {
@@ -879,7 +923,7 @@ function markNotificationRead(notificationId) {
 }
 
 // ============================================
-// 9. UTILITY FUNCTIONS
+// 10. UTILITY FUNCTIONS
 // ============================================
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
@@ -924,41 +968,49 @@ function formatNumber(num) {
 }
 
 function updateTotalBalance() {
-    let total = 0;
-    total += userData.balances.USDT || 0;
-    total += (userData.balances.REFI || 0) * REFI_PRICE;
-    total += (userData.balances.BNB || 0) * (livePrices.BNB?.price || 0);
-    total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
-    total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
-    total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
-    total += (userData.balances.TRUMP || 0) * (livePrices.TRUMP?.price || 5.00);
-    
-    document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
+    try {
+        let total = 0;
+        total += userData.balances.USDT || 0;
+        total += (userData.balances.REFI || 0) * REFI_PRICE;
+        total += (userData.balances.BNB || 0) * (livePrices.BNB?.price || 0);
+        total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
+        total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
+        total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
+        total += (userData.balances.TRUMP || 0) * (livePrices.TRUMP?.price || 5.00);
+        
+        document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
+    } catch (error) {
+        console.error("Error updating total balance:", error);
+    }
 }
 
 function updateStakingStats() {
-    const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
-    document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
-    
-    const now = new Date();
-    const rewards = userData.staking.reduce((sum, stake) => {
-        const endDate = new Date(stake.endDate);
-        if (endDate < now && !stake.claimed) {
-            return sum + (stake.amount * stake.plan.return / 100);
+    try {
+        const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
+        document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
+        
+        const now = new Date();
+        const rewards = userData.staking.reduce((sum, stake) => {
+            const endDate = new Date(stake.endDate);
+            if (endDate < now && !stake.claimed) {
+                return sum + (stake.amount * stake.plan.return / 100);
+            }
+            return sum;
+        }, 0);
+        
+        document.getElementById('rewardsEarned').textContent = rewards.toFixed(2) + ' USDT';
+        document.getElementById('stakeBalance').textContent = `Balance: $${(userData.balances.USDT || 0).toFixed(2)} USDT`;
+        document.getElementById('activeStakesCount').textContent = userData.staking.length;
+        
+        if (userData.staking.length > 0) {
+            const avgReturn = userData.staking.reduce((sum, stake) => sum + stake.plan.return, 0) / userData.staking.length;
+            document.getElementById('avgReturn').textContent = avgReturn.toFixed(0) + '%';
         }
-        return sum;
-    }, 0);
-    
-    document.getElementById('rewardsEarned').textContent = rewards.toFixed(2) + ' USDT';
-    document.getElementById('stakeBalance').textContent = `Balance: $${(userData.balances.USDT || 0).toFixed(2)} USDT`;
-    document.getElementById('activeStakesCount').textContent = userData.staking.length;
-    
-    if (userData.staking.length > 0) {
-        const avgReturn = userData.staking.reduce((sum, stake) => sum + stake.plan.return, 0) / userData.staking.length;
-        document.getElementById('avgReturn').textContent = avgReturn.toFixed(0) + '%';
+        
+        renderActiveStakes();
+    } catch (error) {
+        console.error("Error updating staking stats:", error);
     }
-    
-    renderActiveStakes();
 }
 
 function renderActiveStakes() {
@@ -996,61 +1048,81 @@ function renderActiveStakes() {
 }
 
 function updateReferralStats() {
-    document.getElementById('totalReferrals').textContent = userData.referralCount || 0;
-    document.getElementById('refiEarned').textContent = ((userData.referralCount || 0) * REFERRAL_BONUS).toLocaleString() + ' REFI';
-    document.getElementById('usdtEarned').textContent = (userData.totalUsdtEarned || 0).toFixed(2) + ' USDT';
-    
-    const referralLinkInput = document.getElementById('referralLink');
-    if (referralLinkInput) {
-        referralLinkInput.value = getReferralLink();
+    try {
+        document.getElementById('totalReferrals').textContent = userData.referralCount || 0;
+        document.getElementById('refiEarned').textContent = ((userData.referralCount || 0) * REFERRAL_BONUS).toLocaleString() + ' REFI';
+        document.getElementById('usdtEarned').textContent = (userData.totalUsdtEarned || 0).toFixed(2) + ' USDT';
+        
+        const referralLinkInput = document.getElementById('referralLink');
+        if (referralLinkInput) {
+            referralLinkInput.value = getReferralLink();
+        }
+    } catch (error) {
+        console.error("Error updating referral stats:", error);
     }
 }
 
 function updateSwapBalances() {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
+    try {
+        const payCurrency = document.getElementById('payCurrency').textContent;
+        document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
+    } catch (error) {
+        console.error("Error updating swap balances:", error);
+    }
 }
 
 function updateNotificationBadge() {
-    const badge = document.querySelector('.badge');
-    if (badge) {
-        unreadNotifications = userData.notifications?.filter(n => !n.read).length || 0;
-        badge.textContent = unreadNotifications;
-        badge.style.display = unreadNotifications > 0 ? 'block' : 'none';
+    try {
+        const badge = document.querySelector('.badge');
+        if (badge) {
+            unreadNotifications = userData.notifications?.filter(n => !n.read).length || 0;
+            badge.textContent = unreadNotifications;
+            badge.style.display = unreadNotifications > 0 ? 'block' : 'none';
+        }
+    } catch (error) {
+        console.error("Error updating notification badge:", error);
     }
 }
 
 function animateElement(selector, animationClass) {
-    const element = document.querySelector(selector);
-    if (element) {
-        element.classList.add(animationClass);
-        setTimeout(() => {
-            element.classList.remove(animationClass);
-        }, 500);
+    try {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.classList.add(animationClass);
+            setTimeout(() => {
+                element.classList.remove(animationClass);
+            }, 500);
+        }
+    } catch (error) {
+        console.error("Error animating element:", error);
     }
 }
 
 function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-    
-    toastMessage.textContent = message;
-    toast.classList.remove('hidden');
-    
-    const icon = toast.querySelector('i');
-    if (type === 'success') {
-        icon.className = 'fa-regular fa-circle-check';
-    } else if (type === 'error') {
-        icon.className = 'fa-regular fa-circle-xmark';
-    } else if (type === 'warning') {
-        icon.className = 'fa-regular fa-circle-exclamation';
-    } else {
-        icon.className = 'fa-regular fa-circle-info';
+    try {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toastMessage.textContent = message;
+        toast.classList.remove('hidden');
+        
+        const icon = toast.querySelector('i');
+        if (type === 'success') {
+            icon.className = 'fa-regular fa-circle-check';
+        } else if (type === 'error') {
+            icon.className = 'fa-regular fa-circle-xmark';
+        } else if (type === 'warning') {
+            icon.className = 'fa-regular fa-circle-exclamation';
+        } else {
+            icon.className = 'fa-regular fa-circle-info';
+        }
+        
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    } catch (error) {
+        console.error("Error showing toast:", error);
     }
-    
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 3000);
 }
 
 function copyToClipboard(text) {
@@ -1059,7 +1131,7 @@ function copyToClipboard(text) {
 }
 
 // ============================================
-// 10. DEPOSIT SYSTEM (محسن من VIP Mining)
+// 11. DEPOSIT SYSTEM
 // ============================================
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
@@ -1093,13 +1165,11 @@ function copyDepositAddress() {
     animateElement('.copy-address-btn', 'pop');
 }
 
-// ✅ دالة الإيداع المحسنة (مثل VIP Mining)
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
     const txnId = document.getElementById('txnId').value.trim();
     
-    // 1. تعطيل الزر مؤقتاً
     const submitBtn = document.querySelector('#depositModal .modal-btn');
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -1107,7 +1177,6 @@ async function submitDeposit() {
     }
     
     try {
-        // 2. التحقق من المدخلات
         if (!amount || amount <= 0) {
             showToast('Please enter a valid amount', 'error');
             enableSubmitButton(submitBtn, 'deposit');
@@ -1120,14 +1189,12 @@ async function submitDeposit() {
             return;
         }
         
-        // 3. التحقق من الطول (TXID عادة 64+ حرف)
         if (txnId.length < MIN_TX_LENGTH) {
             showToast('Invalid transaction ID (too short)', 'error');
             enableSubmitButton(submitBtn, 'deposit');
             return;
         }
         
-        // 4. التحقق من التكرار (منع استخدام نفس TXID مرتين)
         const usedBefore = walletData.usedTransactions.includes(txnId.toLowerCase());
         if (usedBefore) {
             showToast('This transaction ID has already been used', 'error');
@@ -1135,7 +1202,6 @@ async function submitDeposit() {
             return;
         }
         
-        // 5. التحقق من الحد الأدنى
         const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
         if (amount < minAmount) {
             showToast(`Minimum deposit is ${minAmount} ${currency}`, 'error');
@@ -1143,7 +1209,6 @@ async function submitDeposit() {
             return;
         }
         
-        // 6. إنشاء طلب الإيداع
         const depositRequest = {
             id: 'dep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             userId: userData.userId,
@@ -1157,7 +1222,6 @@ async function submitDeposit() {
             type: 'deposit'
         };
         
-        // 7. حفظ محلياً أولاً (ضمان عدم فقدان الطلب)
         walletData.pendingDeposits.push(depositRequest);
         walletData.usedTransactions.push(txnId.toLowerCase());
         
@@ -1166,7 +1230,6 @@ async function submitDeposit() {
         
         saveUserData();
         
-        // 8. حفظ في Firebase (في الخلفية)
         if (db) {
             try {
                 await db.collection('transactions').add(depositRequest);
@@ -1174,15 +1237,12 @@ async function submitDeposit() {
                 console.log("✅ Deposit saved to Firebase");
             } catch (error) {
                 console.error("Firebase error:", error);
-                // حتى لو فشل Firebase، الطلب محفوظ محلياً
             }
         }
         
-        // 9. رسالة نجاح
         showToast('Deposit request submitted! Waiting for admin approval.', 'success');
         closeModal('depositModal');
         
-        // 10. تفعيل الزر مرة أخرى
         enableSubmitButton(submitBtn, 'deposit');
         
     } catch (error) {
@@ -1206,7 +1266,7 @@ function enableSubmitButton(btn, type) {
 }
 
 // ============================================
-// 11. WITHDRAWAL SYSTEM (مع حجز الرصيد)
+// 12. WITHDRAWAL SYSTEM
 // ============================================
 function showWithdrawModal() {
     document.getElementById('withdrawModal').classList.add('show');
@@ -1245,13 +1305,11 @@ function updateWithdrawIcon() {
     if (icon) icon.src = getCurrencyIcon(currency);
 }
 
-// ✅ دالة السحب المحسنة (مع حجز الرصيد)
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
     const address = document.getElementById('walletAddress').value.trim();
     
-    // 1. تعطيل الزر مؤقتاً
     const submitBtn = document.querySelector('#withdrawModal .modal-btn');
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -1259,21 +1317,18 @@ async function submitWithdraw() {
     }
     
     try {
-        // 2. التحقق من المدخلات
         if (!amount || amount <= 0 || !address) {
             showToast('Please fill all fields', 'error');
             enableSubmitButton(submitBtn, 'withdraw');
             return;
         }
         
-        // 3. التحقق من الرصيد
         if (!userData.balances[currency] || userData.balances[currency] < amount) {
             showToast(`Insufficient ${currency} balance`, 'error');
             enableSubmitButton(submitBtn, 'withdraw');
             return;
         }
         
-        // 4. التحقق من الرسوم
         const fee = WITHDRAWAL_FEES[currency] || 0;
         if (fee > 0 && (!userData.balances.BNB || userData.balances.BNB < fee)) {
             showToast(`You need ${fee} BNB for withdrawal fee`, 'error');
@@ -1281,16 +1336,11 @@ async function submitWithdraw() {
             return;
         }
         
-        // 5. حجز الرصيد (خصم فوري)
-        const originalBalance = userData.balances[currency];
-        const originalBnbBalance = userData.balances.BNB;
-        
         userData.balances[currency] -= amount;
         if (fee > 0) {
             userData.balances.BNB -= fee;
         }
         
-        // 6. إنشاء طلب السحب
         const withdrawRequest = {
             id: 'wd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             userId: userData.userId,
@@ -1305,12 +1355,10 @@ async function submitWithdraw() {
             type: 'withdraw'
         };
         
-        // 7. حفظ محلياً
         walletData.pendingWithdrawals.push(withdrawRequest);
         userData.transactions.push(withdrawRequest);
         saveUserData();
         
-        // 8. حفظ في Firebase
         if (db) {
             try {
                 await db.collection('transactions').add(withdrawRequest);
@@ -1321,7 +1369,6 @@ async function submitWithdraw() {
             }
         }
         
-        // 9. تحديث الواجهة
         updateUI();
         showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
         closeModal('withdrawModal');
@@ -1336,7 +1383,7 @@ async function submitWithdraw() {
 }
 
 // ============================================
-// 12. SWAP SYSTEM
+// 13. SWAP SYSTEM
 // ============================================
 function showCurrencySelector(type) {
     currentCurrencySelector = type;
@@ -1360,8 +1407,6 @@ function selectCurrency(symbol) {
     if (currentCurrencySelector === 'pay') {
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
-        
-        // العملة المستقبلة ثابتة: REFI
         document.getElementById('receiveCurrency').textContent = 'REFI';
         document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
     }
@@ -1448,7 +1493,6 @@ function confirmSwap() {
         return;
     }
     
-    // Execute swap
     userData.balances[payCurrency] -= payAmount;
     userData.balances.REFI += receiveAmount;
     
@@ -1466,7 +1510,6 @@ function confirmSwap() {
     userData.transactions.push(transaction);
     saveUserData();
     
-    // Save to Firebase (optional)
     if (db) {
         db.collection('transactions').add(transaction).catch(e => console.log(e));
     }
@@ -1508,7 +1551,7 @@ function swapDirection(direction) {
 }
 
 // ============================================
-// 13. STAKING SYSTEM
+// 14. STAKING SYSTEM
 // ============================================
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
@@ -1653,7 +1696,7 @@ function claimStakingMission(missionId) {
 }
 
 // ============================================
-// 14. REFERRAL SYSTEM
+// 15. REFERRAL SYSTEM
 // ============================================
 function copyReferralLink() {
     const link = getReferralLink();
@@ -1703,7 +1746,6 @@ async function processReferral() {
         if (referrerId === userData.userId) return;
         if (referrerData.referrals && referrerData.referrals.includes(userData.userId)) return;
         
-        // Update referrer
         const updatedReferrals = [...(referrerData.referrals || []), userData.userId];
         const updatedReferralCount = (referrerData.referralCount || 0) + 1;
         const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
@@ -1715,7 +1757,6 @@ async function processReferral() {
             totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS
         });
         
-        // Update current user
         userData.referredBy = referralCode;
         userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
         
@@ -1799,7 +1840,7 @@ function claimReferralMilestone(referrals) {
 }
 
 // ============================================
-// 15. NOTIFICATION SYSTEM
+// 16. NOTIFICATION SYSTEM
 // ============================================
 async function addNotification(userId, message, type = 'info') {
     if (!db) return;
@@ -1837,7 +1878,7 @@ function showNotifications() {
 }
 
 // ============================================
-// 16. ADMIN SYSTEM
+// 17. ADMIN SYSTEM
 // ============================================
 function isAdmin() {
     return userData.userId === ADMIN_ID;
@@ -1877,7 +1918,6 @@ function addAdminCrown() {
     
     if (tryAddCrown()) return;
     
-    // Retry up to 5 times
     let attempts = 0;
     const interval = setInterval(() => {
         attempts++;
@@ -2042,7 +2082,6 @@ function renderAdminTransactionCard(tx, tab) {
     `;
 }
 
-// ✅ دالة الموافقة على المعاملة
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     try {
         console.log("Approving transaction:", txId);
@@ -2060,7 +2099,6 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
             await addNotification(targetUserId, `✅ Your deposit of ${amount} ${currency} has been approved!`, 'success');
             
         } else if (type === 'withdraw') {
-            // Withdrawal - balance already reserved, just notify
             const feeText = fee > 0 ? ` (Fee: ${fee} ${feeCurrency})` : '';
             await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
         }
@@ -2076,7 +2114,6 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
 }
 
-// ✅ دالة رفض المعاملة (مع إعادة الرصيد للسحب)
 async function rejectTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     try {
         console.log("Rejecting transaction:", txId);
@@ -2091,7 +2128,6 @@ async function rejectTransaction(txId, targetUserId, type, currency, amount, fee
             rejectedAt: new Date().toISOString()
         });
         
-        // Return balance for rejected withdrawals
         if (type === 'withdraw') {
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
@@ -2117,14 +2153,13 @@ async function rejectTransaction(txId, targetUserId, type, currency, amount, fee
 }
 
 // ============================================
-// 17. REALTIME LISTENERS (للطلبات المعلقة فقط)
+// 18. REALTIME LISTENERS
 // ============================================
 function setupRealtimeListeners() {
     if (!db || !userData.userId) return;
     
-    console.log("👂 Setting up real-time listeners for financial transactions...");
+    console.log("👂 Setting up real-time listeners...");
     
-    // Listen for deposit status changes
     db.collection('transactions')
         .where('userId', '==', userData.userId)
         .where('status', 'in', ['approved', 'rejected'])
@@ -2143,7 +2178,6 @@ function setupRealtimeListeners() {
                     } else if (tx.status === 'rejected') {
                         showToast(`❌ Your ${tx.type} was rejected. Reason: ${tx.reason || 'No reason'}`, 'error');
                         
-                        // Return balance for rejected withdrawals
                         if (tx.type === 'withdraw') {
                             userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
                             if (tx.fee > 0) {
@@ -2152,7 +2186,6 @@ function setupRealtimeListeners() {
                         }
                     }
                     
-                    // Update transaction in local array
                     const txIndex = userData.transactions.findIndex(t => t.id === tx.id);
                     if (txIndex >= 0) {
                         userData.transactions[txIndex] = tx;
@@ -2168,7 +2201,7 @@ function setupRealtimeListeners() {
 }
 
 // ============================================
-// 18. NAVIGATION FUNCTIONS
+// 19. NAVIGATION FUNCTIONS
 // ============================================
 function showWallet() {
     document.getElementById('walletSection').classList.remove('hidden');
@@ -2193,7 +2226,6 @@ function showSwap() {
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     document.querySelector('.nav-item:nth-child(2)').classList.add('active');
     
-    // Set default values
     document.getElementById('payCurrency').textContent = 'USDT';
     document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
     document.getElementById('receiveCurrency').textContent = 'REFI';
@@ -2307,7 +2339,7 @@ function scrollToTop() {
 }
 
 // ============================================
-// 19. EXPORT FUNCTIONS TO WINDOW
+// 20. EXPORT FUNCTIONS TO WINDOW
 // ============================================
 window.showWallet = showWallet;
 window.showSwap = showSwap;
@@ -2353,4 +2385,4 @@ window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Wallet v11.0 loaded successfully!");
+console.log("✅ REFI Wallet v12.0 loaded successfully!");
