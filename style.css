@@ -61,6 +61,178 @@ body {
     overflow: hidden;
 }
 
+/* ====== دعم اللغة العربية (RTL) ====== */
+body.rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.rtl .header-actions {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.rtl .section-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .see-all-btn i {
+    transform: rotate(180deg);
+}
+
+.rtl .back-btn i {
+    transform: rotate(180deg);
+}
+
+.rtl .nav-item i {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.rtl .asset-left {
+    flex-direction: row-reverse;
+}
+
+.rtl .asset-right {
+    text-align: left;
+}
+
+.rtl .crypto-left {
+    flex-direction: row-reverse;
+}
+
+.rtl .crypto-right {
+    text-align: left;
+}
+
+.rtl .swap-input-group {
+    flex-direction: row-reverse;
+}
+
+.rtl .currency-selector i {
+    transform: rotate(180deg);
+}
+
+.rtl .swap-actions {
+    flex-direction: row-reverse;
+}
+
+.rtl .info-row {
+    flex-direction: row-reverse;
+}
+
+.rtl .summary-row {
+    flex-direction: row-reverse;
+}
+
+.rtl .mission-info {
+    flex-direction: row-reverse;
+}
+
+.rtl .mission-reward {
+    text-align: left;
+}
+
+.rtl .milestone-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .progress-text {
+    text-align: left;
+}
+
+.rtl .history-item-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .history-type {
+    flex-direction: row-reverse;
+}
+
+.rtl .history-details {
+    flex-direction: row-reverse;
+}
+
+.rtl .modal-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .form-group label {
+    text-align: right;
+}
+
+.rtl .address-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .admin-tabs {
+    flex-direction: row-reverse;
+}
+
+.rtl .admin-tx-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .admin-tx-row {
+    flex-direction: row-reverse;
+}
+
+.rtl .admin-tx-value {
+    text-align: left;
+}
+
+/* ====== زر اللغة ====== */
+.language-flag {
+    font-size: 20px;
+    line-height: 1;
+}
+
+#languageBtn {
+    font-size: 20px;
+    padding: 0;
+}
+
+/* ====== التحقق من الهاش ====== */
+.hash-validation-hint,
+.address-validation-hint {
+    font-size: 11px;
+    margin-top: 5px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.hash-validation-hint.valid {
+    color: var(--success);
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+}
+
+.hash-validation-hint.invalid {
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger);
+}
+
+.hash-validation-hint.warning {
+    color: var(--warning);
+    background: var(--warning-bg);
+    border: 1px solid var(--warning);
+}
+
+.address-validation-hint.valid {
+    color: var(--success);
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+}
+
+.address-validation-hint.invalid {
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger);
+}
+
+/* باقي الأنماط كما هي من ملفك الأصلي */
 /* ====== حاوية التطبيق ====== */
 .app-container {
     width: 100%;
