@@ -1,98 +1,3 @@
-// ====== IndexedDB Configuration ======
-const DB_NAME = 'REFIWalletDB';
-const DB_VERSION = 1;
-const STORES = {
-    USERS: 'users',
-    TRANSACTIONS: 'transactions',
-    PRICES: 'prices',
-    NOTIFICATIONS: 'notifications',
-    SETTINGS: 'settings'
-};
-
-let dbInstance = null;
-
-// ====== Initialize IndexedDB ======
-async function initIndexedDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-            dbInstance = request.result;
-            console.log("✅ IndexedDB initialized");
-            resolve(dbInstance);
-        };
-        
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            
-            if (!db.objectStoreNames.contains(STORES.USERS)) {
-                const userStore = db.createObjectStore(STORES.USERS, { keyPath: 'userId' });
-                userStore.createIndex('referralCode', 'referralCode', { unique: true });
-            }
-            
-            if (!db.objectStoreNames.contains(STORES.TRANSACTIONS)) {
-                const txStore = db.createObjectStore(STORES.TRANSACTIONS, { keyPath: 'id' });
-                txStore.createIndex('userId', 'userId', { unique: false });
-                txStore.createIndex('timestamp', 'timestamp', { unique: false });
-                txStore.createIndex('status', 'status', { unique: false });
-            }
-            
-            if (!db.objectStoreNames.contains(STORES.PRICES)) {
-                db.createObjectStore(STORES.PRICES, { keyPath: 'symbol' });
-            }
-            
-            if (!db.objectStoreNames.contains(STORES.NOTIFICATIONS)) {
-                const notifStore = db.createObjectStore(STORES.NOTIFICATIONS, { keyPath: 'id' });
-                notifStore.createIndex('userId', 'userId', { unique: false });
-                notifStore.createIndex('read', 'read', { unique: false });
-            }
-            
-            if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
-                db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
-            }
-        };
-    });
-}
-
-// ====== IndexedDB Helper Functions ======
-async function getFromIndexedDB(storeName, key) {
-    if (!dbInstance) await initIndexedDB();
-    return new Promise((resolve, reject) => {
-        const transaction = dbInstance.transaction(storeName, 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.get(key);
-        
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function saveToIndexedDB(storeName, data) {
-    if (!dbInstance) await initIndexedDB();
-    return new Promise((resolve, reject) => {
-        const transaction = dbInstance.transaction(storeName, 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.put(data);
-        
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function getAllFromIndexedDB(storeName, indexName, value) {
-    if (!dbInstance) await initIndexedDB();
-    return new Promise((resolve, reject) => {
-        const transaction = dbInstance.transaction(storeName, 'readonly');
-        const store = transaction.objectStore(storeName);
-        const index = store.index(indexName);
-        const request = index.getAll(value);
-        
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
 // ====== Firebase Configuration ======
 const firebaseConfig = {
     apiKey: "AIzaSyCnnmuZNJxkWTw-GjaP0fz6UpS3NZLF0n8",
@@ -127,8 +32,6 @@ const CMC_ICONS = {
     DOGE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png',
     SHIB: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5994.png',
     PEPE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png',
-    BONK: 'https://s2.coinmarketcap.com/static/img/coins/64x64/23095.png',
-    TRUMP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35336.png',
     TRX: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1958.png'
 };
 
@@ -156,24 +59,12 @@ const DEPOSIT_MINIMUMS = {
     TRX: 40
 };
 
-// ====== ملاحظات الإيداع ======
-const DEPOSIT_NOTES = {
-    REFI: '✓ Blockchain confirmation 1-5 minutes',
-    USDT: '✓ Blockchain confirmation 1-5 minutes',
-    BNB: '✓ Blockchain confirmation 1-5 minutes',
-    ETH: '✓ Blockchain confirmation 1-5 minutes',
-    SHIB: '✓ Blockchain confirmation 1-5 minutes',
-    PEPE: '✓ Blockchain confirmation 1-5 minutes',
-    SOL: '✓ Blockchain confirmation 1-5 minutes',
-    TRX: '✓ Blockchain confirmation 1-5 minutes'
-};
-
 // ====== الروابط الثابتة ======
 const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
-const ADMIN_ID = "1653918641";
-const SWAP_RATE = 500000;
-const REFERRAL_BONUS = 250000;
-const REFI_PRICE = 0.000002;
+const ADMIN_ID = "1653918641"; // ✅ معرف المشرف الصحيح
+const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
+const REFERRAL_BONUS = 250000; // REFI per referral
+const REFI_PRICE = 0.000002; // سعر REFI الثابت
 
 // ====== معرفات العملات في CoinGecko ======
 const CRYPTO_IDS = {
@@ -182,14 +73,9 @@ const CRYPTO_IDS = {
     BNB: 'binancecoin',
     USDT: 'tether',
     SOL: 'solana',
-    TON: 'the-open-network',
-    ADA: 'cardano',
-    DOGE: 'dogecoin',
+    TRX: 'tron',
     SHIB: 'shiba-inu',
-    PEPE: 'pepe',
-    BONK: 'bonk',
-    TRUMP: 'official-trump',
-    TRX: 'tron'
+    PEPE: 'pepe'
 };
 
 // ====== خطط الستيكينغ ======
@@ -249,30 +135,30 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-gem' }
 ];
 
-// ====== قائمة العملات العشر (للعرض فقط) ======
+// ====== قائمة العملات العشر ======
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
     { symbol: 'BNB', name: 'Binance Coin' },
     { symbol: 'SOL', name: 'Solana' },
-    { symbol: 'ADA', name: 'Cardano' },
-    { symbol: 'DOGE', name: 'Dogecoin' },
-    { symbol: 'TON', name: 'Toncoin' },
     { symbol: 'TRX', name: 'TRON' },
     { symbol: 'SHIB', name: 'Shiba Inu' },
-    { symbol: 'PEPE', name: 'Pepe' }
+    { symbol: 'PEPE', name: 'Pepe' },
+    { symbol: 'ADA', name: 'Cardano' },
+    { symbol: 'DOGE', name: 'Dogecoin' },
+    { symbol: 'TON', name: 'Toncoin' }
 ];
 
 // ====== جميع العملات المتاحة للاختيار في السواب (8 عملات قابلة للإيداع) ======
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
-    { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
+    { symbol: 'BNB', name: 'BNB', icon: CMC_ICONS.BNB },
     { symbol: 'ETH', name: 'Ethereum', icon: CMC_ICONS.ETH },
-    { symbol: 'BNB', name: 'Binance Coin', icon: CMC_ICONS.BNB },
     { symbol: 'SOL', name: 'Solana', icon: CMC_ICONS.SOL },
+    { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX },
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
     { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE },
-    { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX }
+    { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI }
 ];
 
 // ====== قائمة الأصول (فقط 8 عملات قابلة للإيداع) ======
@@ -290,12 +176,11 @@ const ALL_ASSETS = [
 // ====== State Management ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
-let swapMode = 'to-usdt';
+let swapMode = 'to-refi';
 let livePrices = {};
 let unreadNotifications = 0;
 let currentCurrencySelector = 'pay';
 let currentHistoryFilter = 'all';
-let syncTimer = null;
 let realtimeListener = null;
 
 // ====== Initialize Telegram Web App ======
@@ -310,68 +195,86 @@ document.getElementById('userId').textContent = userName;
 
 // ====== Initialize App ======
 document.addEventListener('DOMContentLoaded', async () => {
-    await initIndexedDB();
-    
+    // شاشة التحميل
     setTimeout(() => {
         document.getElementById('splashScreen').classList.add('hidden');
         document.getElementById('mainContent').style.display = 'block';
     }, 2000);
     
-    await loadUserDataFromCache();
+    await loadUserData();
     await loadPricesOnce();
     renderStakingPlans();
+    renderAssets();
+    renderTopCryptos();
+    updateTotalBalance();
+    updateReferralStats();
     setupScrollListener();
-    setupPullToRefresh();
-    startPeriodicSync();
     setupFinancialRealtimeListener();
     
+    // ✅ التحقق من المشرف وإضافة التاج
     if (isAdmin()) {
+        console.log("👑 Admin detected, adding crown");
         addAdminCrown();
+    } else {
+        console.log("👤 Regular user, userId:", userId);
     }
 });
 
-// ====== Load User Data from Cache (مع معالجة الأخطاء) ======
-async function loadUserDataFromCache() {
+// ====== Load User Data from localStorage + Firebase ======
+async function loadUserData() {
     try {
-        if (!dbInstance) {
-            await initIndexedDB();
-        }
-        
-        const cachedUser = await getFromIndexedDB(STORES.USERS, userId);
-        
-        if (cachedUser) {
-            userData = cachedUser;
-            console.log("📦 Loaded user data from cache");
+        // 1. محاولة التحميل من localStorage أولاً
+        const localData = localStorage.getItem(`user_${userId}`);
+        if (localData) {
+            userData = JSON.parse(localData);
+            console.log("📦 Loaded user data from localStorage");
             updateUI();
-        } else {
-            const localData = localStorage.getItem(`user_${userId}`);
-            if (localData) {
-                userData = JSON.parse(localData);
-                console.log("📦 Loaded from localStorage backup");
-                updateUI();
-            } else {
-                await loadUserDataFromFirebase();
-            }
         }
         
-        setTimeout(() => syncUserWithFirebase(), 1000);
+        // 2. التحميل من Firebase (دائماً للتأكد)
+        if (db) {
+            const userDoc = await db.collection('users').doc(userId).get();
+            
+            if (userDoc.exists) {
+                const fbData = userDoc.data();
+                
+                // دمج البيانات (Firebase له الأولوية للأرصدة)
+                if (userData) {
+                    userData = {
+                        ...userData,
+                        ...fbData,
+                        balances: fbData.balances || userData.balances
+                    };
+                } else {
+                    userData = fbData;
+                }
+                
+                console.log("✅ Synced with Firebase");
+            } else if (!userData) {
+                // مستخدم جديد - ننشئ حساب
+                createNewUser();
+            }
+            
+            // حفظ في localStorage
+            if (userData) {
+                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+            }
+        } else if (!userData) {
+            // لا Firebase ولا localStorage - ننشئ مستخدم جديد
+            createNewUser();
+        }
+        
+        updateUI();
+        await processReferral();
+        updateNotificationBadge();
         
     } catch (error) {
-        console.error("Error loading from cache:", error);
+        console.error("Error loading user data:", error);
+        showToast('Error loading data', 'error');
         
-        try {
-            const localData = localStorage.getItem(`user_${userId}`);
-            if (localData) {
-                userData = JSON.parse(localData);
-                console.log("📦 Loaded from localStorage after error");
-                updateUI();
-                showToast('Loaded from backup', 'info');
-            } else {
-                await createNewUser();
-            }
-        } catch (e) {
-            console.error("Even localStorage failed:", e);
-            await createNewUser();
+        // في حالة الخطأ، ننشئ مستخدم جديد
+        if (!userData) {
+            createNewUser();
         }
     }
 }
@@ -406,65 +309,47 @@ async function createNewUser() {
         createdAt: new Date().toISOString()
     };
     
-    await saveToIndexedDB(STORES.USERS, userData);
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    if (db) {
+        await db.collection('users').doc(userId).set(userData);
+    }
+    
     updateUI();
     showToast('Welcome to REFI Network!', 'success');
 }
 
-// ====== Load User Data from Firebase ======
-async function loadUserDataFromFirebase() {
-    try {
-        if (!db) return;
-        
-        const userDoc = await db.collection('users').doc(userId).get();
-        
-        if (userDoc.exists) {
-            userData = userDoc.data();
-        } else {
-            await createNewUser();
-            await db.collection('users').doc(userId).set(userData);
-        }
-        
-        await saveToIndexedDB(STORES.USERS, userData);
-        console.log("✅ User data loaded from Firebase");
-        updateUI();
-        
-        await processReferral();
-        updateNotificationBadge();
-        
-    } catch (error) {
-        console.error("Error loading from Firebase:", error);
-        showToast('Error loading data', 'error');
-    }
-}
-
-// ====== Sync with Firebase ======
-async function syncUserWithFirebase() {
-    if (!db || !userData || !navigator.onLine) return;
+// ====== Save User Data ======
+async function saveUserData() {
+    if (!userData) return;
     
-    try {
-        console.log("🔄 Syncing user with Firebase...");
-        userData.lastSync = new Date().toISOString();
-        await db.collection('users').doc(userId).set(userData, { merge: true });
-        await saveToIndexedDB(STORES.USERS, userData);
-        console.log("✅ Sync completed");
-    } catch (error) {
-        console.error("Error syncing with Firebase:", error);
+    // حفظ في localStorage
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    // حفظ في Firebase (إذا كان متاحاً)
+    if (db) {
+        try {
+            await db.collection('users').doc(userId).set(userData, { merge: true });
+        } catch (error) {
+            console.error("Error saving to Firebase:", error);
+        }
     }
 }
 
 // ====== Load Prices Once ======
 async function loadPricesOnce() {
-    const cachedPrices = await getFromIndexedDB(STORES.PRICES, 'all');
-    
-    if (cachedPrices && Date.now() - cachedPrices.timestamp < 3600000) {
-        livePrices = cachedPrices.data;
-        renderTopCryptos();
-        renderAssets();
-        updateTotalBalance();
-        console.log("📦 Loaded prices from cache");
-        return;
+    // محاولة التحميل من localStorage
+    const cachedPrices = localStorage.getItem('cachedPrices');
+    if (cachedPrices) {
+        const { data, timestamp } = JSON.parse(cachedPrices);
+        if (Date.now() - timestamp < 3600000) { // أقل من ساعة
+            livePrices = data;
+            renderTopCryptos();
+            renderAssets();
+            updateTotalBalance();
+            console.log("📦 Loaded prices from localStorage");
+            return;
+        }
     }
     
     await fetchLivePrices();
@@ -488,11 +373,11 @@ async function fetchLivePrices() {
             }
         }
         
-        await saveToIndexedDB(STORES.PRICES, {
-            symbol: 'all',
+        // حفظ في localStorage
+        localStorage.setItem('cachedPrices', JSON.stringify({
             data: livePrices,
             timestamp: Date.now()
-        });
+        }));
         
         renderTopCryptos();
         renderAssets();
@@ -526,8 +411,6 @@ function getReferralLink() {
 // ====== Process Referral ======
 async function processReferral() {
     try {
-        console.log("🔍 Checking for referral...");
-        
         const urlParams = new URLSearchParams(window.location.search);
         let referralCode = urlParams.get('start') || urlParams.get('ref');
         
@@ -569,7 +452,7 @@ async function processReferral() {
         userData.referredBy = referralCode;
         userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
         
-        await saveToIndexedDB(STORES.USERS, userData);
+        await saveUserData();
         
         const referralTx = {
             id: 'ref_' + Date.now() + Math.random().toString(36).substr(2, 5),
@@ -616,7 +499,7 @@ async function addNotification(userId, message, type = 'info') {
         if (userId === userData?.userId) {
             userData.notifications = userData.notifications || [];
             userData.notifications.push(notification);
-            await saveToIndexedDB(STORES.USERS, userData);
+            await saveUserData();
             updateNotificationBadge();
             showToast(message, type);
         }
@@ -1000,7 +883,7 @@ async function markNotificationRead(notificationId) {
             });
         }
         
-        await saveToIndexedDB(STORES.USERS, userData);
+        await saveUserData();
         renderNotifications();
     }
 }
@@ -1114,7 +997,7 @@ async function claimStakingReward(startDate) {
         await db.collection('transactions').add(transaction);
     }
     
-    await saveToIndexedDB(STORES.USERS, userData);
+    await saveUserData();
     
     showToast(`Claimed ${reward.toFixed(2)} USDT rewards!`, 'success');
     updateStakingStats();
@@ -1140,10 +1023,8 @@ function updateSwapBalances() {
     if (!userData) return;
     
     const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
-    document.getElementById('receiveBalance').textContent = `Balance: ${formatBalance(userData.balances[receiveCurrency] || 0, receiveCurrency)}`;
 }
 
 // ====== Update Notification Badge ======
@@ -1296,7 +1177,7 @@ async function stakeUSDT() {
         await db.collection('transactions').add(transaction);
     }
     
-    await saveToIndexedDB(STORES.USERS, userData);
+    await saveUserData();
     
     showToast(`Successfully staked ${amount} USDT for ${selectedStakingPlan.days} days!`, 'success');
     document.getElementById('stakeAmount').value = '';
@@ -1343,7 +1224,7 @@ async function claimStakingMission(missionId) {
         await db.collection('transactions').add(transaction);
     }
     
-    await saveToIndexedDB(STORES.USERS, userData);
+    await saveUserData();
     
     showToast(`Claimed ${reward} USDT!`, 'success');
     renderStakingMissions();
@@ -1389,7 +1270,7 @@ async function claimReferralMilestone(referrals) {
         await db.collection('transactions').add(transaction);
     }
     
-    await saveToIndexedDB(STORES.USERS, userData);
+    await saveUserData();
     
     showToast(`Claimed ${reward} USDT!`, 'success');
     updateReferralStats();
@@ -1404,7 +1285,14 @@ function showCurrencySelector(type) {
     const modal = document.getElementById('currencySelectorModal');
     const currencyList = document.getElementById('currencyList');
     
-    currencyList.innerHTML = SWAP_CURRENCIES.map(curr => `
+    // للـ PAY: نعرض كل العملات
+    // للـ RECEIVE: نعرض REFI فقط (لأنه الثابت)
+    let currencies = SWAP_CURRENCIES;
+    if (type === 'receive') {
+        currencies = SWAP_CURRENCIES.filter(c => c.symbol === 'REFI');
+    }
+    
+    currencyList.innerHTML = currencies.map(curr => `
         <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
             <img src="${curr.icon}" alt="${curr.symbol}">
             <div class="currency-list-info">
@@ -1423,23 +1311,24 @@ function selectCurrency(symbol) {
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        document.getElementById('receiveCurrency').textContent = 'USDT';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
-        swapMode = 'to-usdt';
-    } else {
-        if (symbol === 'USDT' || symbol === 'REFI') {
-            document.getElementById('receiveCurrency').textContent = symbol;
-            document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
-        } else {
-            showToast('You can only receive USDT or REFI', 'warning');
-            return;
-        }
+        // العملة المستقبلة ثابتة: REFI
+        document.getElementById('receiveCurrency').textContent = 'REFI';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
     }
     
     closeModal('currencySelectorModal');
     updateSwapNote();
     calculateSwap();
     updateSwapBalances();
+}
+
+// ====== Set Max Amount ======
+function setMaxAmount() {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const balance = userData.balances[payCurrency] || 0;
+    document.getElementById('payAmount').value = balance;
+    calculateSwap();
+    animateElement('.max-btn', 'pop');
 }
 
 // ====== Update Swap Note ======
@@ -1452,16 +1341,13 @@ function updateSwapNote() {
     if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
         swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
         swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
-    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
-        swapNote.textContent = 'You can swap REFI to USDT at fixed rate';
-        swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
     } else {
-        swapNote.textContent = `You can swap ${payCurrency} to USDT at market rate`;
+        swapNote.textContent = `You can swap ${payCurrency} to REFI at market rate`;
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
         if (payPrice > 0) {
-            const rate = payPrice;
-            swapRate.textContent = `1 ${payCurrency} = $${rate.toFixed(6)}`;
+            const rate = payPrice / REFI_PRICE;
+            swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(0)} REFI`;
         } else {
             swapRate.textContent = `Rate will be calculated based on current market price`;
         }
@@ -1489,30 +1375,6 @@ function filterCurrencies() {
     `).join('');
 }
 
-// ====== Flip Swap Pair ======
-function flipSwapPair() {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    
-    if ((payCurrency === 'USDT' && receiveCurrency === 'REFI') || 
-        (payCurrency === 'REFI' && receiveCurrency === 'USDT')) {
-        document.getElementById('payCurrency').textContent = receiveCurrency;
-        document.getElementById('receiveCurrency').textContent = payCurrency;
-        document.getElementById('payCurrencyIcon').src = getCurrencyIcon(receiveCurrency);
-        document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(payCurrency);
-        
-        swapMode = swapMode === 'to-usdt' ? 'to-refi' : 'to-usdt';
-    } else {
-        showToast('Cannot flip this pair', 'warning');
-        return;
-    }
-    
-    updateSwapNote();
-    calculateSwap();
-    updateSwapBalances();
-    animateElement('.swap-flip-btn', 'pop');
-}
-
 // ====== Calculate Swap ======
 function calculateSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
@@ -1522,15 +1384,12 @@ function calculateSwap() {
     if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
         const receiveAmount = payAmount * SWAP_RATE;
         document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
-    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
-        const receiveAmount = payAmount / SWAP_RATE;
-        document.getElementById('receiveAmount').value = receiveAmount.toFixed(6);
     } else {
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
         if (payPrice > 0) {
-            const receiveAmount = payAmount * payPrice;
-            document.getElementById('receiveAmount').value = receiveAmount.toFixed(2);
+            const receiveAmount = (payAmount * payPrice) / REFI_PRICE;
+            document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
         } else {
             document.getElementById('receiveAmount').value = '0';
         }
@@ -1555,8 +1414,8 @@ async function confirmSwap() {
         return;
     }
     
-    if (receiveCurrency !== 'REFI' && receiveCurrency !== 'USDT') {
-        showToast('You can only swap to REFI or USDT', 'error');
+    if (receiveCurrency !== 'REFI') {
+        showToast('You can only swap to REFI', 'error');
         return;
     }
     
@@ -1584,7 +1443,7 @@ async function confirmSwap() {
         await db.collection('transactions').add(transaction);
     }
     
-    await saveToIndexedDB(STORES.USERS, userData);
+    await saveUserData();
     
     showToast(`Swapped ${payAmount} ${payCurrency} to ${receiveAmount} ${receiveCurrency}`, 'success');
     
@@ -1644,56 +1503,11 @@ function setupFinancialRealtimeListener() {
                         userData.transactions.push(tx);
                     }
                     
-                    await saveToIndexedDB(STORES.USERS, userData);
+                    await saveUserData();
                     updateUI();
                 }
             });
         });
-}
-
-// ====== Start Periodic Sync ======
-function startPeriodicSync() {
-    if (syncTimer) {
-        clearInterval(syncTimer);
-    }
-    
-    syncTimer = setInterval(async () => {
-        if (navigator.onLine) {
-            console.log("🔄 Running periodic sync...");
-            await syncUserWithFirebase();
-            await loadPricesOnce();
-        }
-    }, 3600000);
-    
-    setInterval(async () => {
-        if (navigator.onLine) {
-            console.log("🔄 Running full daily sync...");
-            await loadUserDataFromFirebase();
-        }
-    }, 86400000);
-}
-
-// ====== Setup Pull to Refresh ======
-function setupPullToRefresh() {
-    const container = document.querySelector('.app-container');
-    let startY = 0;
-    
-    container.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    }, { passive: true });
-    
-    container.addEventListener('touchmove', (e) => {
-        if (container.scrollTop === 0 && e.touches[0].clientY - startY > 50) {
-            showToast('Release to refresh', 'info');
-        }
-    }, { passive: true });
-    
-    container.addEventListener('touchend', (e) => {
-        if (container.scrollTop === 0 && e.changedTouches[0].clientY - startY > 50) {
-            refreshPrices();
-            syncUserWithFirebase();
-        }
-    });
 }
 
 // ====== Show Toast ======
@@ -1789,7 +1603,7 @@ function updateDepositInfo() {
     
     if (depositIcon) depositIcon.src = getCurrencyIcon(currency);
     depositAddress.textContent = DEPOSIT_ADDRESSES[currency] || DEPOSIT_ADDRESSES.REFI;
-    addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || '✓ Blockchain confirmation 1-5 minutes'}</span>`;
+    addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>✓ Blockchain confirmation 1-5 minutes</span>`;
     
     const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
     if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE') {
@@ -1846,7 +1660,7 @@ async function submitDeposit() {
         }
         
         userData.transactions.push(depositRequest);
-        await saveToIndexedDB(STORES.USERS, userData);
+        await saveUserData();
         
         showToast('Deposit request submitted! Waiting for admin approval.', 'success');
         closeModal('depositModal');
@@ -2016,9 +1830,11 @@ function isAdmin() {
 }
 
 function addAdminCrown() {
+    // التأكد من أن العنصر موجود
     setTimeout(() => {
         const header = document.querySelector('.header-actions');
         if (header) {
+            // إزالة أي تاج موجود مسبقاً
             const existingCrown = document.getElementById('adminCrownBtn');
             if (existingCrown) existingCrown.remove();
             
@@ -2028,8 +1844,12 @@ function addAdminCrown() {
             adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
             adminBtn.onclick = showAdminPanel;
             header.appendChild(adminBtn);
+            console.log("👑 Admin crown added successfully");
+        } else {
+            console.log("❌ Header not found, retrying...");
+            setTimeout(addAdminCrown, 500);
         }
-    }, 1500);
+    }, 1000);
 }
 
 function showAdminPanel() {
