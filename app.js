@@ -243,10 +243,15 @@ async function initApp() {
         setupScrollListener();
         setupRealtimeListeners();
         
-        if (isAdmin()) {
-            console.log("👑 Admin detected, adding crown");
-            addAdminCrown();
-        }
+        // ✅ التحقق من المشرف وإضافة التاج (مع تأخير للتأكد من تحميل DOM)
+        setTimeout(() => {
+            if (isAdmin()) {
+                console.log("👑 Admin detected, adding crown");
+                addAdminCrown();
+            } else {
+                console.log("👤 Regular user, userId:", userId);
+            }
+        }, 1500);
         
         appInitialized = true;
         console.log("✅ App initialized successfully");
@@ -1568,17 +1573,20 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== Set Max Amount (لزر MAX) ======
-function setMaxAmount() {
+// ====== Set Max Amount (لزر MAX) - معدلة للتأكد من العمل ======
+window.setMaxAmount = function() {
+    console.log("setMaxAmount called");
     const payCurrency = document.getElementById('payCurrency').textContent;
     const balance = userData.balances[payCurrency] || 0;
     document.getElementById('payAmount').value = balance;
     calculateSwap();
     animateElement('.max-btn', 'pop');
+    showToast(`Max amount set: ${balance} ${payCurrency}`, 'info');
 }
 
 // ====== Swap Direction (للأزرار ⬇️ و ⬆️) ======
-function swapDirection(direction) {
+window.swapDirection = function(direction) {
+    console.log("swapDirection called:", direction);
     if (direction === 'down') {
         // USDT → REFI
         document.getElementById('payCurrency').textContent = 'USDT';
@@ -1924,15 +1932,19 @@ function showStakingDetails(type) {
     modal.classList.add('show');
 }
 
-// ====== Admin Functions ======
+// ====== Admin Functions with better error handling ======
 function isAdmin() {
     return userId === ADMIN_ID;
 }
 
+// ✅ دالة مضمنة لإضافة التاج (مع إعادة محاولة)
 function addAdminCrown() {
-    setTimeout(() => {
+    console.log("Attempting to add admin crown...");
+    
+    const tryAddCrown = () => {
         const header = document.querySelector('.header-actions');
         if (header) {
+            // إزالة أي تاج موجود مسبقاً
             const existingCrown = document.getElementById('adminCrownBtn');
             if (existingCrown) existingCrown.remove();
             
@@ -1941,10 +1953,26 @@ function addAdminCrown() {
             adminBtn.className = 'icon-btn';
             adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
             adminBtn.onclick = showAdminPanel;
+            adminBtn.title = 'Admin Panel';
             header.appendChild(adminBtn);
-            console.log("👑 Admin crown added");
+            console.log("👑 Admin crown added successfully");
+            return true;
         }
-    }, 1500);
+        return false;
+    };
+    
+    // محاولة الإضافة فوراً
+    if (tryAddCrown()) return;
+    
+    // إذا فشلت، نعيد المحاولة بعد تأخير
+    let attempts = 0;
+    const maxAttempts = 5;
+    const interval = setInterval(() => {
+        attempts++;
+        if (tryAddCrown() || attempts >= maxAttempts) {
+            clearInterval(interval);
+        }
+    }, 500);
 }
 
 function showAdminPanel() {
