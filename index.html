@@ -15,28 +15,20 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Animate.css للتأثيرات الحية -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- شاشة التحميل بتأثير النبض المتوهج المحسن -->
+        <!-- شاشة التحميل -->
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
-                <div class="splash-glow-container">
-                    <div class="splash-glow-circle"></div>
-                    <div class="splash-glow-circle delay-1"></div>
-                    <div class="splash-glow-circle delay-2"></div>
-                    <div class="splash-glow-core">
-                        <i class="fa-solid fa-bolt fa-beat-fade"></i>
-                    </div>
+                <div class="splash-logo">
+                    <i class="fa-solid fa-bolt float-slow"></i>
                 </div>
-                <h1 class="splash-title animate__animated animate__pulse animate__infinite">REFI Network</h1>
+                <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v6.0.0</div>
+                <div class="splash-version">v6.5.0</div>
             </div>
         </div>
 
@@ -44,40 +36,39 @@
         <main id="mainContent" style="display: none;">
             <!-- قسم المحفظة -->
             <div id="walletSection">
-                <!-- الهيدر مع تأثير حي -->
-                <div class="header animate__animated animate__fadeInDown">
+                <!-- الهيدر -->
+                <div class="header">
                     <div class="welcome-text">
                         <span class="welcome-title">Welcome back,</span>
                         <span class="user-name" id="userId">REFI User</span>
                     </div>
                     <div class="header-actions">
                         <button class="icon-btn" onclick="showNotifications()" id="notificationBtn">
-                            <i class="fa-regular fa-bell fa-shake"></i>
+                            <i class="fa-regular fa-bell"></i>
                             <span class="badge" id="notificationBadge">0</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- بطاقة الرصيد مع تأثير حي -->
-                <div class="balance-card animate__animated animate__zoomIn">
-                    <div class="balance-glow"></div>
+                <!-- بطاقة الرصيد (التصميم القديم) -->
+                <div class="balance-card">
                     <div class="balance-label">Total Balance</div>
                     <div class="balance-amount" id="totalBalance">$0.00</div>
                     <div class="balance-actions">
                         <button class="action-btn" onclick="showDepositModal()">
-                            <i class="fa-regular fa-circle-down fa-bounce"></i>
+                            <i class="fa-regular fa-circle-down"></i>
                             <span>Deposit</span>
                         </button>
                         <button class="action-btn" onclick="showWithdrawModal()">
-                            <i class="fa-regular fa-circle-up fa-bounce"></i>
+                            <i class="fa-regular fa-circle-up"></i>
                             <span>Withdraw</span>
                         </button>
                         <button class="action-btn" onclick="showHistory()">
-                            <i class="fa-regular fa-clock fa-spin"></i>
+                            <i class="fa-regular fa-clock"></i>
                             <span>History</span>
                         </button>
                         <button class="action-btn" onclick="showP2P()">
-                            <i class="fa-solid fa-handshake fa-shake"></i>
+                            <i class="fa-solid fa-handshake"></i>
                             <span>P2P</span>
                         </button>
                     </div>
@@ -85,41 +76,41 @@
 
                 <!-- عنوان الأصول -->
                 <div class="section-header">
-                    <h3>My Assets <i class="fa-regular fa-star fa-beat" style="color: #ff5ad9;"></i></h3>
+                    <h3>My Assets <i class="fa-regular fa-star" style="color: #ff5ad9;"></i></h3>
                     <button class="see-all-btn" onclick="showAllAssets()">
-                        See All <i class="fa-solid fa-chevron-right fa-beat-fade"></i>
+                        See All <i class="fa-solid fa-chevron-right"></i>
                     </button>
                 </div>
 
-                <!-- قائمة الأصول -->
+                <!-- قائمة الأصول (جميع العملات ظاهرة) -->
                 <div class="assets-list" id="assetsList"></div>
 
-                <!-- العملات مع الأسعار الحية -->
+                <!-- العملات العشر -->
                 <div class="section-header" style="margin-top: 20px;">
-                    <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot fa-beat"></i> LIVE</span></h3>
+                    <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
-                        <i class="fa-solid fa-rotate-right fa-spin"></i>
+                        <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
                 <div class="top-crypto-list" id="topCryptoList">
                     <div class="loading-spinner">
-                        <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading prices...
+                        <i class="fa-solid fa-spinner"></i> Loading prices...
                     </div>
                 </div>
             </div>
 
-            <!-- قسم السواب المحسن -->
+            <!-- قسم السواب -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
-                        <i class="fa-solid fa-chevron-left fa-beat-fade"></i>
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
                     <h3>Swap</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="swap-container">
-                    <div class="swap-card animate__animated animate__fadeInUp">
+                    <div class="swap-card">
                         <!-- أنت تدفع -->
                         <div class="swap-input-card">
                             <div class="swap-label">
@@ -131,17 +122,17 @@
                                 <div class="currency-selector" onclick="showCurrencySelector('pay')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" class="currency-icon" id="payCurrencyIcon">
                                     <span id="payCurrency">USDT</span>
-                                    <i class="fa-solid fa-chevron-down fa-beat-fade"></i>
+                                    <i class="fa-solid fa-chevron-down"></i>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- زر قلب الزوج المحسن -->
+                        <!-- زر قلب الزوج -->
                         <div class="swap-flip-container">
                             <button class="swap-flip-btn" onclick="flipSwapPair()">
-                                <i class="fa-solid fa-arrow-down-wide-short fa-spin"></i>
+                                <i class="fa-solid fa-arrow-down-wide-short"></i>
                                 <span id="swapPairText">USDT ⟷ REFI</span>
-                                <i class="fa-solid fa-arrow-up-wide-short fa-spin"></i>
+                                <i class="fa-solid fa-arrow-up-wide-short"></i>
                             </button>
                         </div>
 
@@ -156,7 +147,7 @@
                                 <div class="currency-selector" onclick="showCurrencySelector('receive')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="currency-icon" id="receiveCurrencyIcon">
                                     <span id="receiveCurrency">REFI</span>
-                                    <i class="fa-solid fa-chevron-down fa-beat-fade"></i>
+                                    <i class="fa-solid fa-chevron-down"></i>
                                 </div>
                             </div>
                         </div>
@@ -175,13 +166,13 @@
 
                         <!-- ملاحظة السواب -->
                         <div class="swap-note info">
-                            <i class="fa-solid fa-circle-info fa-beat"></i>
-                            <span id="swapNote">You can swap any token to USDT or REFI only</span>
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span id="swapNote">You can swap any token to REFI</span>
                         </div>
 
                         <!-- زر التأكيد -->
                         <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
-                            <i class="fa-regular fa-circle-check fa-bounce"></i>
+                            <i class="fa-regular fa-circle-check"></i>
                             Confirm Swap
                         </button>
                     </div>
@@ -192,14 +183,14 @@
             <div id="stakingSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
-                        <i class="fa-solid fa-chevron-left fa-beat-fade"></i>
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
                     <h3>Staking</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="staking-header">
-                    <span class="staking-title glow-text">USDT REWARDS <i class="fa-regular fa-gem fa-spin"></i></span>
+                    <span class="staking-title">USDT REWARDS</span>
                 </div>
 
                 <!-- إحصائيات الستيكينغ -->
@@ -248,14 +239,14 @@
                     </div>
 
                     <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">
-                        <i class="fa-regular fa-lock fa-bounce"></i>
+                        <i class="fa-regular fa-lock"></i>
                         Stake USDT
                     </button>
                 </div>
 
                 <!-- الستيكات النشطة -->
                 <div class="active-stakes-header">
-                    <h4>Active Stakes <i class="fa-regular fa-clock fa-spin"></i></h4>
+                    <h4>Active Stakes</h4>
                     <span class="count-badge" id="activeStakesCount">0</span>
                 </div>
                 <div class="active-stakes" id="activeStakes"></div>
@@ -264,7 +255,7 @@
                 <div class="staking-missions">
                     <div class="section-header">
                         <h3>STAKING MISSIONS</h3>
-                        <span class="mission-badge"><i class="fa-regular fa-gift fa-beat"></i> BONUS</span>
+                        <span class="mission-badge"><i class="fa-regular fa-gift"></i> BONUS</span>
                     </div>
                     <div class="missions-grid" id="stakingMissions"></div>
                 </div>
@@ -274,14 +265,14 @@
             <div id="referralSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
-                        <i class="fa-solid fa-chevron-left fa-beat-fade"></i>
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
                     <h3>Referrals</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="referral-header">
-                    <span class="referral-title glow-text">EARN USDT <i class="fa-regular fa-star fa-spin"></i></span>
+                    <span class="referral-title">EARN USDT</span>
                 </div>
 
                 <div class="referral-stats">
@@ -304,16 +295,16 @@
                     <div class="link-container">
                         <input type="text" class="referral-link" id="referralLink" readonly>
                         <button class="copy-btn" onclick="copyReferralLink()">
-                            <i class="fa-regular fa-copy fa-beat"></i>
+                            <i class="fa-regular fa-copy"></i>
                         </button>
                         <button class="share-btn" onclick="shareReferral()">
-                            <i class="fa-regular fa-share-from-square fa-beat"></i>
+                            <i class="fa-regular fa-share-from-square"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="referral-description">
-                    <i class="fa-regular fa-star fa-spin"></i>
+                    <i class="fa-regular fa-star"></i>
                     <p>Share your link and get <span class="highlight">250,000 REFI</span> for every friend who joins. Complete milestones to earn massive USDT rewards!</p>
                 </div>
 
@@ -328,33 +319,31 @@
         <!-- القائمة السفلية -->
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" onclick="showWallet()">
-                <i class="fa-solid fa-wallet fa-beat"></i>
+                <i class="fa-solid fa-wallet"></i>
                 <span>Wallet</span>
             </button>
             <button class="nav-item" onclick="showSwap()">
-                <i class="fa-solid fa-arrow-right-arrow-left fa-spin"></i>
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
                 <span>Swap</span>
             </button>
             <button class="nav-item" onclick="showStaking()">
-                <i class="fa-solid fa-lock fa-shake"></i>
+                <i class="fa-solid fa-lock"></i>
                 <span>Staking</span>
             </button>
             <button class="nav-item" onclick="showReferral()">
-                <i class="fa-solid fa-users fa-beat-fade"></i>
+                <i class="fa-solid fa-users"></i>
                 <span>Referral</span>
             </button>
         </nav>
     </div>
 
-    <!-- ====== MODALS ====== -->
-
-    <!-- نافذة الإيداع المحسنة -->
+    <!-- نافذة الإيداع -->
     <div id="depositModal" class="modal">
-        <div class="modal-content animate__animated animate__fadeInUp">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Deposit Funds</h3>
                 <button class="close-btn" onclick="closeModal('depositModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -383,25 +372,25 @@
                     <input type="text" id="txnId" class="form-input" placeholder="Enter transaction ID">
                 </div>
                 
-                <!-- عنوان الإيداع مع النص الجديد -->
+                <!-- عنوان الإيداع -->
                 <div class="deposit-address-card">
                     <div class="address-header">
                         <p>Send to this address:</p>
                         <button class="copy-address-btn" onclick="copyDepositAddress()">
-                            <i class="fa-regular fa-copy fa-beat"></i> Copy
+                            <i class="fa-regular fa-copy"></i> Copy
                         </button>
                     </div>
                     <div class="address-container" id="depositAddressContainer">
                         <code id="depositAddress">0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
                     </div>
                     <div class="address-note" id="depositAddressNote">
-                        <i class="fa-regular fa-circle-check fa-beat"></i>
+                        <i class="fa-regular fa-circle-check"></i>
                         <span>✓ Blockchain confirmation 1-5 minutes</span>
                     </div>
                 </div>
                 
                 <button class="modal-btn" onclick="submitDeposit()">
-                    <i class="fa-regular fa-circle-down fa-bounce"></i>
+                    <i class="fa-regular fa-circle-down"></i>
                     Submit Deposit
                 </button>
             </div>
@@ -410,11 +399,11 @@
 
     <!-- نافذة السحب -->
     <div id="withdrawModal" class="modal">
-        <div class="modal-content animate__animated animate__fadeInUp">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Withdraw Funds</h3>
                 <button class="close-btn" onclick="closeModal('withdrawModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -440,7 +429,7 @@
                 
                 <!-- تحذير الرسوم -->
                 <div id="feeWarning" class="fee-warning hidden">
-                    <i class="fa-solid fa-circle-exclamation fa-shake"></i>
+                    <i class="fa-solid fa-circle-exclamation"></i>
                     <span id="feeWarningText">This withdrawal requires a fee</span>
                 </div>
                 
@@ -457,20 +446,20 @@
                 </div>
                 
                 <button class="modal-btn" onclick="submitWithdraw()">
-                    <i class="fa-regular fa-circle-up fa-bounce"></i>
+                    <i class="fa-regular fa-circle-up"></i>
                     Submit Withdrawal
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة التاريخ المحسنة -->
+    <!-- نافذة التاريخ -->
     <div id="historyModal" class="modal">
-        <div class="modal-content history-modal animate__animated animate__fadeInUp">
+        <div class="modal-content history-modal">
             <div class="modal-header">
-                <h3>Transaction History <i class="fa-regular fa-clock fa-spin"></i></h3>
+                <h3>Transaction History</h3>
                 <button class="close-btn" onclick="closeModal('historyModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -484,7 +473,7 @@
                 </div>
                 <div class="history-list" id="historyList">
                     <div class="loading-spinner">
-                        <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading history...
+                        <i class="fa-solid fa-spinner"></i> Loading history...
                     </div>
                 </div>
             </div>
@@ -493,11 +482,11 @@
 
     <!-- نافذة الإشعارات -->
     <div id="notificationsModal" class="modal">
-        <div class="modal-content notifications-modal animate__animated animate__fadeInUp">
+        <div class="modal-content notifications-modal">
             <div class="modal-header">
-                <h3>Notifications <i class="fa-regular fa-bell fa-shake"></i></h3>
+                <h3>Notifications</h3>
                 <button class="close-btn" onclick="closeModal('notificationsModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -506,68 +495,68 @@
         </div>
     </div>
 
-    <!-- ====== ADMIN PANEL - صفحة المشرف المحسنة ====== -->
+    <!-- ADMIN PANEL -->
     <div id="adminPanel" class="admin-panel hidden">
         <div class="admin-header">
             <div class="admin-header-content">
-                <h2><i class="fa-solid fa-crown fa-spin" style="color: gold;"></i> Admin Dashboard</h2>
+                <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
                 <button class="admin-close-btn" onclick="closeAdminPanel()">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="admin-stats" id="adminStats">
-                <div class="admin-stat-card animate__animated animate__fadeInUp">
+                <div class="admin-stat-card">
                     <span class="admin-stat-label">Total Users</span>
                     <span class="admin-stat-value" id="totalUsers">0</span>
                 </div>
-                <div class="admin-stat-card animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="admin-stat-card">
                     <span class="admin-stat-label">Pending</span>
                     <span class="admin-stat-value" id="pendingCount">0</span>
                 </div>
-                <div class="admin-stat-card animate__animated animate__fadeInUp animate__delay-2s">
+                <div class="admin-stat-card">
                     <span class="admin-stat-label">Approved</span>
                     <span class="admin-stat-value" id="approvedCount">0</span>
                 </div>
-                <div class="admin-stat-card animate__animated animate__fadeInUp animate__delay-3s">
+                <div class="admin-stat-card">
                     <span class="admin-stat-label">Total Referrals</span>
                     <span class="admin-stat-value" id="totalReferralsCount">0</span>
                 </div>
             </div>
             <div class="admin-tabs">
                 <button class="admin-tab active" onclick="showAdminTab('deposits')">
-                    <i class="fa-regular fa-circle-down fa-beat"></i> Deposits
+                    <i class="fa-regular fa-circle-down"></i> Deposits
                 </button>
                 <button class="admin-tab" onclick="showAdminTab('withdrawals')">
-                    <i class="fa-regular fa-circle-up fa-beat"></i> Withdrawals
+                    <i class="fa-regular fa-circle-up"></i> Withdrawals
                 </button>
                 <button class="admin-tab" onclick="showAdminTab('completed')">
-                    <i class="fa-regular fa-circle-check fa-beat"></i> Completed
+                    <i class="fa-regular fa-circle-check"></i> Completed
                 </button>
                 <button class="admin-tab" onclick="showAdminTab('rejected')">
-                    <i class="fa-regular fa-circle-xmark fa-beat"></i> Rejected
+                    <i class="fa-regular fa-circle-xmark"></i> Rejected
                 </button>
             </div>
         </div>
         
         <div class="admin-content" id="adminContent">
             <div class="loading-spinner">
-                <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading admin panel...
+                <i class="fa-solid fa-spinner"></i> Loading admin panel...
             </div>
         </div>
     </div>
 
     <!-- نافذة اختيار العملة -->
     <div id="currencySelectorModal" class="modal currency-modal">
-        <div class="modal-content animate__animated animate__fadeInUp">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Select Currency</h3>
                 <button class="close-btn" onclick="closeModal('currencySelectorModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="currency-search">
-                    <i class="fa-solid fa-search fa-beat"></i>
+                    <i class="fa-solid fa-search"></i>
                     <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
                 </div>
                 <div class="currency-list" id="currencyList"></div>
@@ -577,33 +566,33 @@
 
     <!-- نافذة P2P Coming Soon -->
     <div id="p2pModal" class="modal">
-        <div class="modal-content p2p-modal animate__animated animate__fadeInUp">
+        <div class="modal-content p2p-modal">
             <div class="modal-header">
                 <h3>P2P Trading</h3>
                 <button class="close-btn" onclick="closeModal('p2pModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body p2p-body">
                 <div class="p2p-icon">
-                    <i class="fa-solid fa-handshake fa-beat"></i>
+                    <i class="fa-solid fa-handshake"></i>
                 </div>
-                <h2 class="p2p-title animate__animated animate__pulse animate__infinite">Coming Soon!</h2>
+                <h2 class="p2p-title">Coming Soon!</h2>
                 <p class="p2p-text">
                     We're working hard to bring you the best P2P trading experience. 
                     Stay tuned for exciting updates!
                 </p>
                 <div class="p2p-features">
                     <div class="feature-item">
-                        <i class="fa-regular fa-circle-check fa-beat"></i>
+                        <i class="fa-regular fa-circle-check"></i>
                         <span>Trade directly with others</span>
                     </div>
                     <div class="feature-item">
-                        <i class="fa-regular fa-circle-check fa-beat"></i>
+                        <i class="fa-regular fa-circle-check"></i>
                         <span>Best exchange rates</span>
                     </div>
                     <div class="feature-item">
-                        <i class="fa-regular fa-circle-check fa-beat"></i>
+                        <i class="fa-regular fa-circle-check"></i>
                         <span>Secure escrow system</span>
                     </div>
                 </div>
@@ -620,28 +609,28 @@
 
     <!-- نافذة تفاصيل الستيكينغ -->
     <div id="stakingDetailsModal" class="modal">
-        <div class="modal-content animate__animated animate__fadeInUp">
+        <div class="modal-content">
             <div class="modal-header">
                 <h3>Staking Details</h3>
                 <button class="close-btn" onclick="closeModal('stakingDetailsModal')">
-                    <i class="fa-solid fa-times fa-spin"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body" id="stakingDetailsBody"></div>
         </div>
     </div>
 
-    <!-- إشعار منبثق محسن -->
+    <!-- إشعار منبثق -->
     <div id="toast" class="toast hidden">
         <div class="toast-content">
-            <i class="fa-regular fa-circle-check fa-beat"></i>
+            <i class="fa-regular fa-circle-check"></i>
             <span id="toastMessage">Message</span>
         </div>
     </div>
 
     <!-- زر العودة للأعلى -->
     <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
-        <i class="fa-solid fa-arrow-up fa-bounce"></i>
+        <i class="fa-solid fa-arrow-up"></i>
     </button>
 
     <script src="app.js"></script>
