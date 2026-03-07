@@ -324,7 +324,7 @@ body {
     font-weight: 600;
 }
 
-/* ====== بطاقة الرصيد (التصميم القديم - أبيض مع توهج) ====== */
+/* ====== بطاقة الرصيد ====== */
 .balance-card {
     background: var(--gradient-dark);
     margin: 15px 20px;
@@ -512,7 +512,7 @@ body {
     animation: pulseSlow 2s infinite;
 }
 
-/* ====== قائمة الأصول (فقط 8 عملات قابلة للإيداع) ====== */
+/* ====== قائمة الأصول ====== */
 .assets-list {
     padding: 0 20px;
     display: flex;
@@ -632,7 +632,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* ====== قائمة العملات العشر (للعرض فقط) ====== */
+/* ====== قائمة العملات العشر ====== */
 .top-crypto-list {
     padding: 0 20px;
     display: flex;
@@ -868,6 +868,12 @@ body {
     font-size: 14px;
 }
 
+.balance-with-max {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .balance-text {
     color: var(--pink-1);
     font-size: 13px;
@@ -875,6 +881,30 @@ body {
     background: rgba(255, 90, 217, 0.1);
     padding: 3px 8px;
     border-radius: 15px;
+}
+
+/* زر MAX الجديد */
+.max-btn {
+    background: var(--gradient-pink);
+    border: none;
+    border-radius: 12px;
+    padding: 3px 10px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px var(--pink-glow);
+}
+
+.max-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--pink-glow-strong);
+}
+
+.max-btn:active {
+    transform: scale(0.95);
 }
 
 .swap-input-group {
@@ -933,52 +963,23 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-/* زر قلب الزوج */
-.swap-flip-container {
-    display: flex;
-    justify-content: center;
+/* سهم التحويل */
+.swap-arrow {
+    text-align: center;
     margin: 5px 0;
-    position: relative;
-    z-index: 2;
 }
 
-.swap-flip-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid var(--pink-1);
-    padding: 10px 20px;
-    border-radius: 30px;
+.swap-arrow i {
+    background: var(--bg-card);
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: all 0.4s ease;
+    justify-content: center;
     color: var(--pink-1);
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 0 20px var(--pink-glow);
-    backdrop-filter: var(--blur-bg);
-}
-
-.swap-flip-btn i {
-    font-size: 16px;
-    transition: all 0.4s ease;
-}
-
-.swap-flip-btn:hover {
-    background: var(--gradient-pink);
-    color: white;
-    transform: scale(1.05);
-    border-color: transparent;
-    box-shadow: 0 0 30px var(--pink-glow-strong);
-}
-
-.swap-flip-btn:hover i {
-    animation: rotateSlow 1s linear infinite;
-    color: white;
-}
-
-.swap-flip-btn:active {
-    transform: scale(0.95);
+    border: 1px solid var(--border-color);
+    animation: floatSlow 3s ease-in-out infinite;
 }
 
 .swap-info {
