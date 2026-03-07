@@ -24,7 +24,7 @@
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
                 <div class="splash-logo">
-                    <i class="fa-solid fa-bolt float-slow"></i>
+                    <i class="fa-solid fa-bolt"></i>
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
@@ -50,7 +50,7 @@
                     </div>
                 </div>
 
-                <!-- بطاقة الرصيد (التصميم القديم) -->
+                <!-- بطاقة الرصيد -->
                 <div class="balance-card">
                     <div class="balance-label">Total Balance</div>
                     <div class="balance-amount" id="totalBalance">$0.00</div>
@@ -82,10 +82,10 @@
                     </button>
                 </div>
 
-                <!-- قائمة الأصول (جميع العملات ظاهرة) -->
+                <!-- قائمة الأصول (8 عملات قابلة للإيداع) -->
                 <div class="assets-list" id="assetsList"></div>
 
-                <!-- العملات العشر -->
+                <!-- العملات العشر (للعرض فقط) -->
                 <div class="section-header" style="margin-top: 20px;">
                     <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
@@ -167,7 +167,7 @@
                         <!-- ملاحظة السواب -->
                         <div class="swap-note info">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span id="swapNote">You can swap any token to REFI</span>
+                            <span id="swapNote">You can swap any token to USDT or REFI</span>
                         </div>
 
                         <!-- زر التأكيد -->
@@ -336,6 +336,8 @@
             </button>
         </nav>
     </div>
+
+    <!-- ====== MODALS ====== -->
 
     <!-- نافذة الإيداع -->
     <div id="depositModal" class="modal">
