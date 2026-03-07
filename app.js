@@ -1,4 +1,28 @@
-// ====== Firebase Configuration ======
+// ============================================
+// REFI WALLET - PROFESSIONAL VERSION 10.0
+// Built on the solid foundation of VIP Mining
+// All features: Deposits, Withdrawals, Swaps, Staking, Referrals
+// Optimized storage: localStorage for speed, Firebase for financials only
+// ============================================
+
+// ============================================
+// 1. TELEGRAM WEBAPP INITIALIZATION
+// ============================================
+let tg = null;
+try {
+    tg = window.Telegram.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+        console.log("✅ Telegram WebApp initialized");
+    }
+} catch (e) {
+    console.log("⚠️ Not in Telegram environment");
+}
+
+// ============================================
+// 2. FIREBASE CONFIGURATION
+// ============================================
 const firebaseConfig = {
     apiKey: "AIzaSyCnnmuZNJxkWTw-GjaP0fz6UpS3NZLF0n8",
     authDomain: "realfinanc-22bfd.firebaseapp.com",
@@ -9,17 +33,28 @@ const firebaseConfig = {
     appId: "1:631107346327:web:2a5405b81783aee7596ed2"
 };
 
-// ====== Initialize Firebase ======
+// Initialize Firebase
 let firebaseApp, db;
-try {
-    firebaseApp = firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    console.log("🔥 Firebase initialized successfully");
-} catch (error) {
-    console.error("Firebase initialization error:", error);
+if (typeof firebase !== 'undefined') {
+    try {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        console.log("✅ Firebase initialized");
+    } catch (error) {
+        console.error("❌ Firebase error:", error);
+    }
 }
 
-// ====== أيقونات العملات الرسمية من CoinMarketCap ======
+// ============================================
+// 3. CONSTANTS & CONFIGURATION
+// ============================================
+const ADMIN_ID = "1653918641";
+const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
+const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
+const REFERRAL_BONUS = 250000; // REFI per referral
+const REFI_PRICE = 0.000002; // سعر REFI الثابت
+
+// أيقونات العملات
 const CMC_ICONS = {
     REFI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png',
     USDT: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
@@ -36,7 +71,7 @@ const CMC_ICONS = {
     TRUMP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35336.png'
 };
 
-// ====== عناوين الإيداع ======
+// عناوين الإيداع
 const DEPOSIT_ADDRESSES = {
     REFI: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
     USDT: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
@@ -49,7 +84,7 @@ const DEPOSIT_ADDRESSES = {
     TRUMP: '3DjcSVxfeP3u4WcV9KniMH11btgThnoGxcx54dMtbfuR'
 };
 
-// ====== الحدود الدنيا للإيداع ======
+// الحدود الدنيا للإيداع
 const DEPOSIT_MINIMUMS = {
     REFI: 500000,
     USDT: 10,
@@ -62,27 +97,17 @@ const DEPOSIT_MINIMUMS = {
     TRUMP: 5
 };
 
-// ====== ملاحظات الإيداع ======
-const DEPOSIT_NOTES = {
-    REFI: '✓ Blockchain confirmation 1-5 minutes',
-    USDT: '✓ Blockchain confirmation 1-5 minutes',
-    BNB: '✓ Blockchain confirmation 1-5 minutes',
-    ETH: '✓ Blockchain confirmation 1-5 minutes',
-    SHIB: '✓ Blockchain confirmation 1-5 minutes',
-    PEPE: '✓ Blockchain confirmation 1-5 minutes',
-    SOL: '✓ Blockchain confirmation 1-5 minutes',
-    TRX: '✓ Blockchain confirmation 1-5 minutes',
-    TRUMP: '✓ Blockchain confirmation 1-5 minutes'
+// رسوم السحب
+const WITHDRAWAL_FEES = {
+    REFI: 0,
+    USDT: 0.00016,
+    BNB: 0.0005
 };
 
-// ====== الروابط الثابتة ======
-const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
-const ADMIN_ID = "1653918641";
-const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
-const REFERRAL_BONUS = 250000; // REFI per referral
-const REFI_PRICE = 0.000002; // سعر REFI الثابت
+// الحد الأدنى لطول TXID
+const MIN_TX_LENGTH = 64;
 
-// ====== معرفات العملات في CoinGecko ======
+// معرفات العملات في CoinGecko
 const CRYPTO_IDS = {
     BTC: 'bitcoin',
     ETH: 'ethereum',
@@ -98,7 +123,7 @@ const CRYPTO_IDS = {
     TRUMP: 'official-trump'
 };
 
-// ====== خطط الستيكينغ ======
+// خطط الستيكينغ
 const STAKING_PLANS = [
     { 
         id: '3days', 
@@ -138,7 +163,7 @@ const STAKING_PLANS = [
     }
 ];
 
-// ====== مهام الستيكينغ ======
+// مهام الستيكينغ
 const STAKING_MISSIONS = [
     { id: '3days', plan: '3 Days', reward: 5, icon: 'fa-clock', claimed: false },
     { id: '7days', plan: '7 Days', reward: 20, icon: 'fa-calendar-week', claimed: false },
@@ -146,7 +171,7 @@ const STAKING_MISSIONS = [
     { id: '30days', plan: '30 Days', reward: 50, icon: 'fa-calendar-check', claimed: false }
 ];
 
-// ====== مهام الإحالة ======
+// مهام الإحالة
 const REFERRAL_MILESTONES = [
     { referrals: 10, reward: 50, unit: 'USDT', icon: 'fa-medal' },
     { referrals: 25, reward: 120, unit: 'USDT', icon: 'fa-medal' },
@@ -155,7 +180,7 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-gem' }
 ];
 
-// ====== قائمة العملات للعرض ======
+// قائمة العملات للعرض
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
@@ -170,7 +195,7 @@ const TOP_CRYPTOS = [
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
-// ====== جميع العملات المتاحة للاختيار في السواب ======
+// العملات المتاحة للسواب
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
     { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
@@ -183,7 +208,7 @@ const SWAP_CURRENCIES = [
     { symbol: 'TRUMP', name: 'Trump Coin', icon: CMC_ICONS.TRUMP }
 ];
 
-// ====== قائمة الأصول ======
+// قائمة الأصول
 const ALL_ASSETS = [
     { symbol: 'REFI', name: 'REFI Network' },
     { symbol: 'USDT', name: 'Tether' },
@@ -196,66 +221,78 @@ const ALL_ASSETS = [
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
-// ====== State Management ======
-let userData = null;
-let selectedStakingPlan = STAKING_PLANS[0];
-let swapMode = 'to-usdt';
+// ============================================
+// 4. STATE MANAGEMENT
+// ============================================
+let userData = {
+    userId: null,
+    userName: 'REFI User',
+    balances: {
+        REFI: 0,
+        USDT: 0,
+        BNB: 0,
+        BTC: 0,
+        ETH: 0,
+        SOL: 0,
+        ADA: 0,
+        DOGE: 0,
+        SHIB: 0,
+        PEPE: 0,
+        TON: 0,
+        TRX: 0,
+        TRUMP: 0
+    },
+    referralCode: null,
+    referredBy: null,
+    referrals: [],
+    referralCount: 0,
+    staking: [],
+    stakingMissions: [],
+    referralMilestones: [],
+    transactions: [],
+    notifications: [],
+    totalRefiEarned: 0,
+    totalUsdtEarned: 0,
+    lastSaveTime: Date.now(),
+    createdAt: null,
+    isInitialized: false
+};
+
+let walletData = {
+    pendingDeposits: [],
+    pendingWithdrawals: [],
+    usedTransactions: [],
+    depositHistory: [],
+    withdrawalHistory: []
+};
+
 let livePrices = {};
 let unreadNotifications = 0;
-let currentCurrencySelector = 'pay';
-let currentHistoryFilter = 'all';
+let selectedStakingPlan = STAKING_PLANS[0];
+let swapDirection = 'to-refi';
 let appInitialized = false;
+let lastFirebaseSaveTime = Date.now();
 
-// ====== Initialize Telegram Web App ======
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-tg.enableClosingConfirmation();
-
-const userId = tg.initDataUnsafe?.user?.id?.toString() || 'guest_' + Math.random().toString(36).substr(2, 9);
-const userName = tg.initDataUnsafe?.user?.first_name || 'REFI User';
-document.getElementById('userId').textContent = userName;
-
-// ====== Initialize App with guaranteed splash screen hide ======
+// ============================================
+// 5. INITIALIZATION
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    // إضافة التاج فوراً
+    // إضافة التاج للمشرف فوراً
     setTimeout(() => {
         checkAdminAndAddCrown();
     }, 300);
     
+    // إخفاء شاشة التحميل بعد 3 ثواني كحد أقصى
     const forceHideSplash = setTimeout(() => {
         hideSplashScreen();
     }, 3000);
     
+    // بدء التطبيق
     initApp().finally(() => {
         clearTimeout(forceHideSplash);
         hideSplashScreen();
     });
 });
-
-async function initApp() {
-    if (appInitialized) return;
-    
-    try {
-        console.log("🚀 Initializing app...");
-        
-        await loadUserData();
-        await loadPricesOnce();
-        renderStakingPlans();
-        renderAssets();
-        renderTopCryptos();
-        updateTotalBalance();
-        updateReferralStats();
-        setupScrollListener();
-        setupRealtimeListeners();
-        
-        appInitialized = true;
-        console.log("✅ App initialized successfully");
-        
-    } catch (error) {
-        console.error("❌ Error initializing app:", error);
-    }
-}
 
 function hideSplashScreen() {
     const splash = document.getElementById('splashScreen');
@@ -268,367 +305,215 @@ function hideSplashScreen() {
     }
 }
 
-// ====== التحقق من المشرف وإضافة التاج ======
-function checkAdminAndAddCrown() {
-    console.log("🔍 Checking admin status...");
-    console.log("User ID:", userId);
-    console.log("Admin ID:", ADMIN_ID);
-    console.log("Is admin?", userId === ADMIN_ID);
+async function initApp() {
+    if (appInitialized) return;
     
-    if (userId === ADMIN_ID) {
-        console.log("👑 Admin confirmed! Adding crown...");
-        addAdminCrown();
-    } else {
-        console.log("👤 Regular user, no crown needed");
-    }
-}
-
-function addAdminCrown() {
-    console.log("👑 Attempting to add admin crown...");
-    
-    const tryAddCrown = () => {
-        const header = document.querySelector('.header-actions');
-        if (!header) {
-            console.log("❌ Header not found");
-            return false;
-        }
-        
-        const existingCrown = document.getElementById('adminCrownBtn');
-        if (existingCrown) existingCrown.remove();
-        
-        const adminBtn = document.createElement('button');
-        adminBtn.id = 'adminCrownBtn';
-        adminBtn.className = 'icon-btn';
-        adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
-        adminBtn.onclick = showAdminPanel;
-        adminBtn.title = 'Admin Panel';
-        header.appendChild(adminBtn);
-        
-        console.log("✅ Admin crown added successfully!");
-        return true;
-    };
-    
-    if (tryAddCrown()) return;
-    
-    let attempts = 0;
-    const maxAttempts = 10;
-    const interval = setInterval(() => {
-        attempts++;
-        console.log(`🔄 Crown attempt ${attempts}/${maxAttempts}`);
-        
-        if (tryAddCrown() || attempts >= maxAttempts) {
-            clearInterval(interval);
-            if (attempts >= maxAttempts) {
-                console.log("❌ Failed to add crown after max attempts");
-            }
-        }
-    }, 500);
-}
-
-// ====== Load User Data ======
-async function loadUserData() {
     try {
-        const localData = localStorage.getItem(`user_${userId}`);
-        if (localData) {
-            userData = JSON.parse(localData);
-        } else {
-            userData = {
-                userId: userId,
-                userName: userName,
-                balances: {
-                    REFI: 0,
-                    USDT: 0,
-                    BNB: 0,
-                    BTC: 0,
-                    ETH: 0,
-                    SOL: 0,
-                    ADA: 0,
-                    DOGE: 0,
-                    SHIB: 0,
-                    PEPE: 0,
-                    TON: 0,
-                    TRX: 0,
-                    TRUMP: 0
-                },
-                referralCode: generateReferralCode(),
-                referredBy: null,
-                referrals: [],
-                referralCount: 0,
-                staking: [],
-                stakingMissions: STAKING_MISSIONS.map(m => ({ ...m, claimed: false })),
-                referralMilestones: REFERRAL_MILESTONES.map(m => ({ ...m, claimed: false })),
-                transactions: [],
-                notifications: [],
-                totalRefiEarned: 0,
-                totalUsdtEarned: 0,
-                lastLogin: new Date().toISOString(),
-                createdAt: new Date().toISOString()
-            };
-            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-        }
+        console.log("🚀 Initializing REFI Wallet...");
         
-        if (db) {
-            const userDoc = await db.collection('users').doc(userId).get();
-            if (userDoc.exists) {
-                const fbData = userDoc.data();
-                userData = { 
-                    ...userData, 
-                    ...fbData,
-                    balances: fbData.balances || userData.balances
-                };
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-            } else {
-                await db.collection('users').doc(userId).set(userData);
-            }
-            
-            setupRealtimeListeners();
-        }
+        await setupUser();
+        await loadUserData();
+        await loadPricesOnce();
         
+        renderStakingPlans();
+        renderAssets();
+        renderTopCryptos();
+        renderReferralMilestones();
         updateUI();
-        await processReferral();
-        updateNotificationBadge();
+        
+        setupRealtimeListeners();
+        setupAutoSave();
+        checkForReferral();
+        
+        appInitialized = true;
+        console.log("✅ App initialized successfully");
+        
     } catch (error) {
-        console.error("Error loading user data:", error);
+        console.error("❌ Error initializing app:", error);
     }
 }
 
-// ====== Generate Unique Referral Code ======
+async function setupUser() {
+    console.log("👤 Setting up user...");
+    
+    let telegramUser = null;
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        telegramUser = tg.initDataUnsafe.user;
+        console.log("📱 Telegram user found:", telegramUser.id);
+    }
+    
+    if (telegramUser) {
+        userData.userId = telegramUser.id.toString();
+        userData.userName = telegramUser.first_name || 'REFI User';
+    } else {
+        const savedUserId = localStorage.getItem('refi_user_id');
+        userData.userId = savedUserId || 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        userData.userName = 'REFI User';
+        
+        if (!savedUserId) {
+            localStorage.setItem('refi_user_id', userData.userId);
+        }
+    }
+    
+    document.getElementById('userId').textContent = userData.userName;
+    
+    if (!userData.referralCode) {
+        userData.referralCode = generateReferralCode();
+    }
+    
+    console.log("✅ User setup complete:", userData.userId);
+}
+
 function generateReferralCode() {
     const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const userPart = userId.substring(0, 4).toUpperCase();
+    const userPart = userData.userId.substring(0, 4).toUpperCase();
     return `REF${randomPart}${userPart}`;
 }
 
-// ====== Get Full Referral Link ======
 function getReferralLink() {
     return `${BOT_LINK}?start=${userData.referralCode}`;
 }
 
-// ====== Process Referral ======
-async function processReferral() {
+// ============================================
+// 6. DATA LOADING & SAVING (localStorage first)
+// ============================================
+async function loadUserData() {
+    console.log("📂 Loading user data...");
+    
     try {
-        console.log("🔍 Checking for referral...");
+        // Load from localStorage first
+        const storageKey = `refi_user_${userData.userId}`;
+        const savedData = localStorage.getItem(storageKey);
         
-        const urlParams = new URLSearchParams(window.location.search);
-        let referralCode = urlParams.get('start') || urlParams.get('ref');
-        
-        if (!referralCode && tg.initDataUnsafe?.start_param) {
-            referralCode = tg.initDataUnsafe.start_param;
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            
+            // Merge saved data with default structure
+            userData = {
+                ...userData,
+                ...parsed,
+                balances: { ...userData.balances, ...parsed.balances }
+            };
+            
+            console.log("✅ Loaded from localStorage");
+        } else {
+            // Initialize new user
+            userData.createdAt = new Date().toISOString();
+            userData.stakingMissions = STAKING_MISSIONS.map(m => ({ ...m, claimed: false }));
+            userData.referralMilestones = REFERRAL_MILESTONES.map(m => ({ ...m, claimed: false }));
+            saveUserData();
+            console.log("📝 New user created");
         }
         
-        if (!referralCode || referralCode === userData.referralCode || userData.referredBy) {
-            return;
+        // Load wallet data
+        const walletKey = `refi_wallet_${userData.userId}`;
+        const savedWallet = localStorage.getItem(walletKey);
+        if (savedWallet) {
+            walletData = { ...walletData, ...JSON.parse(savedWallet) };
         }
         
-        if (!db) return;
-        
-        const referrerQuery = await db.collection('users')
-            .where('referralCode', '==', referralCode)
-            .limit(1)
-            .get();
-        
-        if (referrerQuery.empty) return;
-        
-        const referrerDoc = referrerQuery.docs[0];
-        const referrerId = referrerDoc.id;
-        const referrerData = referrerDoc.data();
-        
-        if (referrerId === userId) return;
-        if (referrerData.referrals && referrerData.referrals.includes(userId)) return;
-        
-        const updatedReferrals = [...(referrerData.referrals || []), userId];
-        const updatedReferralCount = (referrerData.referralCount || 0) + 1;
-        const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
-        
-        await db.collection('users').doc(referrerId).update({
-            referrals: updatedReferrals,
-            referralCount: updatedReferralCount,
-            'balances.REFI': updatedRefiBalance,
-            totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS
-        });
-        
-        userData.referredBy = referralCode;
-        userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
-        
-        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-        
-        await db.collection('users').doc(userId).update({
-            referredBy: referralCode,
-            'balances.REFI': userData.balances.REFI
-        });
-        
-        const referralTransaction = {
-            userId: userId,
-            type: 'referral_bonus',
-            amount: 10000,
-            currency: 'REFI',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-            details: `Welcome bonus from referral`
-        };
-        
-        userData.transactions.push(referralTransaction);
-        await db.collection('transactions').add(referralTransaction);
-        
-        const referrerTransaction = {
-            userId: referrerId,
-            type: 'referral_bonus',
-            amount: REFERRAL_BONUS,
-            currency: 'REFI',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-            details: `Referral bonus from ${userId}`
-        };
-        await db.collection('transactions').add(referrerTransaction);
-        
-        await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`, 'success');
-        await addNotification(userId, `🎉 Welcome! You got 10,000 REFI bonus!`, 'success');
-        
-        showToast(`🎉 Welcome! You got 10,000 REFI bonus!`, 'success');
-        
+        // Update UI with loaded data
         updateUI();
         
     } catch (error) {
-        console.error("Error processing referral:", error);
+        console.error("❌ Error loading user data:", error);
     }
 }
 
-// ====== Add Notification ======
-async function addNotification(userId, message, type = 'info') {
-    if (!db) return;
-    
-    const notification = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
-        message: message,
-        type: type,
-        read: false,
-        timestamp: new Date().toISOString()
-    };
+function saveUserData() {
+    if (!userData.userId) return;
     
     try {
-        await db.collection('users').doc(userId).update({
-            notifications: firebase.firestore.FieldValue.arrayUnion(notification)
-        });
+        const storageKey = `refi_user_${userData.userId}`;
+        userData.lastSaveTime = Date.now();
         
-        if (userId === userData?.userId) {
-            userData.notifications = userData.notifications || [];
-            userData.notifications.push(notification);
-            updateNotificationBadge();
-            showToast(message, type);
-        }
+        localStorage.setItem(storageKey, JSON.stringify(userData));
+        
+        // Save wallet data
+        const walletKey = `refi_wallet_${userData.userId}`;
+        localStorage.setItem(walletKey, JSON.stringify(walletData));
+        
+        console.log("💾 Data saved locally");
+        
     } catch (error) {
-        console.error("Error adding notification:", error);
+        console.error("❌ Error saving user data:", error);
     }
 }
 
-// ====== Copy Referral Link ======
-function copyReferralLink() {
-    const link = getReferralLink();
-    navigator.clipboard.writeText(link);
-    showToast('✅ Referral link copied!', 'success');
-    animateElement('.copy-btn', 'pop');
-}
-
-// ====== Share Referral ======
-function shareReferral() {
-    const link = getReferralLink();
-    const text = `🚀 Join REFI Network and get 10,000 REFI bonus! Use my link: ${link}`;
-    
-    if (tg.shareToStory) {
-        tg.shareToStory(text);
-    } else {
-        navigator.clipboard.writeText(text);
-        showToast('📋 Referral message copied!', 'success');
-    }
-}
-
-// ====== Setup Realtime Listeners (محدث) ======
-function setupRealtimeListeners() {
-    if (!db) return;
-    
-    db.collection('users').doc(userId).onSnapshot((doc) => {
-        if (doc.exists) {
-            const fbData = doc.data();
-            if (fbData.balances) {
-                userData.balances = fbData.balances;
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                updateUI();
-            }
+function setupAutoSave() {
+    // Auto-save every 5 minutes
+    setInterval(() => {
+        if (userData.userId) {
+            saveUserData();
             
-            if (fbData.notifications) {
-                const oldCount = unreadNotifications;
-                userData.notifications = fbData.notifications;
-                unreadNotifications = fbData.notifications.filter(n => !n.read).length;
-                if (oldCount !== unreadNotifications) {
-                    updateNotificationBadge();
-                }
+            // Save to Firebase every hour
+            const now = Date.now();
+            if (db && now - lastFirebaseSaveTime > 3600000) { // 1 hour
+                syncToFirebase();
+                lastFirebaseSaveTime = now;
             }
         }
-    });
+    }, 300000); // 5 minutes
+}
+
+async function syncToFirebase() {
+    if (!db || !userData.userId) return;
     
-    // ✅ تحديث المعاملات في الوقت الفعلي
-    db.collection('transactions')
-        .where('userId', '==', userId)
-        .orderBy('timestamp', 'desc')
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === 'added' || change.type === 'modified') {
-                    const tx = change.doc.data();
-                    
-                    // تحديث أو إضافة المعاملة في userData
-                    const txIndex = userData.transactions.findIndex(t => t.id === tx.id);
-                    if (txIndex >= 0) {
-                        userData.transactions[txIndex] = tx;
-                    } else {
-                        userData.transactions.push(tx);
-                    }
-                    
-                    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                    
-                    // إشعارات حسب حالة المعاملة
-                    if (tx.status === 'approved') {
-                        addNotification(userId, `✅ Your ${tx.type} of ${tx.amount} ${tx.currency} has been approved!`, 'success');
-                        
-                        // تحديث الرصيد عند الموافقة على الإيداع
-                        if (tx.type === 'deposit') {
-                            userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
-                            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                            updateUI();
-                        }
-                    } else if (tx.status === 'rejected') {
-                        const reason = tx.reason || 'No reason provided';
-                        addNotification(userId, `❌ Your ${tx.type} of ${tx.amount} ${tx.currency} was rejected. Reason: ${reason}`, 'error');
-                        
-                        // ✅ إعادة الرصيد عند رفض السحب
-                        if (tx.type === 'withdraw') {
-                            userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
-                            if (tx.fee > 0) {
-                                userData.balances[tx.feeCurrency] = (userData.balances[tx.feeCurrency] || 0) + tx.fee;
-                            }
-                            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                            updateUI();
-                        }
-                    }
-                }
-            });
-            updateUI();
-        });
+    try {
+        const userRef = db.collection('users').doc(userData.userId);
+        await userRef.set({
+            userId: userData.userId,
+            userName: userData.userName,
+            balances: userData.balances,
+            referralCode: userData.referralCode,
+            referredBy: userData.referredBy,
+            referrals: userData.referrals,
+            referralCount: userData.referralCount,
+            staking: userData.staking,
+            totalRefiEarned: userData.totalRefiEarned,
+            totalUsdtEarned: userData.totalUsdtEarned,
+            lastSync: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        console.log("✅ Synced to Firebase");
+    } catch (error) {
+        console.error("❌ Firebase sync error:", error);
+    }
 }
 
-// ====== Start Live Prices ======
-function startLivePrices() {
-    fetchLivePrices();
-    setInterval(fetchLivePrices, 60000);
+// ============================================
+// 7. PRICE LOADING (once per session)
+// ============================================
+async function loadPricesOnce() {
+    try {
+        const cachedPrices = localStorage.getItem('cachedPrices');
+        if (cachedPrices) {
+            const { data, timestamp } = JSON.parse(cachedPrices);
+            if (Date.now() - timestamp < 3600000) { // 1 hour
+                livePrices = data;
+                renderTopCryptos();
+                renderAssets();
+                updateTotalBalance();
+                console.log("📦 Loaded prices from cache");
+                return;
+            }
+        }
+    } catch (e) {
+        console.error("Error loading cached prices:", e);
+    }
+    
+    await fetchLivePrices();
 }
 
-// ====== Fetch Live Prices ======
 async function fetchLivePrices() {
     try {
         const ids = Object.values(CRYPTO_IDS).join(',');
         const response = await fetch(
             `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
         );
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
         const data = await response.json();
         
         for (const [symbol, id] of Object.entries(CRYPTO_IDS)) {
@@ -640,56 +525,65 @@ async function fetchLivePrices() {
             }
         }
         
+        localStorage.setItem('cachedPrices', JSON.stringify({
+            data: livePrices,
+            timestamp: Date.now()
+        }));
+        
         renderTopCryptos();
         renderAssets();
         updateTotalBalance();
+        
     } catch (error) {
         console.error("Error fetching prices:", error);
+        setDefaultPrices();
     }
 }
 
-// ====== Refresh Prices ======
+function setDefaultPrices() {
+    const defaultPrices = {
+        BTC: { price: 43250.00, change: 0 },
+        ETH: { price: 2250.00, change: 0 },
+        BNB: { price: 310.00, change: 0 },
+        SOL: { price: 95.00, change: 0 },
+        TRX: { price: 0.25, change: 0 },
+        SHIB: { price: 0.00001, change: 0 },
+        PEPE: { price: 0.000001, change: 0 },
+        TON: { price: 2.15, change: 0 },
+        DOGE: { price: 0.08, change: 0 },
+        ADA: { price: 0.35, change: 0 },
+        TRUMP: { price: 5.00, change: 0 }
+    };
+    
+    livePrices = defaultPrices;
+    renderTopCryptos();
+    renderAssets();
+    updateTotalBalance();
+}
+
 function refreshPrices() {
     animateElement('.refresh-btn', 'pop');
     fetchLivePrices();
     showToast('Prices updated!', 'success');
 }
 
-// ====== Load Prices Once ======
-async function loadPricesOnce() {
-    try {
-        const cachedPrices = localStorage.getItem('cachedPrices');
-        if (cachedPrices) {
-            const { data, timestamp } = JSON.parse(cachedPrices);
-            if (Date.now() - timestamp < 3600000) {
-                livePrices = data;
-                renderTopCryptos();
-                renderAssets();
-                updateTotalBalance();
-                return;
-            }
-        }
-    } catch (e) {
-        console.error("Error loading cached prices:", e);
-    }
-    
-    await fetchLivePrices();
-}
-
-// ====== Update UI ======
+// ============================================
+// 8. UI RENDERING FUNCTIONS
+// ============================================
 function updateUI() {
     renderAssets();
     updateTotalBalance();
     updateStakingStats();
     updateReferralStats();
     updateSwapBalances();
+    updateNotificationBadge();
 }
 
-// ====== Render Assets ======
 function renderAssets() {
     const assetsList = document.getElementById('assetsList');
     if (!assetsList || !userData) return;
     
+    // Sort: REFI first, then by balance
     const sortedAssets = [...ALL_ASSETS].sort((a, b) => {
         if (a.symbol === 'REFI') return -1;
         if (b.symbol === 'REFI') return 1;
@@ -727,32 +621,6 @@ function renderAssets() {
     }).join('');
 }
 
-// ====== Get Currency Name ======
-function getCurrencyName(symbol) {
-    const names = {
-        REFI: 'REFI Network',
-        USDT: 'Tether',
-        BNB: 'BNB',
-        BTC: 'Bitcoin',
-        ETH: 'Ethereum',
-        SOL: 'Solana',
-        ADA: 'Cardano',
-        DOGE: 'Dogecoin',
-        SHIB: 'Shiba Inu',
-        PEPE: 'Pepe',
-        TON: 'Toncoin',
-        TRX: 'TRON',
-        TRUMP: 'Trump Coin'
-    };
-    return names[symbol] || symbol;
-}
-
-// ====== Get Currency Icon ======
-function getCurrencyIcon(symbol) {
-    return CMC_ICONS[symbol] || CMC_ICONS.REFI;
-}
-
-// ====== Render Top Cryptos ======
 function renderTopCryptos() {
     const topCryptoList = document.getElementById('topCryptoList');
     if (!topCryptoList) return;
@@ -785,7 +653,6 @@ function renderTopCryptos() {
     }).join('');
 }
 
-// ====== Render Staking Plans ======
 function renderStakingPlans() {
     const plansGrid = document.getElementById('plansGrid');
     if (!plansGrid) return;
@@ -800,7 +667,6 @@ function renderStakingPlans() {
     `).join('');
 }
 
-// ====== Render Staking Missions ======
 function renderStakingMissions() {
     const missionsGrid = document.getElementById('stakingMissions');
     if (!missionsGrid || !userData) return;
@@ -831,7 +697,6 @@ function renderStakingMissions() {
     }).join('');
 }
 
-// ====== Render Referral Milestones ======
 function renderReferralMilestones() {
     const milestonesList = document.getElementById('milestonesList');
     if (!milestonesList || !userData) return;
@@ -867,28 +732,15 @@ function renderReferralMilestones() {
     }).join('');
 }
 
-// ====== Render History ======
 function renderHistory(filter = 'all') {
     const historyList = document.getElementById('historyList');
     if (!historyList || !userData) return;
-    
-    currentHistoryFilter = filter;
     
     let transactions = [...userData.transactions]
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
     if (filter !== 'all') {
-        if (filter === 'deposit') {
-            transactions = transactions.filter(tx => tx.type === 'deposit');
-        } else if (filter === 'withdraw') {
-            transactions = transactions.filter(tx => tx.type === 'withdraw');
-        } else if (filter === 'swap') {
-            transactions = transactions.filter(tx => tx.type === 'swap');
-        } else if (filter === 'referral') {
-            transactions = transactions.filter(tx => tx.type === 'referral_bonus');
-        } else if (filter === 'staking') {
-            transactions = transactions.filter(tx => tx.type === 'staking');
-        }
+        transactions = transactions.filter(tx => tx.type === filter);
     }
     
     if (transactions.length === 0) {
@@ -960,7 +812,6 @@ function renderHistory(filter = 'all') {
     }).join('');
 }
 
-// ====== Filter History ======
 function filterHistory(filter) {
     document.querySelectorAll('.history-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -969,7 +820,6 @@ function filterHistory(filter) {
     renderHistory(filter);
 }
 
-// ====== Render Notifications ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
@@ -1015,8 +865,7 @@ function renderNotifications() {
     }).join('');
 }
 
-// ====== Mark Notification as Read ======
-async function markNotificationRead(notificationId) {
+function markNotificationRead(notificationId) {
     if (!userData.notifications) return;
     
     const notification = userData.notifications.find(n => n.id === notificationId);
@@ -1024,18 +873,37 @@ async function markNotificationRead(notificationId) {
         notification.read = true;
         unreadNotifications--;
         updateNotificationBadge();
-        
-        if (db) {
-            await db.collection('users').doc(userId).update({
-                notifications: userData.notifications
-            });
-        }
-        
+        saveUserData();
         renderNotifications();
     }
 }
 
-// ====== Format Balance ======
+// ============================================
+// 9. UTILITY FUNCTIONS
+// ============================================
+function getCurrencyIcon(symbol) {
+    return CMC_ICONS[symbol] || CMC_ICONS.REFI;
+}
+
+function getCurrencyName(symbol) {
+    const names = {
+        REFI: 'REFI Network',
+        USDT: 'Tether',
+        BNB: 'BNB',
+        BTC: 'Bitcoin',
+        ETH: 'Ethereum',
+        SOL: 'Solana',
+        ADA: 'Cardano',
+        DOGE: 'Dogecoin',
+        SHIB: 'Shiba Inu',
+        PEPE: 'Pepe',
+        TON: 'Toncoin',
+        TRX: 'TRON',
+        TRUMP: 'Trump Coin'
+    };
+    return names[symbol] || symbol;
+}
+
 function formatBalance(balance, symbol) {
     if (symbol === 'REFI' || symbol === 'SHIB' || symbol === 'PEPE' || symbol === 'TRUMP') {
         return balance.toLocaleString() + ' ' + symbol;
@@ -1047,7 +915,6 @@ function formatBalance(balance, symbol) {
     return balance.toString();
 }
 
-// ====== Format Number ======
 function formatNumber(num) {
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
@@ -1056,15 +923,11 @@ function formatNumber(num) {
     return num.toFixed(2);
 }
 
-// ====== Update Total Balance ======
 function updateTotalBalance() {
-    if (!userData) return;
-    
     let total = 0;
     total += userData.balances.USDT || 0;
     total += (userData.balances.REFI || 0) * REFI_PRICE;
     total += (userData.balances.BNB || 0) * (livePrices.BNB?.price || 0);
-    total += (userData.balances.BTC || 0) * (livePrices.BTC?.price || 0);
     total += (userData.balances.ETH || 0) * (livePrices.ETH?.price || 0);
     total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
     total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
@@ -1073,10 +936,7 @@ function updateTotalBalance() {
     document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
 }
 
-// ====== Update Staking Stats ======
 function updateStakingStats() {
-    if (!userData) return;
-    
     const totalStaked = userData.staking.reduce((sum, stake) => sum + stake.amount, 0);
     document.getElementById('totalStaked').textContent = totalStaked.toFixed(2) + ' USDT';
     
@@ -1101,10 +961,9 @@ function updateStakingStats() {
     renderActiveStakes();
 }
 
-// ====== Render Active Stakes ======
 function renderActiveStakes() {
     const activeStakes = document.getElementById('activeStakes');
-    if (!activeStakes || !userData) return;
+    if (!activeStakes) return;
     
     if (userData.staking.length === 0) {
         activeStakes.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No active stakes</p>';
@@ -1136,48 +995,7 @@ function renderActiveStakes() {
     }).join('');
 }
 
-// ====== Claim Staking Reward ======
-function claimStakingReward(startDate) {
-    const stake = userData.staking.find(s => s.startDate === startDate);
-    if (!stake || stake.claimed) return;
-    
-    const reward = stake.amount * stake.plan.return / 100;
-    userData.balances.USDT += reward;
-    stake.claimed = true;
-    
-    const transaction = {
-        id: 'staking_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
-        type: 'staking',
-        amount: reward,
-        currency: 'USDT',
-        status: 'completed',
-        timestamp: new Date().toISOString(),
-        details: `Staking reward for ${stake.plan.name}`
-    };
-    
-    userData.transactions.push(transaction);
-    
-    if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            staking: userData.staking,
-            transactions: userData.transactions
-        });
-        db.collection('transactions').add(transaction);
-    }
-    
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-    
-    showToast(`Claimed ${reward.toFixed(2)} USDT rewards!`, 'success');
-    updateStakingStats();
-    updateUI();
-}
-
-// ====== Update Referral Stats ======
 function updateReferralStats() {
-    if (!userData) return;
-    
     document.getElementById('totalReferrals').textContent = userData.referralCount || 0;
     document.getElementById('refiEarned').textContent = ((userData.referralCount || 0) * REFERRAL_BONUS).toLocaleString() + ' REFI';
     document.getElementById('usdtEarned').textContent = (userData.totalUsdtEarned || 0).toFixed(2) + ' USDT';
@@ -1188,85 +1006,20 @@ function updateReferralStats() {
     }
 }
 
-// ====== Update Swap Balances ======
 function updateSwapBalances() {
-    if (!userData) return;
-    
     const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    
     document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
-    document.getElementById('receiveBalance').textContent = `Balance: ${formatBalance(userData.balances[receiveCurrency] || 0, receiveCurrency)}`;
 }
 
-// ====== Update Notification Badge ======
 function updateNotificationBadge() {
     const badge = document.querySelector('.badge');
-    if (badge && userData) {
+    if (badge) {
         unreadNotifications = userData.notifications?.filter(n => !n.read).length || 0;
         badge.textContent = unreadNotifications;
         badge.style.display = unreadNotifications > 0 ? 'block' : 'none';
     }
 }
 
-// ====== Navigation Functions ======
-function showWallet() {
-    document.getElementById('walletSection').classList.remove('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(1)').classList.add('active');
-    
-    renderAssets();
-    updateTotalBalance();
-    animateElement('.balance-card', 'pop');
-}
-
-function showSwap() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.remove('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(2)').classList.add('active');
-    
-    updateSwapBalances();
-    calculateSwap();
-    animateElement('.swap-card', 'scaleIn');
-}
-
-function showStaking() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.remove('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
-    
-    updateStakingStats();
-    renderStakingMissions();
-    animateElement('.staking-stats', 'slideUp');
-}
-
-function showReferral() {
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.remove('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
-    
-    updateReferralStats();
-    renderReferralMilestones();
-    animateElement('.referral-link-card', 'pop');
-}
-
-// ====== Animate Element ======
 function animateElement(selector, animationClass) {
     const element = document.querySelector(selector);
     if (element) {
@@ -1277,7 +1030,491 @@ function animateElement(selector, animationClass) {
     }
 }
 
-// ====== Select Staking Plan ======
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.classList.remove('hidden');
+    
+    const icon = toast.querySelector('i');
+    if (type === 'success') {
+        icon.className = 'fa-regular fa-circle-check';
+    } else if (type === 'error') {
+        icon.className = 'fa-regular fa-circle-xmark';
+    } else if (type === 'warning') {
+        icon.className = 'fa-regular fa-circle-exclamation';
+    } else {
+        icon.className = 'fa-regular fa-circle-info';
+    }
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3000);
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard!', 'success');
+}
+
+// ============================================
+// 10. DEPOSIT SYSTEM (محسن من VIP Mining)
+// ============================================
+function showDepositModal() {
+    document.getElementById('depositModal').classList.add('show');
+    updateDepositInfo();
+    animateElement('.modal-content', 'slideUpModal');
+}
+
+function updateDepositInfo() {
+    const currency = document.getElementById('depositCurrency').value;
+    const amountInput = document.getElementById('depositAmount');
+    const depositAddress = document.getElementById('depositAddress');
+    const depositIcon = document.getElementById('depositIcon');
+    const addressNote = document.getElementById('depositAddressNote');
+    
+    if (depositIcon) depositIcon.src = getCurrencyIcon(currency);
+    depositAddress.textContent = DEPOSIT_ADDRESSES[currency] || DEPOSIT_ADDRESSES.REFI;
+    addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>✓ Blockchain confirmation 1-5 minutes</span>`;
+    
+    const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
+    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE' || currency === 'TRUMP') {
+        amountInput.placeholder = `Min ${minAmount.toLocaleString()} ${currency}`;
+    } else {
+        amountInput.placeholder = `Min ${minAmount} ${currency}`;
+    }
+}
+
+function copyDepositAddress() {
+    const address = document.getElementById('depositAddress').textContent;
+    navigator.clipboard.writeText(address);
+    showToast('Address copied to clipboard!', 'success');
+    animateElement('.copy-address-btn', 'pop');
+}
+
+// ✅ دالة الإيداع المحسنة (مثل VIP Mining)
+async function submitDeposit() {
+    const currency = document.getElementById('depositCurrency').value;
+    const amount = parseFloat(document.getElementById('depositAmount').value);
+    const txnId = document.getElementById('txnId').value.trim();
+    
+    // 1. تعطيل الزر مؤقتاً
+    const submitBtn = document.querySelector('.modal-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    }
+    
+    try {
+        // 2. التحقق من المدخلات
+        if (!amount || amount <= 0) {
+            showToast('Please enter a valid amount', 'error');
+            enableSubmitButton(submitBtn);
+            return;
+        }
+        
+        if (!txnId) {
+            showToast('Please enter transaction ID', 'error');
+            enableSubmitButton(submitBtn);
+            return;
+        }
+        
+        // 3. التحقق من الطول (TXID عادة 64+ حرف)
+        if (txnId.length < MIN_TX_LENGTH) {
+            showToast('Invalid transaction ID (too short)', 'error');
+            enableSubmitButton(submitBtn);
+            return;
+        }
+        
+        // 4. التحقق من التكرار (منع استخدام نفس TXID مرتين)
+        const usedBefore = walletData.usedTransactions.includes(txnId.toLowerCase());
+        if (usedBefore) {
+            showToast('This transaction ID has already been used', 'error');
+            enableSubmitButton(submitBtn);
+            return;
+        }
+        
+        // 5. التحقق من الحد الأدنى
+        const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
+        if (amount < minAmount) {
+            showToast(`Minimum deposit is ${minAmount} ${currency}`, 'error');
+            enableSubmitButton(submitBtn);
+            return;
+        }
+        
+        // 6. إنشاء طلب الإيداع
+        const depositRequest = {
+            id: 'dep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userData.userId,
+            username: userData.userName,
+            currency: currency,
+            amount: amount,
+            txnId: txnId,
+            address: DEPOSIT_ADDRESSES[currency],
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            type: 'deposit'
+        };
+        
+        // 7. حفظ محلياً أولاً (ضمان عدم فقدان الطلب)
+        walletData.pendingDeposits.push(depositRequest);
+        walletData.usedTransactions.push(txnId.toLowerCase());
+        
+        if (!userData.transactions) userData.transactions = [];
+        userData.transactions.push(depositRequest);
+        
+        saveUserData();
+        
+        // 8. حفظ في Firebase (في الخلفية)
+        if (db) {
+            try {
+                await db.collection('transactions').add(depositRequest);
+                await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userData.userId}`, 'info');
+                console.log("✅ Deposit saved to Firebase");
+            } catch (error) {
+                console.error("Firebase error:", error);
+                // حتى لو فشل Firebase، الطلب محفوظ محلياً
+            }
+        }
+        
+        // 9. رسالة نجاح
+        showToast('Deposit request submitted! Waiting for admin approval.', 'success');
+        closeModal('depositModal');
+        
+        // 10. تفعيل الزر مرة أخرى
+        enableSubmitButton(submitBtn);
+        
+    } catch (error) {
+        console.error("Deposit error:", error);
+        showToast('Failed to submit deposit request', 'error');
+        enableSubmitButton(submitBtn);
+    }
+}
+
+function enableSubmitButton(btn) {
+    setTimeout(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-regular fa-circle-down"></i> Submit Deposit';
+        }
+    }, 1000);
+}
+
+// ============================================
+// 11. WITHDRAWAL SYSTEM (مع حجز الرصيد)
+// ============================================
+function showWithdrawModal() {
+    document.getElementById('withdrawModal').classList.add('show');
+    checkWithdrawFee();
+    updateWithdrawIcon();
+    animateElement('.modal-content', 'slideUpModal');
+}
+
+function checkWithdrawFee() {
+    const currency = document.getElementById('withdrawCurrency').value;
+    const feeWarning = document.getElementById('feeWarning');
+    const feeWarningText = document.getElementById('feeWarningText');
+    const networkFee = document.getElementById('networkFee');
+    const receiveAmount = document.getElementById('receiveAmount_');
+    const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+    
+    updateWithdrawIcon();
+    
+    const fee = WITHDRAWAL_FEES[currency] || 0;
+    
+    if (fee > 0) {
+        feeWarning.classList.remove('hidden');
+        feeWarningText.textContent = `${currency} withdrawal requires ${fee} BNB fee`;
+        networkFee.textContent = fee + ' BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+    } else {
+        feeWarning.classList.add('hidden');
+        networkFee.textContent = '0 BNB';
+        if (receiveAmount) receiveAmount.textContent = amount.toFixed(6) + ' ' + currency;
+    }
+}
+
+function updateWithdrawIcon() {
+    const currency = document.getElementById('withdrawCurrency').value;
+    const icon = document.getElementById('withdrawIcon');
+    if (icon) icon.src = getCurrencyIcon(currency);
+}
+
+// ✅ دالة السحب المحسنة (مع حجز الرصيد)
+async function submitWithdraw() {
+    const currency = document.getElementById('withdrawCurrency').value;
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const address = document.getElementById('walletAddress').value.trim();
+    
+    // 1. تعطيل الزر مؤقتاً
+    const submitBtn = document.querySelector('#withdrawModal .modal-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    }
+    
+    try {
+        // 2. التحقق من المدخلات
+        if (!amount || amount <= 0 || !address) {
+            showToast('Please fill all fields', 'error');
+            enableWithdrawButton(submitBtn);
+            return;
+        }
+        
+        // 3. التحقق من الرصيد
+        if (!userData.balances[currency] || userData.balances[currency] < amount) {
+            showToast(`Insufficient ${currency} balance`, 'error');
+            enableWithdrawButton(submitBtn);
+            return;
+        }
+        
+        // 4. التحقق من الرسوم
+        const fee = WITHDRAWAL_FEES[currency] || 0;
+        if (fee > 0 && (!userData.balances.BNB || userData.balances.BNB < fee)) {
+            showToast(`You need ${fee} BNB for withdrawal fee`, 'error');
+            enableWithdrawButton(submitBtn);
+            return;
+        }
+        
+        // 5. حجز الرصيد (خصم فوري)
+        const originalBalance = userData.balances[currency];
+        const originalBnbBalance = userData.balances.BNB;
+        
+        userData.balances[currency] -= amount;
+        if (fee > 0) {
+            userData.balances.BNB -= fee;
+        }
+        
+        // 6. إنشاء طلب السحب
+        const withdrawRequest = {
+            id: 'wd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userData.userId,
+            username: userData.userName,
+            currency: currency,
+            amount: amount,
+            address: address,
+            fee: fee,
+            feeCurrency: 'BNB',
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            type: 'withdraw'
+        };
+        
+        // 7. حفظ محلياً
+        walletData.pendingWithdrawals.push(withdrawRequest);
+        userData.transactions.push(withdrawRequest);
+        saveUserData();
+        
+        // 8. حفظ في Firebase
+        if (db) {
+            try {
+                await db.collection('transactions').add(withdrawRequest);
+                await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userData.userId}`, 'info');
+                console.log("✅ Withdrawal saved to Firebase");
+            } catch (error) {
+                console.error("Firebase error:", error);
+            }
+        }
+        
+        // 9. تحديث الواجهة
+        updateUI();
+        showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
+        closeModal('withdrawModal');
+        
+        enableWithdrawButton(submitBtn);
+        
+    } catch (error) {
+        console.error("Withdraw error:", error);
+        showToast('Failed to submit withdrawal request', 'error');
+        enableWithdrawButton(submitBtn);
+    }
+}
+
+function enableWithdrawButton(btn) {
+    setTimeout(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-regular fa-circle-up"></i> Submit Withdrawal';
+        }
+    }, 1000);
+}
+
+// ============================================
+// 12. SWAP SYSTEM
+// ============================================
+function showCurrencySelector(type) {
+    currentCurrencySelector = type;
+    const modal = document.getElementById('currencySelectorModal');
+    const currencyList = document.getElementById('currencyList');
+    
+    currencyList.innerHTML = SWAP_CURRENCIES.map(curr => `
+        <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
+            <img src="${curr.icon}" alt="${curr.symbol}">
+            <div class="currency-list-info">
+                <h4>${curr.name}</h4>
+                <p>${curr.symbol}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    modal.classList.add('show');
+}
+
+function selectCurrency(symbol) {
+    if (currentCurrencySelector === 'pay') {
+        document.getElementById('payCurrency').textContent = symbol;
+        document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
+        
+        // العملة المستقبلة ثابتة: REFI
+        document.getElementById('receiveCurrency').textContent = 'REFI';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+    }
+    
+    closeModal('currencySelectorModal');
+    updateSwapNote();
+    calculateSwap();
+    updateSwapBalances();
+}
+
+function updateSwapNote() {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const swapNote = document.getElementById('swapNote');
+    const swapRate = document.getElementById('swapRate');
+    
+    if (payCurrency === 'USDT') {
+        swapNote.textContent = 'Swap USDT to REFI at fixed rate';
+        swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
+    } else {
+        swapNote.textContent = `Swap ${payCurrency} to REFI at market rate`;
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
+        
+        if (payPrice > 0) {
+            const rate = payPrice / REFI_PRICE;
+            swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(0)} REFI`;
+        } else {
+            swapRate.textContent = 'Rate will be calculated based on current market price';
+        }
+    }
+}
+
+function filterCurrencies() {
+    const searchTerm = document.getElementById('currencySearch').value.toLowerCase();
+    const currencyList = document.getElementById('currencyList');
+    
+    const filtered = SWAP_CURRENCIES.filter(curr => 
+        curr.name.toLowerCase().includes(searchTerm) || 
+        curr.symbol.toLowerCase().includes(searchTerm)
+    );
+    
+    currencyList.innerHTML = filtered.map(curr => `
+        <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
+            <img src="${curr.icon}" alt="${curr.symbol}">
+            <div class="currency-list-info">
+                <h4>${curr.name}</h4>
+                <p>${curr.symbol}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function calculateSwap() {
+    const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    
+    if (payCurrency === 'USDT') {
+        const receiveAmount = payAmount * SWAP_RATE;
+        document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
+    } else {
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
+        
+        if (payPrice > 0) {
+            const receiveAmount = (payAmount * payPrice) / REFI_PRICE;
+            document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
+        } else {
+            document.getElementById('receiveAmount').value = '0';
+        }
+    }
+}
+
+function confirmSwap() {
+    const payAmount = parseFloat(document.getElementById('payAmount').value);
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveAmount = parseFloat(document.getElementById('receiveAmount').value);
+    
+    if (!payAmount || payAmount <= 0) {
+        showToast('Please enter a valid amount', 'error');
+        animateElement('#payAmount', 'shake');
+        return;
+    }
+    
+    if (!userData.balances[payCurrency] || userData.balances[payCurrency] < payAmount) {
+        showToast(`Insufficient ${payCurrency} balance`, 'error');
+        return;
+    }
+    
+    // Execute swap
+    userData.balances[payCurrency] -= payAmount;
+    userData.balances.REFI += receiveAmount;
+    
+    const transaction = {
+        id: 'swap_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
+        type: 'swap',
+        amount: payAmount,
+        currency: payCurrency,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        details: `Swapped to ${receiveAmount} REFI`
+    };
+    
+    userData.transactions.push(transaction);
+    saveUserData();
+    
+    // Save to Firebase (optional)
+    if (db) {
+        db.collection('transactions').add(transaction).catch(e => console.log(e));
+    }
+    
+    showToast(`Swapped ${payAmount} ${payCurrency} to ${receiveAmount} REFI`, 'success');
+    
+    document.getElementById('payAmount').value = '1';
+    calculateSwap();
+    updateSwapBalances();
+    updateUI();
+    animateElement('#swapBtn', 'pop');
+}
+
+function setMaxAmount() {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const balance = userData.balances[payCurrency] || 0;
+    document.getElementById('payAmount').value = balance;
+    calculateSwap();
+    animateElement('.max-btn', 'pop');
+}
+
+function swapDirection(direction) {
+    if (direction === 'down') {
+        document.getElementById('payCurrency').textContent = 'USDT';
+        document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
+        document.getElementById('receiveCurrency').textContent = 'REFI';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+    } else if (direction === 'up') {
+        document.getElementById('payCurrency').textContent = 'REFI';
+        document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
+        document.getElementById('receiveCurrency').textContent = 'USDT';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+    }
+    
+    updateSwapNote();
+    calculateSwap();
+    updateSwapBalances();
+    animateElement('.swap-action-btn', 'pop');
+}
+
+// ============================================
+// 13. STAKING SYSTEM
+// ============================================
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -1286,7 +1523,6 @@ function selectStakingPlan(planId) {
     animateElement('.plan-card.selected', 'pop');
 }
 
-// ====== Calculate Staking Return ======
 function calculateStakingReturn() {
     const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;
     const returnAmount = (amount * selectedStakingPlan.return) / 100;
@@ -1296,7 +1532,6 @@ function calculateStakingReturn() {
     document.getElementById('totalAfterStaking').textContent = total.toFixed(2) + ' USDT';
 }
 
-// ====== Stake USDT ======
 function stakeUSDT() {
     const amount = parseFloat(document.getElementById('stakeAmount').value);
     
@@ -1328,8 +1563,8 @@ function stakeUSDT() {
     userData.staking.push(stake);
     
     const transaction = {
-        id: 'stake_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
+        id: 'stake_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
         type: 'staking',
         amount: amount,
         currency: 'USDT',
@@ -1339,17 +1574,11 @@ function stakeUSDT() {
     };
     
     userData.transactions.push(transaction);
+    saveUserData();
     
     if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            staking: userData.staking,
-            transactions: userData.transactions
-        });
-        db.collection('transactions').add(transaction);
+        db.collection('transactions').add(transaction).catch(e => console.log(e));
     }
-    
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     showToast(`Successfully staked ${amount} USDT for ${selectedStakingPlan.days} days!`, 'success');
     document.getElementById('stakeAmount').value = '';
@@ -1359,7 +1588,37 @@ function stakeUSDT() {
     animateElement('.confirm-btn', 'pop');
 }
 
-// ====== Claim Staking Mission ======
+function claimStakingReward(startDate) {
+    const stake = userData.staking.find(s => s.startDate === startDate);
+    if (!stake || stake.claimed) return;
+    
+    const reward = stake.amount * stake.plan.return / 100;
+    userData.balances.USDT += reward;
+    stake.claimed = true;
+    
+    const transaction = {
+        id: 'reward_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
+        type: 'staking',
+        amount: reward,
+        currency: 'USDT',
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        details: `Staking reward for ${stake.plan.name}`
+    };
+    
+    userData.transactions.push(transaction);
+    saveUserData();
+    
+    if (db) {
+        db.collection('transactions').add(transaction).catch(e => console.log(e));
+    }
+    
+    showToast(`Claimed ${reward.toFixed(2)} USDT rewards!`, 'success');
+    updateStakingStats();
+    updateUI();
+}
+
 function claimStakingMission(missionId) {
     const missionIndex = userData.stakingMissions.findIndex(m => m.id === missionId);
     if (missionIndex === -1 || userData.stakingMissions[missionIndex].claimed) return;
@@ -1375,8 +1634,8 @@ function claimStakingMission(missionId) {
     userData.stakingMissions[missionIndex].claimed = true;
     
     const transaction = {
-        id: 'mission_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
+        id: 'mission_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
         type: 'staking',
         amount: reward,
         currency: 'USDT',
@@ -1386,17 +1645,11 @@ function claimStakingMission(missionId) {
     };
     
     userData.transactions.push(transaction);
+    saveUserData();
     
     if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            stakingMissions: userData.stakingMissions,
-            transactions: userData.transactions
-        });
-        db.collection('transactions').add(transaction);
+        db.collection('transactions').add(transaction).catch(e => console.log(e));
     }
-    
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     showToast(`Claimed ${reward} USDT!`, 'success');
     renderStakingMissions();
@@ -1404,7 +1657,113 @@ function claimStakingMission(missionId) {
     animateElement('.mission-card', 'pop');
 }
 
-// ====== Claim Referral Milestone ======
+// ============================================
+// 14. REFERRAL SYSTEM
+// ============================================
+function copyReferralLink() {
+    const link = getReferralLink();
+    navigator.clipboard.writeText(link);
+    showToast('✅ Referral link copied!', 'success');
+    animateElement('.copy-btn', 'pop');
+}
+
+function shareReferral() {
+    const link = getReferralLink();
+    const text = `🚀 Join REFI Network and get 10,000 REFI bonus! Use my link: ${link}`;
+    
+    if (tg && tg.shareToStory) {
+        tg.shareToStory(text);
+    } else {
+        navigator.clipboard.writeText(text);
+        showToast('📋 Referral message copied!', 'success');
+    }
+}
+
+async function processReferral() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        let referralCode = urlParams.get('start') || urlParams.get('ref');
+        
+        if (!referralCode && tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+            referralCode = tg.initDataUnsafe.start_param;
+        }
+        
+        if (!referralCode || referralCode === userData.referralCode || userData.referredBy) {
+            return;
+        }
+        
+        if (!db) return;
+        
+        const referrerQuery = await db.collection('users')
+            .where('referralCode', '==', referralCode)
+            .limit(1)
+            .get();
+        
+        if (referrerQuery.empty) return;
+        
+        const referrerDoc = referrerQuery.docs[0];
+        const referrerId = referrerDoc.id;
+        const referrerData = referrerDoc.data();
+        
+        if (referrerId === userData.userId) return;
+        if (referrerData.referrals && referrerData.referrals.includes(userData.userId)) return;
+        
+        // Update referrer
+        const updatedReferrals = [...(referrerData.referrals || []), userData.userId];
+        const updatedReferralCount = (referrerData.referralCount || 0) + 1;
+        const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
+        
+        await db.collection('users').doc(referrerId).update({
+            referrals: updatedReferrals,
+            referralCount: updatedReferralCount,
+            'balances.REFI': updatedRefiBalance,
+            totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS
+        });
+        
+        // Update current user
+        userData.referredBy = referralCode;
+        userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
+        
+        const referralTx = {
+            id: 'ref_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userData.userId,
+            type: 'referral_bonus',
+            amount: 10000,
+            currency: 'REFI',
+            status: 'completed',
+            timestamp: new Date().toISOString()
+        };
+        
+        userData.transactions.push(referralTx);
+        saveUserData();
+        
+        await db.collection('transactions').add(referralTx);
+        
+        await addNotification(referrerId, `🎉 Someone joined with your link! You got ${REFERRAL_BONUS.toLocaleString()} REFI!`, 'success');
+        await addNotification(userData.userId, `🎉 Welcome! You got 10,000 REFI bonus!`, 'success');
+        
+        showToast(`🎉 Welcome! You got 10,000 REFI bonus!`, 'success');
+        updateUI();
+        
+    } catch (error) {
+        console.error("Error processing referral:", error);
+    }
+}
+
+function checkForReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let referralCode = urlParams.get('start') || urlParams.get('ref');
+    
+    if (!referralCode && tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+        referralCode = tg.initDataUnsafe.start_param;
+    }
+    
+    if (referralCode && referralCode !== userData.referralCode && !userData.referredBy) {
+        console.log("🔗 Referral detected:", referralCode);
+        processReferral();
+    }
+}
+
 function claimReferralMilestone(referrals) {
     const milestoneIndex = userData.referralMilestones.findIndex(m => m.referrals === referrals);
     if (milestoneIndex === -1 || userData.referralMilestones[milestoneIndex].claimed) return;
@@ -1420,8 +1779,8 @@ function claimReferralMilestone(referrals) {
     userData.referralMilestones[milestoneIndex].claimed = true;
     
     const transaction = {
-        id: 'refmil_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
+        id: 'refmil_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
         type: 'referral_bonus',
         amount: reward,
         currency: 'USDT',
@@ -1431,18 +1790,11 @@ function claimReferralMilestone(referrals) {
     };
     
     userData.transactions.push(transaction);
+    saveUserData();
     
     if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            totalUsdtEarned: userData.totalUsdtEarned,
-            referralMilestones: userData.referralMilestones,
-            transactions: userData.transactions
-        });
-        db.collection('transactions').add(transaction);
+        db.collection('transactions').add(transaction).catch(e => console.log(e));
     }
-    
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     showToast(`Claimed ${reward} USDT!`, 'success');
     updateReferralStats();
@@ -1451,227 +1803,36 @@ function claimReferralMilestone(referrals) {
     animateElement('.milestone-item', 'pop');
 }
 
-// ====== Show Currency Selector ======
-function showCurrencySelector(type) {
-    currentCurrencySelector = type;
-    const modal = document.getElementById('currencySelectorModal');
-    const currencyList = document.getElementById('currencyList');
+// ============================================
+// 15. NOTIFICATION SYSTEM
+// ============================================
+async function addNotification(userId, message, type = 'info') {
+    if (!db) return;
     
-    currencyList.innerHTML = SWAP_CURRENCIES.map(curr => `
-        <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
-            <img src="${curr.icon}" alt="${curr.symbol}">
-            <div class="currency-list-info">
-                <h4>${curr.name}</h4>
-                <p>${curr.symbol}</p>
-            </div>
-        </div>
-    `).join('');
-    
-    modal.classList.add('show');
-}
-
-// ====== Select Currency ======
-function selectCurrency(symbol) {
-    if (currentCurrencySelector === 'pay') {
-        document.getElementById('payCurrency').textContent = symbol;
-        document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
-        
-        // العملة المستقبلة ثابتة: REFI
-        document.getElementById('receiveCurrency').textContent = 'REFI';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-        swapMode = 'to-refi';
-    }
-    
-    closeModal('currencySelectorModal');
-    updateSwapNote();
-    calculateSwap();
-    updateSwapBalances();
-}
-
-// ====== Update Swap Note ======
-function updateSwapNote() {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    const swapNote = document.getElementById('swapNote');
-    const swapRate = document.getElementById('swapRate');
-    
-    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
-        swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
-        swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
-    } else {
-        swapNote.textContent = `You can swap ${payCurrency} to REFI at market rate`;
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
-        
-        if (payPrice > 0) {
-            const rate = payPrice / REFI_PRICE;
-            swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(0)} REFI`;
-        } else {
-            swapRate.textContent = `Rate will be calculated based on current market price`;
-        }
-    }
-}
-
-// ====== Filter Currencies ======
-function filterCurrencies() {
-    const searchTerm = document.getElementById('currencySearch').value.toLowerCase();
-    const currencyList = document.getElementById('currencyList');
-    
-    const filtered = SWAP_CURRENCIES.filter(curr => 
-        curr.name.toLowerCase().includes(searchTerm) || 
-        curr.symbol.toLowerCase().includes(searchTerm)
-    );
-    
-    currencyList.innerHTML = filtered.map(curr => `
-        <div class="currency-list-item" onclick="selectCurrency('${curr.symbol}')">
-            <img src="${curr.icon}" alt="${curr.symbol}">
-            <div class="currency-list-info">
-                <h4>${curr.name}</h4>
-                <p>${curr.symbol}</p>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ====== Calculate Swap ======
-function calculateSwap() {
-    const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    
-    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
-        const receiveAmount = payAmount * SWAP_RATE;
-        document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
-    } else {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
-        
-        if (payPrice > 0) {
-            const receiveAmount = (payAmount * payPrice) / REFI_PRICE;
-            document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
-        } else {
-            document.getElementById('receiveAmount').value = '0';
-        }
-    }
-}
-
-// ====== Confirm Swap ======
-function confirmSwap() {
-    const payAmount = parseFloat(document.getElementById('payAmount').value);
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
-    const receiveAmount = parseFloat(document.getElementById('receiveAmount').value);
-    
-    if (!payAmount || payAmount <= 0) {
-        showToast('Please enter a valid amount', 'error');
-        animateElement('#payAmount', 'shake');
-        return;
-    }
-    
-    if (!userData.balances[payCurrency] || userData.balances[payCurrency] < payAmount) {
-        showToast(`Insufficient ${payCurrency} balance`, 'error');
-        return;
-    }
-    
-    if (receiveCurrency !== 'REFI') {
-        showToast('You can only swap to REFI', 'error');
-        return;
-    }
-    
-    userData.balances[payCurrency] -= payAmount;
-    userData.balances[receiveCurrency] += receiveAmount;
-    
-    const transaction = {
-        id: 'swap_' + Date.now() + Math.random().toString(36).substr(2, 5),
+    const notification = {
+        id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         userId: userId,
-        type: 'swap',
-        amount: payAmount,
-        currency: payCurrency,
-        status: 'completed',
-        timestamp: new Date().toISOString(),
-        details: `Swapped to ${receiveAmount} ${receiveCurrency}`
+        message: message,
+        type: type,
+        read: false,
+        timestamp: new Date().toISOString()
     };
     
-    userData.transactions.push(transaction);
-    
-    if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            transactions: userData.transactions
+    try {
+        await db.collection('users').doc(userId).update({
+            notifications: firebase.firestore.FieldValue.arrayUnion(notification)
         });
-        db.collection('transactions').add(transaction);
+        
+        if (userId === userData.userId) {
+            userData.notifications = userData.notifications || [];
+            userData.notifications.push(notification);
+            saveUserData();
+            updateNotificationBadge();
+            showToast(message, type);
+        }
+    } catch (error) {
+        console.error("Error adding notification:", error);
     }
-    
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-    
-    showToast(`Swapped ${payAmount} ${payCurrency} to ${receiveAmount} ${receiveCurrency}`, 'success');
-    
-    document.getElementById('payAmount').value = '1';
-    calculateSwap();
-    updateSwapBalances();
-    updateUI();
-    animateElement('#swapBtn', 'pop');
-}
-
-// ====== Set Max Amount ======
-window.setMaxAmount = function() {
-    console.log("setMaxAmount called");
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const balance = userData.balances[payCurrency] || 0;
-    document.getElementById('payAmount').value = balance;
-    calculateSwap();
-    animateElement('.max-btn', 'pop');
-    showToast(`Max amount set: ${balance} ${payCurrency}`, 'info');
-}
-
-// ====== Swap Direction ======
-window.swapDirection = function(direction) {
-    console.log("swapDirection called:", direction);
-    if (direction === 'down') {
-        document.getElementById('payCurrency').textContent = 'USDT';
-        document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
-        document.getElementById('receiveCurrency').textContent = 'REFI';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-    } else if (direction === 'up') {
-        document.getElementById('payCurrency').textContent = 'REFI';
-        document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
-        document.getElementById('receiveCurrency').textContent = 'USDT';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
-    }
-    
-    updateSwapNote();
-    calculateSwap();
-    updateSwapBalances();
-    animateElement('.swap-action-btn', 'pop');
-}
-
-// ====== P2P Function ======
-function showP2P() {
-    document.getElementById('p2pModal').classList.add('show');
-    animateElement('.p2p-icon', 'pulse');
-    
-    const countdown = document.getElementById('p2pCountdown');
-    if (countdown) {
-        countdown.textContent = '7 days';
-    }
-}
-
-// ====== Modal Functions ======
-function showDepositModal() {
-    document.getElementById('depositModal').classList.add('show');
-    updateDepositInfo();
-    animateElement('.modal-content', 'slideUpModal');
-}
-
-function showWithdrawModal() {
-    document.getElementById('withdrawModal').classList.add('show');
-    checkWithdrawFee();
-    updateWithdrawIcon();
-    animateElement('.modal-content', 'slideUpModal');
-}
-
-function showHistory() {
-    document.getElementById('historyModal').classList.add('show');
-    renderHistory('all');
-    animateElement('.modal-content', 'slideUpModal');
 }
 
 function showNotifications() {
@@ -1680,251 +1841,55 @@ function showNotifications() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
+// ============================================
+// 16. ADMIN SYSTEM
+// ============================================
+function isAdmin() {
+    return userData.userId === ADMIN_ID;
 }
 
-// ====== Deposit Functions ======
-function updateDepositInfo() {
-    const currency = document.getElementById('depositCurrency').value;
-    const amountInput = document.getElementById('depositAmount');
-    const depositAddress = document.getElementById('depositAddress');
-    const depositIcon = document.getElementById('depositIcon');
-    const addressNote = document.getElementById('depositAddressNote');
+function checkAdminAndAddCrown() {
+    console.log("🔍 Checking admin status...");
+    console.log("User ID:", userData.userId);
+    console.log("Admin ID:", ADMIN_ID);
+    console.log("Is admin?", userData.userId === ADMIN_ID);
     
-    if (depositIcon) depositIcon.src = getCurrencyIcon(currency);
-    depositAddress.textContent = DEPOSIT_ADDRESSES[currency] || DEPOSIT_ADDRESSES.REFI;
-    addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || '✓ Blockchain confirmation 1-5 minutes'}</span>`;
-    
-    const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
-    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE' || currency === 'TRUMP') {
-        amountInput.placeholder = `Min ${minAmount.toLocaleString()} ${currency}`;
-    } else {
-        amountInput.placeholder = `Min ${minAmount} ${currency}`;
+    if (userData.userId === ADMIN_ID) {
+        console.log("👑 Admin confirmed! Adding crown...");
+        addAdminCrown();
     }
 }
 
-function copyDepositAddress() {
-    const address = document.getElementById('depositAddress').textContent;
-    navigator.clipboard.writeText(address);
-    showToast('Address copied to clipboard!', 'success');
-    animateElement('.copy-address-btn', 'pop');
-}
-
-// ====== ✅ دالة السحب المحسنة مع حجز الرصيد فوراً ======
-async function submitWithdraw() {
-    const currency = document.getElementById('withdrawCurrency').value;
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const address = document.getElementById('walletAddress').value;
-    
-    if (!amount || amount <= 0 || !address) {
-        showToast('Please fill all fields', 'error');
-        return;
-    }
-    
-    // التحقق من الرصيد
-    if (!userData.balances[currency] || userData.balances[currency] < amount) {
-        showToast(`Insufficient ${currency} balance`, 'error');
-        return;
-    }
-    
-    let fee = 0;
-    let feeCurrency = 'BNB';
-    
-    if (currency === 'USDT') {
-        fee = 0.00016;
-        if (!userData.balances.BNB || userData.balances.BNB < fee) {
-            showToast(`You need ${fee} BNB for withdrawal fee`, 'error');
-            return;
-        }
-    } else if (currency === 'BNB') {
-        fee = 0.0005;
-        if (!userData.balances.BNB || userData.balances.BNB < (amount + fee)) {
-            showToast(`Insufficient BNB balance including fee`, 'error');
-            return;
-        }
-    }
-    
-    // ✅ 1. خصم الرصيد فوراً (حجز مؤقت)
-    const originalBalance = userData.balances[currency];
-    const originalFeeBalance = fee > 0 ? userData.balances[feeCurrency] : null;
-    
-    userData.balances[currency] -= amount;
-    if (fee > 0) {
-        userData.balances[feeCurrency] -= fee;
-    }
-    
-    // حفظ التغيير مؤقتاً في localStorage
-    await saveUserData();
-    
-    // ✅ 2. إنشاء طلب السحب
-    const withdrawRequest = {
-        id: 'wd_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        userId: userId,
-        currency: currency,
-        amount: amount,
-        address: address,
-        fee: fee,
-        feeCurrency: feeCurrency,
-        status: 'pending',
-        timestamp: new Date().toISOString(),
-        type: 'withdraw'
+function addAdminCrown() {
+    const tryAddCrown = () => {
+        const header = document.querySelector('.header-actions');
+        if (!header) return false;
+        
+        const existingCrown = document.getElementById('adminCrownBtn');
+        if (existingCrown) existingCrown.remove();
+        
+        const adminBtn = document.createElement('button');
+        adminBtn.id = 'adminCrownBtn';
+        adminBtn.className = 'icon-btn';
+        adminBtn.innerHTML = '<i class="fa-solid fa-crown" style="color: gold;"></i>';
+        adminBtn.onclick = showAdminPanel;
+        adminBtn.title = 'Admin Panel';
+        header.appendChild(adminBtn);
+        
+        console.log("✅ Admin crown added");
+        return true;
     };
     
-    try {
-        if (db) {
-            await db.collection('transactions').add(withdrawRequest);
-            await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
+    if (tryAddCrown()) return;
+    
+    // Retry up to 5 times
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        if (tryAddCrown() || attempts >= 5) {
+            clearInterval(interval);
         }
-        
-        userData.transactions.push(withdrawRequest);
-        await saveUserData();
-        
-        showToast('Withdrawal request submitted! Waiting for admin approval.', 'success');
-        closeModal('withdrawModal');
-        
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('walletAddress').value = '';
-        
-    } catch (error) {
-        console.error("Withdraw error:", error);
-        
-        // ✅ 3. في حالة الخطأ، نعيد الرصيد
-        userData.balances[currency] = originalBalance;
-        if (fee > 0) {
-            userData.balances[feeCurrency] = originalFeeBalance;
-        }
-        await saveUserData();
-        
-        showToast('Failed to submit withdrawal request', 'error');
-    }
-}
-
-// ====== Show Toast ======
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-    
-    toastMessage.textContent = message;
-    toast.classList.remove('hidden');
-    
-    const icon = toast.querySelector('i');
-    if (type === 'success') {
-        icon.className = 'fa-regular fa-circle-check';
-    } else if (type === 'error') {
-        icon.className = 'fa-regular fa-circle-xmark';
-    } else if (type === 'warning') {
-        icon.className = 'fa-regular fa-circle-exclamation';
-    } else {
-        icon.className = 'fa-regular fa-circle-info';
-    }
-    
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 3000);
-}
-
-// ====== Save User Data ======
-async function saveUserData() {
-    if (!userData) return;
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-    
-    if (db) {
-        try {
-            await db.collection('users').doc(userId).set(userData, { merge: true });
-        } catch (error) {
-            console.error("Error saving to Firebase:", error);
-        }
-    }
-}
-
-// ====== Copy to Clipboard ======
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
-    showToast('Copied to clipboard!', 'success');
-}
-
-// ====== Setup Scroll Listener ======
-function setupScrollListener() {
-    const scrollBtn = document.getElementById('scrollTopBtn');
-    const container = document.querySelector('.app-container');
-    
-    if (!scrollBtn || !container) return;
-    
-    container.addEventListener('scroll', () => {
-        if (container.scrollTop > 300) {
-            scrollBtn.classList.add('show');
-        } else {
-            scrollBtn.classList.remove('show');
-        }
-    });
-}
-
-function scrollToTop() {
-    document.querySelector('.app-container').scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-}
-
-// ====== Show All Assets ======
-function showAllAssets() {
-    showToast('All assets view coming soon!', 'info');
-}
-
-// ====== Asset Details ======
-function showAssetDetails(symbol) {
-    const balance = userData.balances[symbol] || 0;
-    const price = symbol === 'REFI' ? REFI_PRICE : (livePrices[symbol]?.price || 0);
-    const value = symbol === 'USDT' ? balance : balance * price;
-    
-    showToast(`${symbol}: ${formatBalance(balance, symbol)} ($${formatNumber(value)})`, 'info');
-}
-
-// ====== Crypto Details ======
-function showCryptoDetails(symbol) {
-    const price = livePrices[symbol]?.price || 0;
-    const change = livePrices[symbol]?.change || 0;
-    const changeSymbol = change >= 0 ? '+' : '';
-    
-    showToast(`${symbol}: $${formatNumber(price)} (${changeSymbol}${change.toFixed(2)}%)`, 'info');
-}
-
-// ====== Staking Details ======
-function showStakingDetails(type) {
-    const modal = document.getElementById('stakingDetailsModal');
-    const body = document.getElementById('stakingDetailsBody');
-    
-    if (!modal || !body) return;
-    
-    if (type === 'total') {
-        body.innerHTML = `
-            <h4>Total Staked</h4>
-            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('totalStaked').textContent}</p>
-            <p>Your staked amount earns rewards based on the plan you choose.</p>
-            <p style="margin-top: 15px; color: var(--text-secondary);">Rewards are calculated and credited after the staking period ends.</p>
-        `;
-    } else if (type === 'rewards') {
-        body.innerHTML = `
-            <h4>Rewards Earned</h4>
-            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('rewardsEarned').textContent}</p>
-            <p>Available rewards from completed stakes.</p>
-            <p style="margin-top: 15px; color: var(--text-secondary);">Claim your rewards from the Active Stakes section.</p>
-        `;
-    } else if (type === 'avg') {
-        body.innerHTML = `
-            <h4>Average Return</h4>
-            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('avgReturn').textContent}</p>
-            <p>Your average return across all active stakes.</p>
-        `;
-    }
-    
-    modal.classList.add('show');
-}
-
-// ====== Admin Functions ======
-function isAdmin() {
-    return userId === ADMIN_ID;
+    }, 500);
 }
 
 function showAdminPanel() {
@@ -1973,33 +1938,42 @@ async function showAdminTab(tab) {
     
     const adminContent = document.getElementById('adminContent');
     
-    if (!db) return;
-    
-    let query;
-    if (tab === 'deposits') {
-        query = db.collection('transactions').where('type', '==', 'deposit').where('status', '==', 'pending');
-    } else if (tab === 'withdrawals') {
-        query = db.collection('transactions').where('type', '==', 'withdraw').where('status', '==', 'pending');
-    } else if (tab === 'completed') {
-        query = db.collection('transactions').where('status', 'in', ['approved', 'completed']);
-    } else if (tab === 'rejected') {
-        query = db.collection('transactions').where('status', '==', 'rejected');
-    }
-    
-    const snapshot = await query.limit(50).get();
-    
-    if (snapshot.empty) {
-        adminContent.innerHTML = '<div class="empty-state">No transactions found</div>';
+    if (!db) {
+        adminContent.innerHTML = '<div class="empty-state">Firebase not connected</div>';
         return;
     }
     
-    let html = '';
-    snapshot.forEach(doc => {
-        const tx = { id: doc.id, ...doc.data() };
-        html += renderAdminTransactionCard(tx, tab);
-    });
-    
-    adminContent.innerHTML = html;
+    try {
+        let query;
+        if (tab === 'deposits') {
+            query = db.collection('transactions').where('type', '==', 'deposit').where('status', '==', 'pending');
+        } else if (tab === 'withdrawals') {
+            query = db.collection('transactions').where('type', '==', 'withdraw').where('status', '==', 'pending');
+        } else if (tab === 'completed') {
+            query = db.collection('transactions').where('status', 'in', ['approved', 'completed']);
+        } else if (tab === 'rejected') {
+            query = db.collection('transactions').where('status', '==', 'rejected');
+        }
+        
+        const snapshot = await query.limit(50).get();
+        
+        if (snapshot.empty) {
+            adminContent.innerHTML = '<div class="empty-state">No transactions found</div>';
+            return;
+        }
+        
+        let html = '';
+        snapshot.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data() };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        adminContent.innerHTML = html;
+        
+    } catch (error) {
+        console.error("Error loading admin tab:", error);
+        adminContent.innerHTML = '<div class="empty-state">Error loading transactions</div>';
+    }
 }
 
 function renderAdminTransactionCard(tx, tab) {
@@ -2032,7 +2006,7 @@ function renderAdminTransactionCard(tx, tab) {
             <div class="admin-tx-details">
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">User:</span>
-                    <span class="admin-tx-value">${tx.userId.substring(0, 8)}...</span>
+                    <span class="admin-tx-value">${tx.userId?.substring(0, 8)}...</span>
                 </div>
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Amount:</span>
@@ -2067,44 +2041,37 @@ function renderAdminTransactionCard(tx, tab) {
                     <span class="admin-tx-label">Time:</span>
                     <span class="admin-tx-value">${formattedDate}</span>
                 </div>
-                ${tx.reason ? `
-                <div class="admin-tx-row">
-                    <span class="admin-tx-label">Reason:</span>
-                    <span class="admin-tx-value" style="color: var(--danger);">${tx.reason}</span>
-                </div>` : ''}
             </div>
             ${actionButtons}
         </div>
     `;
 }
 
-// ====== ✅ دالة الموافقة على الطلب (محدثة) ======
+// ✅ دالة الموافقة على المعاملة
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     try {
         console.log("Approving transaction:", txId);
         
-        await db.collection('transactions').doc(txId).update({
+        const txRef = db.collection('transactions').doc(txId);
+        await txRef.update({
             status: 'approved',
             approvedAt: new Date().toISOString()
         });
         
         if (type === 'deposit') {
-            // الإيداع: نضيف الرصيد
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
             });
             await addNotification(targetUserId, `✅ Your deposit of ${amount} ${currency} has been approved!`, 'success');
             
         } else if (type === 'withdraw') {
-            // السحب: الرصيد محجوز مسبقاً، لا حاجة لخصمه مرة أخرى
-            // فقط نرسل إشعار
+            // Withdrawal - balance already reserved, just notify
             const feeText = fee > 0 ? ` (Fee: ${fee} ${feeCurrency})` : '';
             await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
         }
         
         showToast('Transaction approved!', 'success');
         
-        // تحديث الواجهة
         const activeTab = document.querySelector('.admin-tab.active').textContent.toLowerCase();
         showAdminTab(activeTab);
         
@@ -2114,22 +2081,22 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
 }
 
-// ====== ✅ دالة رفض الطلب (محدثة مع إعادة الرصيد) ======
+// ✅ دالة رفض المعاملة (مع إعادة الرصيد للسحب)
 async function rejectTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     try {
         console.log("Rejecting transaction:", txId);
         
-        // نافذة لاختيار سبب الرفض
         const reason = prompt('Enter rejection reason:', 'Invalid request');
         if (reason === null) return;
         
-        await db.collection('transactions').doc(txId).update({
+        const txRef = db.collection('transactions').doc(txId);
+        await txRef.update({
             status: 'rejected',
             reason: reason,
             rejectedAt: new Date().toISOString()
         });
         
-        // ✅ إعادة الرصيد للمستخدم في حالة رفض السحب
+        // Return balance for rejected withdrawals
         if (type === 'withdraw') {
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
@@ -2145,7 +2112,6 @@ async function rejectTransaction(txId, targetUserId, type, currency, amount, fee
         
         showToast('Transaction rejected!', 'success');
         
-        // تحديث الواجهة
         const activeTab = document.querySelector('.admin-tab.active').textContent.toLowerCase();
         showAdminTab(activeTab);
         
@@ -2154,3 +2120,242 @@ async function rejectTransaction(txId, targetUserId, type, currency, amount, fee
         showToast('Error rejecting transaction', 'error');
     }
 }
+
+// ============================================
+// 17. REALTIME LISTENERS (للطلبات المعلقة فقط)
+// ============================================
+function setupRealtimeListeners() {
+    if (!db || !userData.userId) return;
+    
+    console.log("👂 Setting up real-time listeners for financial transactions...");
+    
+    // Listen for deposit status changes
+    db.collection('transactions')
+        .where('userId', '==', userData.userId)
+        .where('status', 'in', ['approved', 'rejected'])
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'modified') {
+                    const tx = change.doc.data();
+                    
+                    if (tx.status === 'approved') {
+                        if (tx.type === 'deposit') {
+                            userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                            showToast(`✅ Deposit of ${tx.amount} ${tx.currency} approved!`, 'success');
+                        } else if (tx.type === 'withdraw') {
+                            showToast(`✅ Withdrawal of ${tx.amount} ${tx.currency} approved!`, 'success');
+                        }
+                    } else if (tx.status === 'rejected') {
+                        showToast(`❌ Your ${tx.type} was rejected. Reason: ${tx.reason || 'No reason'}`, 'error');
+                        
+                        // Return balance for rejected withdrawals
+                        if (tx.type === 'withdraw') {
+                            userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                            if (tx.fee > 0) {
+                                userData.balances[tx.feeCurrency] = (userData.balances[tx.feeCurrency] || 0) + tx.fee;
+                            }
+                        }
+                    }
+                    
+                    // Update transaction in local array
+                    const txIndex = userData.transactions.findIndex(t => t.id === tx.id);
+                    if (txIndex >= 0) {
+                        userData.transactions[txIndex] = tx;
+                    } else {
+                        userData.transactions.push(tx);
+                    }
+                    
+                    saveUserData();
+                    updateUI();
+                }
+            });
+        });
+}
+
+// ============================================
+// 18. NAVIGATION FUNCTIONS
+// ============================================
+function showWallet() {
+    document.getElementById('walletSection').classList.remove('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+    
+    renderAssets();
+    updateTotalBalance();
+    animateElement('.balance-card', 'pop');
+}
+
+function showSwap() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.remove('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    
+    // Set default values
+    document.getElementById('payCurrency').textContent = 'USDT';
+    document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
+    document.getElementById('receiveCurrency').textContent = 'REFI';
+    document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+    
+    updateSwapBalances();
+    calculateSwap();
+    animateElement('.swap-card', 'scaleIn');
+}
+
+function showStaking() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.remove('hidden');
+    document.getElementById('referralSection').classList.add('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    
+    updateStakingStats();
+    renderStakingMissions();
+    animateElement('.staking-stats', 'slideUp');
+}
+
+function showReferral() {
+    document.getElementById('walletSection').classList.add('hidden');
+    document.getElementById('swapSection').classList.add('hidden');
+    document.getElementById('stakingSection').classList.add('hidden');
+    document.getElementById('referralSection').classList.remove('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
+    
+    updateReferralStats();
+    renderReferralMilestones();
+    animateElement('.referral-link-card', 'pop');
+}
+
+function showHistory() {
+    document.getElementById('historyModal').classList.add('show');
+    renderHistory('all');
+    animateElement('.modal-content', 'slideUpModal');
+}
+
+function showP2P() {
+    document.getElementById('p2pModal').classList.add('show');
+    animateElement('.p2p-icon', 'pulse');
+    document.getElementById('p2pCountdown').textContent = '7 days';
+}
+
+function showAllAssets() {
+    showToast('All assets view coming soon!', 'info');
+}
+
+function showAssetDetails(symbol) {
+    const balance = userData.balances[symbol] || 0;
+    const price = symbol === 'REFI' ? REFI_PRICE : (livePrices[symbol]?.price || 0);
+    const value = symbol === 'USDT' ? balance : balance * price;
+    
+    showToast(`${symbol}: ${formatBalance(balance, symbol)} ($${formatNumber(value)})`, 'info');
+}
+
+function showCryptoDetails(symbol) {
+    const price = livePrices[symbol]?.price || 0;
+    const change = livePrices[symbol]?.change || 0;
+    const changeSymbol = change >= 0 ? '+' : '';
+    
+    showToast(`${symbol}: $${formatNumber(price)} (${changeSymbol}${change.toFixed(2)}%)`, 'info');
+}
+
+function showStakingDetails(type) {
+    const modal = document.getElementById('stakingDetailsModal');
+    const body = document.getElementById('stakingDetailsBody');
+    
+    if (!modal || !body) return;
+    
+    if (type === 'total') {
+        body.innerHTML = `
+            <h4>Total Staked</h4>
+            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('totalStaked').textContent}</p>
+            <p>Your staked amount earns rewards based on the plan you choose.</p>
+            <p style="margin-top: 15px; color: var(--text-secondary);">Rewards are calculated and credited after the staking period ends.</p>
+        `;
+    } else if (type === 'rewards') {
+        body.innerHTML = `
+            <h4>Rewards Earned</h4>
+            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('rewardsEarned').textContent}</p>
+            <p>Available rewards from completed stakes.</p>
+            <p style="margin-top: 15px; color: var(--text-secondary);">Claim your rewards from the Active Stakes section.</p>
+        `;
+    } else if (type === 'avg') {
+        body.innerHTML = `
+            <h4>Average Return</h4>
+            <p style="font-size: 24px; color: var(--pink-1); margin: 20px 0;">${document.getElementById('avgReturn').textContent}</p>
+            <p>Your average return across all active stakes.</p>
+        `;
+    }
+    
+    modal.classList.add('show');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+}
+
+function scrollToTop() {
+    document.querySelector('.app-container').scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// ============================================
+// 19. EXPORT FUNCTIONS TO WINDOW
+// ============================================
+window.showWallet = showWallet;
+window.showSwap = showSwap;
+window.showStaking = showStaking;
+window.showReferral = showReferral;
+window.showDepositModal = showDepositModal;
+window.showWithdrawModal = showWithdrawModal;
+window.showHistory = showHistory;
+window.showP2P = showP2P;
+window.showNotifications = showNotifications;
+window.showCurrencySelector = showCurrencySelector;
+window.selectCurrency = selectCurrency;
+window.filterCurrencies = filterCurrencies;
+window.calculateSwap = calculateSwap;
+window.confirmSwap = confirmSwap;
+window.setMaxAmount = setMaxAmount;
+window.swapDirection = swapDirection;
+window.updateDepositInfo = updateDepositInfo;
+window.copyDepositAddress = copyDepositAddress;
+window.submitDeposit = submitDeposit;
+window.checkWithdrawFee = checkWithdrawFee;
+window.submitWithdraw = submitWithdraw;
+window.updateWithdrawIcon = updateWithdrawIcon;
+window.refreshPrices = refreshPrices;
+window.filterHistory = filterHistory;
+window.closeModal = closeModal;
+window.scrollToTop = scrollToTop;
+window.showAllAssets = showAllAssets;
+window.showAssetDetails = showAssetDetails;
+window.showCryptoDetails = showCryptoDetails;
+window.showStakingDetails = showStakingDetails;
+window.selectStakingPlan = selectStakingPlan;
+window.calculateStakingReturn = calculateStakingReturn;
+window.stakeUSDT = stakeUSDT;
+window.claimStakingReward = claimStakingReward;
+window.claimStakingMission = claimStakingMission;
+window.copyReferralLink = copyReferralLink;
+window.shareReferral = shareReferral;
+window.claimReferralMilestone = claimReferralMilestone;
+window.closeAdminPanel = closeAdminPanel;
+window.showAdminTab = showAdminTab;
+window.approveTransaction = approveTransaction;
+window.rejectTransaction = rejectTransaction;
+window.copyToClipboard = copyToClipboard;
+
+console.log("✅ REFI Wallet v10.0 loaded successfully!");
