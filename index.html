@@ -28,7 +28,7 @@
                 </div>
                 <h1 class="splash-title">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v7.0.0</div>
+                <div class="splash-version">v8.0.0</div>
             </div>
         </div>
 
@@ -82,10 +82,10 @@
                     </button>
                 </div>
 
-                <!-- قائمة الأصول (8 عملات قابلة للإيداع) -->
+                <!-- قائمة الأصول -->
                 <div class="assets-list" id="assetsList"></div>
 
-                <!-- العملات العشر (للعرض فقط) -->
+                <!-- العملات العشر -->
                 <div class="section-header" style="margin-top: 20px;">
                     <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
@@ -99,55 +99,60 @@
                 </div>
             </div>
 
-            <!-- قسم السواب المحسّن (مع زر MAX) -->
+            <!-- قسم السواب المحسن (التصميم الجديد) -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <h3>Swap to REFI</h3>
+                    <h3>Swap</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="swap-container">
                     <div class="swap-card">
-                        <!-- أنت تدفع (مع زر MAX) -->
+                        <!-- From -->
+                        <div class="swap-label">From</div>
                         <div class="swap-input-card">
-                            <div class="swap-label">
-                                <span>YOU PAY</span>
-                                <div class="balance-with-max">
-                                    <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
-                                    <button class="max-btn" onclick="setMaxAmount()">MAX</button>
-                                </div>
-                            </div>
-                            <div class="swap-input-group">
-                                <input type="number" id="payAmount" placeholder="0" value="1" oninput="calculateSwap()">
+                            <div class="swap-header">
+                                <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
                                 <div class="currency-selector" onclick="showCurrencySelector('pay')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" class="currency-icon" id="payCurrencyIcon">
                                     <span id="payCurrency">USDT</span>
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- سهم التحويل -->
-                        <div class="swap-arrow">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </div>
-
-                        <!-- أنت تستلم (ثابت: REFI) -->
-                        <div class="swap-input-card">
-                            <div class="swap-label">
-                                <span>YOU RECEIVE</span>
-                                <span class="balance-text" id="receiveBalance">Balance: 0 REFI</span>
-                            </div>
                             <div class="swap-input-group">
-                                <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
+                                <input type="number" id="payAmount" placeholder="0" value="1" oninput="calculateSwap()">
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons [⬇️] [⬆️] [MAX] -->
+                        <div class="swap-actions">
+                            <button class="swap-action-btn" onclick="swapDirection('down')" id="swapDownBtn" title="Swap USDT to REFI">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <button class="swap-action-btn" onclick="swapDirection('up')" id="swapUpBtn" title="Swap REFI to USDT">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                            <button class="swap-action-btn max-btn" onclick="setMaxAmount()" title="Use maximum balance">
+                                MAX
+                            </button>
+                        </div>
+
+                        <!-- To -->
+                        <div class="swap-label">To</div>
+                        <div class="swap-input-card">
+                            <div class="swap-header">
+                                <span class="balance-text" id="receiveBalance">Balance: 0 REFI</span>
                                 <div class="currency-selector" onclick="showCurrencySelector('receive')">
                                     <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="currency-icon" id="receiveCurrencyIcon">
                                     <span id="receiveCurrency">REFI</span>
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </div>
+                            </div>
+                            <div class="swap-input-group">
+                                <input type="number" id="receiveAmount" placeholder="0" value="500000" readonly disabled>
                             </div>
                         </div>
 
@@ -161,12 +166,6 @@
                                 <span>Network Fee</span>
                                 <span class="fee-free">0 BNB (FREE)</span>
                             </div>
-                        </div>
-
-                        <!-- ملاحظة السواب -->
-                        <div class="swap-note info">
-                            <i class="fa-solid fa-circle-info"></i>
-                            <span id="swapNote">You can swap any token to REFI</span>
                         </div>
 
                         <!-- زر التأكيد -->
@@ -373,7 +372,6 @@
                     <input type="text" id="txnId" class="form-input" placeholder="Enter transaction ID">
                 </div>
                 
-                <!-- عنوان الإيداع -->
                 <div class="deposit-address-card">
                     <div class="address-header">
                         <p>Send to this address:</p>
@@ -428,13 +426,11 @@
                     <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address">
                 </div>
                 
-                <!-- تحذير الرسوم -->
                 <div id="feeWarning" class="fee-warning hidden">
                     <i class="fa-solid fa-circle-exclamation"></i>
                     <span id="feeWarningText">This withdrawal requires a fee</span>
                 </div>
                 
-                <!-- ملخص السحب -->
                 <div class="withdraw-summary">
                     <div class="summary-row">
                         <span>You will receive:</span>
