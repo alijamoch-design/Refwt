@@ -62,9 +62,9 @@ const DEPOSIT_MINIMUMS = {
 // ====== الروابط الثابتة ======
 const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
 const ADMIN_ID = "1653918641";
-const SWAP_RATE = 500000;
-const REFERRAL_BONUS = 250000;
-const REFI_PRICE = 0.000002;
+const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
+const REFERRAL_BONUS = 250000; // REFI per referral
+const REFI_PRICE = 0.000002; // سعر REFI الثابت
 
 // ====== معرفات العملات في CoinGecko (محدثة مع جميع العملات) ======
 const CRYPTO_IDS = {
@@ -155,13 +155,13 @@ const TOP_CRYPTOS = [
 // ====== جميع العملات المتاحة للاختيار في السواب ======
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
+    { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
     { symbol: 'BNB', name: 'BNB', icon: CMC_ICONS.BNB },
     { symbol: 'ETH', name: 'Ethereum', icon: CMC_ICONS.ETH },
     { symbol: 'SOL', name: 'Solana', icon: CMC_ICONS.SOL },
     { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX },
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
-    { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE },
-    { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI }
+    { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE }
 ];
 
 // ====== قائمة الأصول (8 عملات قابلة للإيداع) ======
@@ -179,6 +179,7 @@ const ALL_ASSETS = [
 // ====== State Management ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
+let swapDirection = 'to-refi'; // 'to-refi' أو 'to-usdt'
 let livePrices = {};
 let unreadNotifications = 0;
 let currentCurrencySelector = 'pay';
@@ -224,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ====== Load User Data with better error handling ======
 async function loadUserData() {
     try {
-        // محاولة التحميل من localStorage
+        // محاولة التحميل من localStorage أولاً
         const localData = localStorage.getItem(`user_${userId}`);
         if (localData) {
             try {
@@ -233,7 +234,6 @@ async function loadUserData() {
                 updateUI();
             } catch (e) {
                 console.error("Error parsing localStorage data:", e);
-                // إذا كان التنسيق غير صحيح، ننشئ مستخدم جديد
                 await createNewUser();
             }
         }
@@ -246,7 +246,6 @@ async function loadUserData() {
                 if (userDoc.exists) {
                     const fbData = userDoc.data();
                     
-                    // دمج البيانات (Firebase له الأولوية للأرصدة)
                     if (userData) {
                         userData = {
                             ...userData,
@@ -259,24 +258,19 @@ async function loadUserData() {
                     
                     console.log("✅ Synced with Firebase");
                 } else if (!userData) {
-                    // مستخدم جديد - ننشئ حساب
                     await createNewUser();
-                    // حفظ في Firebase
                     await db.collection('users').doc(userId).set(userData);
                 }
             } catch (firebaseError) {
                 console.error("Firebase error:", firebaseError);
-                // إذا فشل الاتصال بـ Firebase، نستمر بالبيانات المحلية
                 if (!userData) {
                     await createNewUser();
                 }
             }
         } else if (!userData) {
-            // لا Firebase ولا localStorage - ننشئ مستخدم جديد
             await createNewUser();
         }
         
-        // حفظ في localStorage بعد أي تحديث
         if (userData) {
             localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         }
@@ -288,8 +282,6 @@ async function loadUserData() {
     } catch (error) {
         console.error("Error in loadUserData:", error);
         showToast('Error loading data, but creating new user', 'warning');
-        
-        // في حالة الخطأ، ننشئ مستخدم جديد
         await createNewUser();
     }
 }
@@ -331,7 +323,6 @@ async function createNewUser() {
         
     } catch (error) {
         console.error("Error creating new user:", error);
-        // إنشاء مستخدم بسيط جداً في حالة الخطأ
         userData = {
             userId: userId,
             userName: userName,
@@ -361,10 +352,8 @@ async function createNewUser() {
 async function saveUserData() {
     if (!userData) return;
     
-    // حفظ في localStorage
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
-    // حفظ في Firebase (إذا كان متاحاً)
     if (db) {
         try {
             await db.collection('users').doc(userId).set(userData, { merge: true });
@@ -376,12 +365,11 @@ async function saveUserData() {
 
 // ====== Load Prices Once ======
 async function loadPricesOnce() {
-    // محاولة التحميل من localStorage
     try {
         const cachedPrices = localStorage.getItem('cachedPrices');
         if (cachedPrices) {
             const { data, timestamp } = JSON.parse(cachedPrices);
-            if (Date.now() - timestamp < 3600000) { // أقل من ساعة
+            if (Date.now() - timestamp < 3600000) {
                 livePrices = data;
                 renderTopCryptos();
                 renderAssets();
@@ -411,7 +399,6 @@ async function fetchLivePrices() {
         
         const data = await response.json();
         
-        // تحديث الأسعار
         for (const [symbol, id] of Object.entries(CRYPTO_IDS)) {
             if (data[id]) {
                 livePrices[symbol] = {
@@ -421,7 +408,6 @@ async function fetchLivePrices() {
             }
         }
         
-        // حفظ في localStorage
         localStorage.setItem('cachedPrices', JSON.stringify({
             data: livePrices,
             timestamp: Date.now()
@@ -434,8 +420,6 @@ async function fetchLivePrices() {
     } catch (error) {
         console.error("Error fetching prices:", error);
         showToast('Failed to fetch prices', 'error');
-        
-        // استخدام قيم افتراضية للعملات
         setDefaultPrices();
     }
 }
@@ -1099,8 +1083,10 @@ function updateSwapBalances() {
     if (!userData) return;
     
     const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     document.getElementById('payBalance').textContent = `Balance: ${formatBalance(userData.balances[payCurrency] || 0, payCurrency)}`;
+    document.getElementById('receiveBalance').textContent = `Balance: ${formatBalance(userData.balances[receiveCurrency] || 0, receiveCurrency)}`;
 }
 
 // ====== Update Notification Badge ======
@@ -1136,6 +1122,13 @@ function showSwap() {
     
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    
+    // تعيين القيم الافتراضية عند فتح السواب
+    document.getElementById('payCurrency').textContent = 'USDT';
+    document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
+    document.getElementById('receiveCurrency').textContent = 'REFI';
+    document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+    swapDirection = 'to-refi';
     
     updateSwapBalances();
     calculateSwap();
@@ -1361,11 +1354,11 @@ function showCurrencySelector(type) {
     const modal = document.getElementById('currencySelectorModal');
     const currencyList = document.getElementById('currencyList');
     
-    // للـ PAY: نعرض كل العملات القابلة للإيداع
-    // للـ RECEIVE: نعرض REFI فقط (ثابت)
     let currencies = SWAP_CURRENCIES;
+    
+    // للـ RECEIVE: نعرض فقط USDT و REFI (لأن باقي العملات لا يمكن استقبالها)
     if (type === 'receive') {
-        currencies = SWAP_CURRENCIES.filter(c => c.symbol === 'REFI');
+        currencies = SWAP_CURRENCIES.filter(c => c.symbol === 'USDT' || c.symbol === 'REFI');
     }
     
     currencyList.innerHTML = currencies.map(curr => `
@@ -1383,19 +1376,73 @@ function showCurrencySelector(type) {
 
 // ====== Select Currency ======
 function selectCurrency(symbol) {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
     if (currentCurrencySelector === 'pay') {
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        // العملة المستقبلة ثابتة: REFI
-        document.getElementById('receiveCurrency').textContent = 'REFI';
-        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+        // إذا كانت عملة الدفع هي USDT، نجعل الاستقبال REFI
+        if (symbol === 'USDT') {
+            document.getElementById('receiveCurrency').textContent = 'REFI';
+            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+            swapDirection = 'to-refi';
+        }
+        // إذا كانت عملة الدفع هي REFI، نجعل الاستقبال USDT
+        else if (symbol === 'REFI') {
+            document.getElementById('receiveCurrency').textContent = 'USDT';
+            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+            swapDirection = 'to-usdt';
+        }
+        // باقي العملات: نوجهها إلى REFI (ثابت)
+        else {
+            document.getElementById('receiveCurrency').textContent = 'REFI';
+            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+            swapDirection = 'to-refi';
+        }
+    } else {
+        // عند اختيار عملة الاستقبال
+        if (symbol === 'USDT' || symbol === 'REFI') {
+            document.getElementById('receiveCurrency').textContent = symbol;
+            document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
+        } else {
+            showToast('You can only receive USDT or REFI', 'warning');
+            return;
+        }
     }
     
     closeModal('currencySelectorModal');
     updateSwapNote();
     calculateSwap();
     updateSwapBalances();
+}
+
+// ====== Swap Direction (للأزرار ⬇️ و ⬆️) ======
+function swapDirection(direction) {
+    const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
+    if (direction === 'down') {
+        // تحويل USDT → REFI
+        document.getElementById('payCurrency').textContent = 'USDT';
+        document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
+        document.getElementById('receiveCurrency').textContent = 'REFI';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
+        swapDirection = 'to-refi';
+    } else if (direction === 'up') {
+        // تحويل REFI → USDT
+        document.getElementById('payCurrency').textContent = 'REFI';
+        document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
+        document.getElementById('receiveCurrency').textContent = 'USDT';
+        document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
+        swapDirection = 'to-usdt';
+    }
+    
+    updateSwapNote();
+    calculateSwap();
+    updateSwapBalances();
+    animateElement('.swap-action-btn', 'pop');
 }
 
 // ====== Set Max Amount ======
@@ -1410,14 +1457,18 @@ function setMaxAmount() {
 // ====== Update Swap Note ======
 function updateSwapNote() {
     const payCurrency = document.getElementById('payCurrency').textContent;
+    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     const swapNote = document.getElementById('swapNote');
     const swapRate = document.getElementById('swapRate');
     
-    swapNote.textContent = `You can swap ${payCurrency} to REFI`;
-    
-    if (payCurrency === 'USDT') {
+    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
+        swapNote.textContent = 'Swap USDT to REFI at fixed rate';
         swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
+    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
+        swapNote.textContent = 'Swap REFI to USDT at fixed rate';
+        swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
     } else {
+        swapNote.textContent = `Swap ${payCurrency} to ${receiveCurrency}`;
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
         if (payPrice > 0) {
@@ -1459,6 +1510,9 @@ function calculateSwap() {
     if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
         const receiveAmount = payAmount * SWAP_RATE;
         document.getElementById('receiveAmount').value = receiveAmount.toFixed(0);
+    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
+        const receiveAmount = payAmount / SWAP_RATE;
+        document.getElementById('receiveAmount').value = receiveAmount.toFixed(6);
     } else {
         const payPrice = payCurrency === 'REFI' ? REFI_PRICE : (livePrices[payCurrency]?.price || 0);
         
@@ -1489,8 +1543,8 @@ async function confirmSwap() {
         return;
     }
     
-    if (receiveCurrency !== 'REFI') {
-        showToast('You can only swap to REFI', 'error');
+    if (receiveCurrency !== 'USDT' && receiveCurrency !== 'REFI') {
+        showToast('You can only swap to USDT or REFI', 'error');
         return;
     }
     
@@ -2089,7 +2143,8 @@ function renderAdminTransactionCard(tx, tab) {
 // ====== Improved approveTransaction with better error handling ======
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     try {
-        // التحقق من وجود المعاملة
+        console.log("Approving transaction with ID:", txId);
+        
         const txRef = db.collection('transactions').doc(txId);
         const txDoc = await txRef.get();
         
@@ -2098,13 +2153,11 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
             return;
         }
         
-        // تحديث حالة المعاملة
         await txRef.update({
             status: 'approved',
             approvedAt: new Date().toISOString()
         });
         
-        // التحقق من وجود المستخدم
         const userRef = db.collection('users').doc(targetUserId);
         const userDoc = await userRef.get();
         
@@ -2133,7 +2186,6 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
         
         showToast('Transaction approved!', 'success');
         
-        // إعادة تحميل التبويب الحالي
         const activeTab = document.querySelector('.admin-tab.active').textContent.toLowerCase();
         showAdminTab(activeTab);
         
@@ -2146,10 +2198,11 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
 // ====== Improved rejectTransaction with better error handling ======
 async function rejectTransaction(txId, targetUserId) {
     try {
-        // استخدام confirm كبديل لـ tg.showPopup إذا كان متاحاً
+        console.log("Rejecting transaction with ID:", txId);
+        
         if (typeof confirm !== 'undefined') {
             const reason = prompt('Enter rejection reason:', 'Invalid transaction');
-            if (reason === null) return; // المستخدم ألغى
+            if (reason === null) return;
             
             const txRef = db.collection('transactions').doc(txId);
             const txDoc = await txRef.get();
@@ -2169,12 +2222,10 @@ async function rejectTransaction(txId, targetUserId) {
             
             showToast('Transaction rejected!', 'success');
             
-            // إعادة تحميل التبويب الحالي
             const activeTab = document.querySelector('.admin-tab.active').textContent.toLowerCase();
             showAdminTab(activeTab);
             
         } else {
-            // استخدام tg.showPopup كبديل
             tg.showPopup({
                 title: 'Reject Transaction',
                 message: 'Please select a reason:',
@@ -2211,7 +2262,6 @@ async function rejectTransaction(txId, targetUserId) {
                     
                     showToast('Transaction rejected!', 'success');
                     
-                    // إعادة تحميل التبويب الحالي
                     const activeTab = document.querySelector('.admin-tab.active').textContent.toLowerCase();
                     showAdminTab(activeTab);
                     
