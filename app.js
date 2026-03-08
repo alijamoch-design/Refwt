@@ -1,6 +1,6 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 12.0 ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 14.0 ======
 // جميع الحقوق محفوظة • تم التطوير باحترافية عالية
-// الإصدار النهائي مع دعم المجلدات المنفصلة: deposit_requests, withdrawals, transactions
+// الإصدار النهائي مع البحث عن المعاملات باستخدام userId (مثل تطبيق MWH)
 
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
@@ -2500,7 +2500,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 27. ADMIN FUNCTIONS ======
+// ====== 27. ADMIN FUNCTIONS - FIXED with userId search (like MWH app) ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -2717,7 +2717,7 @@ function renderAdminTransactionCard(tx, tab) {
     `;
 }
 
-// ✅ دالة الموافقة على المعاملة - مع دعم المجلدات المختلفة
+// ✅ دالة الموافقة على المعاملة - مثل تطبيق MWH (باستخدام userId)
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
@@ -2725,6 +2725,8 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
     
     try {
+        console.log("🔍 Approving transaction for user:", targetUserId);
+        
         let collectionName = '';
         if (type === 'deposit') {
             collectionName = 'deposit_requests';
@@ -2734,26 +2736,42 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
             collectionName = 'transactions';
         }
         
-        console.log(`🔍 Looking for ${type} in ${collectionName} with ID: ${txId}`);
+        // البحث عن الطلب باستخدام userId (مثل تطبيق MWH)
+        const userRequests = await db.collection(collectionName)
+            .where('userId', '==', targetUserId)
+            .where('status', '==', 'pending')
+            .get();
         
-        // التحقق من وجود المعاملة في المجلد الصحيح
-        const txDoc = await db.collection(collectionName).doc(txId).get();
-        if (!txDoc.exists) {
-            showToast(`❌ ${type} request not found in ${collectionName}`, 'error');
+        if (userRequests.empty) {
+            showToast(`❌ No pending ${type} requests found for this user`, 'error');
             return;
         }
         
-        const txData = txDoc.data();
+        // البحث عن الطلب المطابق للمبلغ والعملة
+        let targetDoc = null;
+        userRequests.forEach(doc => {
+            const data = doc.data();
+            if (data.amount === amount && data.currency === currency) {
+                targetDoc = { id: doc.id, ...data };
+            }
+        });
+        
+        if (!targetDoc) {
+            showToast(`❌ Specific ${type} request not found for this user`, 'error');
+            return;
+        }
+        
+        console.log("✅ Found transaction:", targetDoc);
         
         // تحديث في Firebase
-        await db.collection(collectionName).doc(txId).update({
+        await db.collection(collectionName).doc(targetDoc.id).update({
             status: 'approved',
             approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
             approvedBy: 'admin'
         });
         
         if (type === 'deposit') {
-            // إضافة المبلغ للمستخدم
+            // إضافة المبلغ للمستخدم (مثل تطبيق MWH)
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
             });
@@ -2783,7 +2801,7 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
 }
 
-// ✅ دالة رفض المعاملة - مع دعم المجلدات المختلفة
+// ✅ دالة رفض المعاملة - مثل تطبيق MWH (باستخدام userId)
 function rejectTransaction(txId, targetUserId, type) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
@@ -2821,6 +2839,8 @@ function rejectTransaction(txId, targetUserId, type) {
 
 async function executeRejection(txId, targetUserId, type, reason) {
     try {
+        console.log("🔍 Rejecting transaction for user:", targetUserId);
+        
         let collectionName = '';
         if (type === 'deposit') {
             collectionName = 'deposit_requests';
@@ -2830,26 +2850,41 @@ async function executeRejection(txId, targetUserId, type, reason) {
             collectionName = 'transactions';
         }
         
-        console.log(`🔍 Looking for ${type} in ${collectionName} with ID: ${txId}`);
+        // البحث عن الطلب باستخدام userId (مثل تطبيق MWH)
+        const userRequests = await db.collection(collectionName)
+            .where('userId', '==', targetUserId)
+            .where('status', '==', 'pending')
+            .get();
         
-        // التحقق من وجود المعاملة
-        const txDoc = await db.collection(collectionName).doc(txId).get();
-        if (!txDoc.exists) {
-            showToast(`❌ ${type} request not found in ${collectionName}`, 'error');
+        if (userRequests.empty) {
+            showToast(`❌ No pending ${type} requests found for this user`, 'error');
             return;
         }
         
-        const txData = txDoc.data();
+        // البحث عن الطلب المطابق للمبلغ والعملة باستخدام txId
+        let targetDoc = null;
+        userRequests.forEach(doc => {
+            if (doc.id === txId) {
+                targetDoc = { id: doc.id, ...doc.data() };
+            }
+        });
+        
+        if (!targetDoc) {
+            showToast(`❌ Specific ${type} request not found for this user`, 'error');
+            return;
+        }
+        
+        const txData = targetDoc;
         
         // تحديث في Firebase
-        await db.collection(collectionName).doc(txId).update({
+        await db.collection(collectionName).doc(targetDoc.id).update({
             status: 'rejected',
             reason: reason,
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin'
         });
         
-        // إذا كانت سحب، نعيد المبلغ للمستخدم
+        // إذا كانت سحب، نعيد المبلغ للمستخدم (مثل تطبيق MWH)
         if (type === 'withdraw') {
             const updates = {};
             updates[`balances.${txData.currency}`] = firebase.firestore.FieldValue.increment(txData.amount);
@@ -2986,7 +3021,134 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 29. INITIALIZATION ======
+// ====== 29. FLOATING NOTIFICATIONS (مثل تطبيق MWH) ======
+let notificationInterval = null;
+let notificationTimeouts = [];
+
+function initFloatingNotifications() {
+    console.log("🔔 Initializing floating notifications...");
+    startFloatingNotifications();
+}
+
+function startFloatingNotifications() {
+    if (notificationInterval) {
+        clearInterval(notificationInterval);
+    }
+    
+    // فترات زمنية متفاوتة (8 ثواني إلى 4 دقائق)
+    const schedules = [
+        8000, 12000, 45000, 130000, 10000, 15000, 240000, 7000, 25000, 180000,
+        9000, 30000, 210000, 11000, 35000, 195000, 8500, 28000, 165000, 9500,
+        22000, 150000, 10500, 38000, 225000, 11500, 42000, 135000, 12500, 31000
+    ];
+    
+    let scheduleIndex = 0;
+    
+    function showNextNotification() {
+        // إشعار عشوائي من القائمة
+        const notifications = FLOATING_NOTIFICATIONS;
+        const randomIndex = Math.floor(Math.random() * notifications.length);
+        const notification = notifications[randomIndex];
+        
+        showFloatingToast(notification);
+        
+        // جدولة الإشعار التالي
+        const nextDelay = schedules[scheduleIndex % schedules.length];
+        scheduleIndex++;
+        
+        notificationTimeouts.push(setTimeout(showNextNotification, nextDelay));
+    }
+    
+    // بدء أول إشعار بعد 3 ثواني
+    setTimeout(showNextNotification, 3000);
+}
+
+function showFloatingToast(message) {
+    // التحقق من وجود عنصر الإشعار أو إنشائه
+    let toast = document.getElementById('floatingToast');
+    
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'floatingToast';
+        toast.className = 'floating-toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    // إخفاء بعد 5 ثواني
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 5000);
+}
+
+function stopFloatingNotifications() {
+    notificationTimeouts.forEach(timeout => clearTimeout(timeout));
+    notificationTimeouts = [];
+    
+    const toast = document.getElementById('floatingToast');
+    if (toast) {
+        toast.classList.remove('show');
+    }
+}
+
+// قائمة الإشعارات الوهمية
+const FLOATING_NOTIFICATIONS = [
+    // سحوبات USDT (الأكثرية)
+    "💸 Withdrawal • 0x3f...a2d1 • 12 USDT",
+    "💸 Withdrawal • 0x8b...c4e9 • 18 USDT",
+    "💸 Withdrawal • 0x7d...f1b3 • 25 USDT",
+    "💸 Withdrawal • 0x2a...e7f8 • 35 USDT",
+    "💸 Withdrawal • 0x9c...b5d2 • 45 USDT",
+    "💸 Withdrawal • 0x5f...a3c7 • 58 USDT",
+    "💸 Withdrawal • 0x1e...d9b4 • 65 USDT",
+    "💸 Withdrawal • 0x4b...f2e6 • 72 USDT",
+    "💸 Withdrawal • 0x6d...c8a1 • 85 USDT",
+    "💸 Withdrawal • 0x3a...e5b9 • 95 USDT",
+    "💸 Withdrawal • 0x8f...d2c4 • 110 USDT",
+    "💸 Withdrawal • 0x2c...b7f3 • 125 USDT",
+    "💸 Withdrawal • 0x7e...a1d8 • 140 USDT",
+    "💸 Withdrawal • 0x9b...f4c2 • 160 USDT",
+    "💸 Withdrawal • 0x5a...e3b7 • 185 USDT",
+    "💸 Withdrawal • 0x1f...d8c5 • 210 USDT",
+    
+    // سحوبات REFI
+    "💸 Withdrawal • 3Djc...bfuR • 520,000 REFI",
+    "💸 Withdrawal • 3Djc...a2xL • 580,000 REFI",
+    "💸 Withdrawal • 3Djc...k9mN • 650,000 REFI",
+    "💸 Withdrawal • 3Djc...p4qR • 720,000 REFI",
+    "💸 Withdrawal • 3Djc...w7tS • 850,000 REFI",
+    "💸 Withdrawal • 3Djc...h3nV • 950,000 REFI",
+    
+    // سحوبات BNB
+    "💸 Withdrawal • TMSJ...5E6 • 0.022 BNB",
+    "💸 Withdrawal • TMSJ...8K2 • 0.028 BNB",
+    "💸 Withdrawal • TMSJ...3N9 • 0.035 BNB",
+    "💸 Withdrawal • TMSJ...7M4 • 0.042 BNB",
+    "💸 Withdrawal • TMSJ...2P8 • 0.048 BNB",
+    "💸 Withdrawal • TMSJ...6R1 • 0.055 BNB",
+    
+    // إيداعات USDT
+    "💰 Deposit • 0x3f...a2d1 • 150 USDT",
+    "💰 Deposit • 0x8b...c4e9 • 275 USDT",
+    "💰 Deposit • 0x7d...f1b3 • 420 USDT",
+    "💰 Deposit • 0x2a...e7f8 • 180 USDT",
+    "💰 Deposit • 0x9c...b5d2 • 330 USDT",
+    "💰 Deposit • 0x5f...a3c7 • 560 USDT",
+    
+    // إيداعات REFI
+    "💰 Deposit • 3Djc...bfuR • 550,000 REFI",
+    "💰 Deposit • 3Djc...a2xL • 680,000 REFI",
+    "💰 Deposit • 3Djc...k9mN • 820,000 REFI",
+    
+    // إيداعات BNB
+    "💰 Deposit • TMSJ...5E6 • 0.078 BNB",
+    "💰 Deposit • TMSJ...8K2 • 0.095 BNB",
+    "💰 Deposit • TMSJ...3N9 • 0.125 BNB"
+];
+
+// ====== 30. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -3004,6 +3166,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const splash = document.getElementById('splashScreen');
         if (splash) splash.classList.add('hidden');
         document.getElementById('mainContent').style.display = 'block';
+        
+        // بدء الإشعارات الوهمية بعد اختفاء شاشة التحميل
+        initFloatingNotifications();
     }, 2000);
     
     initApp();
@@ -3032,7 +3197,7 @@ async function initApp() {
     }
 }
 
-// ====== 30. EXPORT FUNCTIONS ======
+// ====== 31. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
 window.showStaking = showStaking;
@@ -3081,13 +3246,9 @@ window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Network v12.0 - ULTIMATE PROFESSIONAL EDITION");
+console.log("✅ REFI Network v14.0 - ULTIMATE PROFESSIONAL EDITION");
 console.log("✅ Languages: English / العربية");
-console.log("✅ Transactions stored in separate collections:");
-console.log("✅ - deposit_requests");
-console.log("✅ - withdrawals");
-console.log("✅ - transactions");
-console.log("✅ Admin approval/rejection works with proper collections");
-console.log("✅ Real-time updates for ALL financial transactions");
-console.log("✅ BNB receive disabled in swap");
+console.log("✅ Transactions stored in separate collections");
+console.log("✅ Admin approval/rejection using userId (like MWH app)");
+console.log("✅ Floating notifications with random timing");
 console.log("✅ COMPLETELY FIXED - 100% RELIABLE");
