@@ -26,9 +26,9 @@
                 <div class="splash-logo">
                     <i class="fa-solid fa-bolt"></i>
                 </div>
-                <h1 class="splash-title">REFI Network</h1>
+                <h1 class="splash-title" data-i18n="app.name">REFI Network</h1>
                 <div class="splash-spinner"></div>
-                <div class="splash-version">v9.0.0</div>
+                <div class="splash-version">v10.0.0</div>
             </div>
         </div>
 
@@ -39,10 +39,13 @@
                 <!-- الهيدر -->
                 <div class="header">
                     <div class="welcome-text">
-                        <span class="welcome-title">Welcome back,</span>
+                        <span class="welcome-title" data-i18n="welcome.title">Welcome back,</span>
                         <span class="user-name" id="userId">REFI User</span>
                     </div>
                     <div class="header-actions">
+                        <button class="icon-btn" id="languageBtn" onclick="toggleLanguage()" title="Change Language">
+                            <span class="language-flag" id="currentLanguageFlag">🇬🇧</span>
+                        </button>
                         <button class="icon-btn" onclick="showNotifications()" id="notificationBtn">
                             <i class="fa-regular fa-bell"></i>
                             <span class="badge" id="notificationBadge">0</span>
@@ -52,33 +55,33 @@
 
                 <!-- بطاقة الرصيد -->
                 <div class="balance-card">
-                    <div class="balance-label">Total Balance</div>
+                    <div class="balance-label" data-i18n="wallet.totalBalance">Total Balance</div>
                     <div class="balance-amount" id="totalBalance">$0.00</div>
                     <div class="balance-actions">
                         <button class="action-btn" onclick="showDepositModal()">
                             <i class="fa-regular fa-circle-down"></i>
-                            <span>Deposit</span>
+                            <span data-i18n="actions.deposit">Deposit</span>
                         </button>
                         <button class="action-btn" onclick="showWithdrawModal()">
                             <i class="fa-regular fa-circle-up"></i>
-                            <span>Withdraw</span>
+                            <span data-i18n="actions.withdraw">Withdraw</span>
                         </button>
                         <button class="action-btn" onclick="showHistory()">
                             <i class="fa-regular fa-clock"></i>
-                            <span>History</span>
+                            <span data-i18n="actions.history">History</span>
                         </button>
                         <button class="action-btn" onclick="showP2P()">
                             <i class="fa-solid fa-handshake"></i>
-                            <span>P2P</span>
+                            <span data-i18n="actions.p2p">P2P</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- عنوان الأصول -->
                 <div class="section-header">
-                    <h3>My Assets <i class="fa-regular fa-star" style="color: #ff5ad9;"></i></h3>
+                    <h3 data-i18n="wallet.myAssets">My Assets <i class="fa-regular fa-star" style="color: #ff5ad9;"></i></h3>
                     <button class="see-all-btn" onclick="showAllAssets()">
-                        See All <i class="fa-solid fa-chevron-right"></i>
+                        <span data-i18n="actions.seeAll">See All</span> <i class="fa-solid fa-chevron-right"></i>
                     </button>
                 </div>
 
@@ -87,14 +90,14 @@
 
                 <!-- العملات العشر -->
                 <div class="section-header" style="margin-top: 20px;">
-                    <h3>Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
+                    <h3 data-i18n="wallet.topCryptos">Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
                 <div class="top-crypto-list" id="topCryptoList">
                     <div class="loading-spinner">
-                        <i class="fa-solid fa-spinner"></i> Loading prices...
+                        <i class="fa-solid fa-spinner"></i> <span data-i18n="messages.loading">Loading prices...</span>
                     </div>
                 </div>
             </div>
@@ -105,14 +108,14 @@
                     <button class="back-btn" onclick="showWallet()">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <h3>Swap</h3>
+                    <h3 data-i18n="nav.swap">Swap</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="swap-container">
                     <div class="swap-card">
                         <!-- From -->
-                        <div class="swap-label">From</div>
+                        <div class="swap-label" data-i18n="swap.from">From</div>
                         <div class="swap-input-card">
                             <div class="swap-header">
                                 <span class="balance-text" id="payBalance">Balance: 0 USDT</span>
@@ -141,7 +144,7 @@
                         </div>
 
                         <!-- To -->
-                        <div class="swap-label">To</div>
+                        <div class="swap-label" data-i18n="swap.to">To</div>
                         <div class="swap-input-card">
                             <div class="swap-header">
                                 <span class="balance-text" id="receiveBalance">Balance: 0 REFI</span>
@@ -159,19 +162,19 @@
                         <!-- معلومات السواب -->
                         <div class="swap-info">
                             <div class="info-row">
-                                <span>Exchange Rate</span>
+                                <span data-i18n="swap.exchangeRate">Exchange Rate</span>
                                 <span id="swapRate">1 USDT = 500,000 REFI</span>
                             </div>
                             <div class="info-row">
-                                <span>Network Fee</span>
-                                <span class="fee-free">0 BNB (FREE)</span>
+                                <span data-i18n="swap.networkFee">Network Fee</span>
+                                <span class="fee-free" data-i18n="swap.free">0 BNB (FREE)</span>
                             </div>
                         </div>
 
                         <!-- زر التأكيد -->
                         <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
                             <i class="fa-regular fa-circle-check"></i>
-                            Confirm Swap
+                            <span data-i18n="actions.confirmSwap">Confirm Swap</span>
                         </button>
                     </div>
                 </div>
@@ -183,26 +186,26 @@
                     <button class="back-btn" onclick="showWallet()">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <h3>Staking</h3>
+                    <h3 data-i18n="nav.staking">Staking</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="staking-header">
-                    <span class="staking-title">USDT REWARDS</span>
+                    <span class="staking-title" data-i18n="staking.title">USDT REWARDS</span>
                 </div>
 
                 <!-- إحصائيات الستيكينغ -->
                 <div class="staking-stats">
                     <div class="stat-card" onclick="showStakingDetails('total')">
-                        <span class="stat-label">TOTAL STAKED</span>
+                        <span class="stat-label" data-i18n="staking.totalStaked">TOTAL STAKED</span>
                         <span class="stat-value" id="totalStaked">0 USDT</span>
                     </div>
                     <div class="stat-card" onclick="showStakingDetails('rewards')">
-                        <span class="stat-label">REWARDS EARNED</span>
+                        <span class="stat-label" data-i18n="staking.rewardsEarned">REWARDS EARNED</span>
                         <span class="stat-value" id="rewardsEarned">0.00 USDT</span>
                     </div>
                     <div class="stat-card" onclick="showStakingDetails('avg')">
-                        <span class="stat-label">AVG. RETURN</span>
+                        <span class="stat-label" data-i18n="staking.avgReturn">AVG. RETURN</span>
                         <span class="stat-value" id="avgReturn">65%</span>
                     </div>
                 </div>
@@ -213,7 +216,7 @@
                 <!-- إدخال مبلغ الستيكينغ -->
                 <div class="stake-input-section">
                     <div class="input-label">
-                        <span>AMOUNT TO STAKE</span>
+                        <span data-i18n="staking.amountToStake">AMOUNT TO STAKE</span>
                         <span class="balance-text" id="stakeBalance">Balance: 0 USDT</span>
                     </div>
                     <div class="stake-input-group">
@@ -223,28 +226,28 @@
 
                     <div class="stake-summary">
                         <div class="summary-row">
-                            <span>Estimated Return</span>
+                            <span data-i18n="staking.estimatedReturn">Estimated Return</span>
                             <span id="estimatedReturn">0.00 USDT</span>
                         </div>
                         <div class="summary-row">
-                            <span>Lock-up Period</span>
+                            <span data-i18n="staking.lockPeriod">Lock-up Period</span>
                             <span id="lockPeriod">3 Days</span>
                         </div>
                         <div class="summary-row highlight">
-                            <span>Total after staking</span>
+                            <span data-i18n="staking.totalAfter">Total after staking</span>
                             <span id="totalAfterStaking">0.00 USDT</span>
                         </div>
                     </div>
 
                     <button class="confirm-btn" onclick="stakeUSDT()" id="stakeBtn">
                         <i class="fa-regular fa-lock"></i>
-                        Stake USDT
+                        <span data-i18n="actions.stake">Stake USDT</span>
                     </button>
                 </div>
 
                 <!-- الستيكات النشطة -->
                 <div class="active-stakes-header">
-                    <h4>Active Stakes</h4>
+                    <h4 data-i18n="staking.activeStakes">Active Stakes</h4>
                     <span class="count-badge" id="activeStakesCount">0</span>
                 </div>
                 <div class="active-stakes" id="activeStakes"></div>
@@ -252,7 +255,7 @@
                 <!-- مهام الستيكينغ -->
                 <div class="staking-missions">
                     <div class="section-header">
-                        <h3>STAKING MISSIONS</h3>
+                        <h3 data-i18n="staking.missions">STAKING MISSIONS</h3>
                         <span class="mission-badge"><i class="fa-regular fa-gift"></i> BONUS</span>
                     </div>
                     <div class="missions-grid" id="stakingMissions"></div>
@@ -265,31 +268,31 @@
                     <button class="back-btn" onclick="showWallet()">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <h3>Referrals</h3>
+                    <h3 data-i18n="nav.referral">Referrals</h3>
                     <div style="width: 30px;"></div>
                 </div>
 
                 <div class="referral-header">
-                    <span class="referral-title">EARN USDT</span>
+                    <span class="referral-title" data-i18n="referral.title">EARN USDT</span>
                 </div>
 
                 <div class="referral-stats">
                     <div class="stat-card">
-                        <span class="stat-label">TOTAL REFERRALS</span>
+                        <span class="stat-label" data-i18n="referral.totalReferrals">TOTAL REFERRALS</span>
                         <span class="stat-value" id="totalReferrals">0</span>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">REFI EARNED</span>
+                        <span class="stat-label" data-i18n="referral.refiEarned">REFI EARNED</span>
                         <span class="stat-value" id="refiEarned">0 REFI</span>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">USDT EARNED</span>
+                        <span class="stat-label" data-i18n="referral.usdtEarned">USDT EARNED</span>
                         <span class="stat-value" id="usdtEarned">0.00 USDT</span>
                     </div>
                 </div>
 
                 <div class="referral-link-card">
-                    <div class="link-label">Your Referral Link</div>
+                    <div class="link-label" data-i18n="referral.yourLink">Your Referral Link</div>
                     <div class="link-container">
                         <input type="text" class="referral-link" id="referralLink" readonly>
                         <button class="copy-btn" onclick="copyReferralLink()">
@@ -303,11 +306,11 @@
 
                 <div class="referral-description">
                     <i class="fa-regular fa-star"></i>
-                    <p>Share your link and get <span class="highlight">250,000 REFI</span> for every friend who joins. Complete milestones to earn massive USDT rewards!</p>
+                    <p><span data-i18n="referral.description">Share your link and get</span> <span class="highlight">250,000 REFI</span> <span data-i18n="referral.description2">for every friend who joins. Complete milestones to earn massive USDT rewards!</span></p>
                 </div>
 
                 <div class="section-header">
-                    <h3>Referral Milestones</h3>
+                    <h3 data-i18n="referral.milestones">Referral Milestones</h3>
                 </div>
 
                 <div class="milestones-list" id="milestonesList"></div>
@@ -318,37 +321,37 @@
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" onclick="showWallet()">
                 <i class="fa-solid fa-wallet"></i>
-                <span>Wallet</span>
+                <span data-i18n="nav.wallet">Wallet</span>
             </button>
             <button class="nav-item" onclick="showSwap()">
                 <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                <span>Swap</span>
+                <span data-i18n="nav.swap">Swap</span>
             </button>
             <button class="nav-item" onclick="showStaking()">
                 <i class="fa-solid fa-lock"></i>
-                <span>Staking</span>
+                <span data-i18n="nav.staking">Staking</span>
             </button>
             <button class="nav-item" onclick="showReferral()">
                 <i class="fa-solid fa-users"></i>
-                <span>Referral</span>
+                <span data-i18n="nav.referral">Referral</span>
             </button>
         </nav>
     </div>
 
     <!-- ====== MODALS ====== -->
 
-    <!-- نافذة الإيداع (محدثة مع TRUMP) -->
+    <!-- نافذة الإيداع -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Deposit Funds</h3>
+                <h3 data-i18n="deposit.title">Deposit Funds</h3>
                 <button class="close-btn" onclick="closeModal('depositModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Select Currency</label>
+                    <label data-i18n="deposit.selectCurrency">Select Currency</label>
                     <div class="currency-select-wrapper">
                         <select id="depositCurrency" class="form-select" onchange="updateDepositInfo()">
                             <option value="REFI">REFI (Min: 500,000)</option>
@@ -365,20 +368,21 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Amount</label>
+                    <label data-i18n="deposit.amount">Amount</label>
                     <input type="number" id="depositAmount" class="form-input" placeholder="Enter amount">
                 </div>
                 <div class="form-group">
-                    <label>Transaction ID</label>
-                    <input type="text" id="txnId" class="form-input" placeholder="Enter transaction ID">
+                    <label data-i18n="deposit.transactionId">Transaction ID</label>
+                    <input type="text" id="txnId" class="form-input" placeholder="0x... (66 characters)" maxlength="66" oninput="validateTransactionHashInput()">
+                    <div class="hash-validation-hint" id="hashValidationHint"></div>
                 </div>
                 
                 <!-- عنوان الإيداع -->
                 <div class="deposit-address-card">
                     <div class="address-header">
-                        <p>Send to this address:</p>
+                        <p data-i18n="deposit.sendTo">Send to this address:</p>
                         <button class="copy-address-btn" onclick="copyDepositAddress()">
-                            <i class="fa-regular fa-copy"></i> Copy
+                            <i class="fa-regular fa-copy"></i> <span data-i18n="actions.copy">Copy</span>
                         </button>
                     </div>
                     <div class="address-container" id="depositAddressContainer">
@@ -386,13 +390,13 @@
                     </div>
                     <div class="address-note" id="depositAddressNote">
                         <i class="fa-regular fa-circle-check"></i>
-                        <span>✓ Blockchain confirmation 1-5 minutes</span>
+                        <span data-i18n="deposit.confirmation">✓ Blockchain confirmation 1-5 minutes</span>
                     </div>
                 </div>
                 
-                <button class="modal-btn" onclick="submitDeposit()">
+                <button class="modal-btn" onclick="submitDeposit()" id="submitDepositBtn">
                     <i class="fa-regular fa-circle-down"></i>
-                    Submit Deposit
+                    <span data-i18n="deposit.submit">Submit Deposit</span>
                 </button>
             </div>
         </div>
@@ -402,14 +406,14 @@
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Withdraw Funds</h3>
+                <h3 data-i18n="withdraw.title">Withdraw Funds</h3>
                 <button class="close-btn" onclick="closeModal('withdrawModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Select Currency</label>
+                    <label data-i18n="withdraw.selectCurrency">Select Currency</label>
                     <div class="currency-select-wrapper">
                         <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
                             <option value="REFI">REFI (No fee)</option>
@@ -420,12 +424,13 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Amount</label>
+                    <label data-i18n="withdraw.amount">Amount</label>
                     <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" oninput="checkWithdrawFee()">
                 </div>
                 <div class="form-group">
-                    <label>Wallet Address</label>
-                    <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address">
+                    <label data-i18n="withdraw.address">Wallet Address</label>
+                    <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address (0x...)" maxlength="42" oninput="validateWithdrawAddressInput()">
+                    <div class="address-validation-hint" id="withdrawAddressHint"></div>
                 </div>
                 
                 <!-- تحذير الرسوم -->
@@ -437,18 +442,18 @@
                 <!-- ملخص السحب -->
                 <div class="withdraw-summary">
                     <div class="summary-row">
-                        <span>You will receive:</span>
+                        <span data-i18n="withdraw.youReceive">You will receive:</span>
                         <span id="receiveAmount_">0.00</span>
                     </div>
                     <div class="summary-row">
-                        <span>Network fee:</span>
+                        <span data-i18n="withdraw.networkFee">Network fee:</span>
                         <span id="networkFee">0 BNB</span>
                     </div>
                 </div>
                 
-                <button class="modal-btn" onclick="submitWithdraw()">
+                <button class="modal-btn" onclick="submitWithdraw()" id="submitWithdrawBtn">
                     <i class="fa-regular fa-circle-up"></i>
-                    Submit Withdrawal
+                    <span data-i18n="withdraw.submit">Submit Withdrawal</span>
                 </button>
             </div>
         </div>
@@ -458,23 +463,23 @@
     <div id="historyModal" class="modal">
         <div class="modal-content history-modal">
             <div class="modal-header">
-                <h3>Transaction History</h3>
+                <h3 data-i18n="history.title">Transaction History</h3>
                 <button class="close-btn" onclick="closeModal('historyModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="history-tabs">
-                    <button class="history-tab active" onclick="filterHistory('all')">All</button>
-                    <button class="history-tab" onclick="filterHistory('deposit')">Deposits</button>
-                    <button class="history-tab" onclick="filterHistory('withdraw')">Withdrawals</button>
-                    <button class="history-tab" onclick="filterHistory('swap')">Swaps</button>
-                    <button class="history-tab" onclick="filterHistory('referral')">Referrals</button>
-                    <button class="history-tab" onclick="filterHistory('staking')">Staking</button>
+                    <button class="history-tab active" onclick="filterHistory('all')" data-i18n="history.all">All</button>
+                    <button class="history-tab" onclick="filterHistory('deposit')" data-i18n="history.deposits">Deposits</button>
+                    <button class="history-tab" onclick="filterHistory('withdraw')" data-i18n="history.withdrawals">Withdrawals</button>
+                    <button class="history-tab" onclick="filterHistory('swap')" data-i18n="history.swaps">Swaps</button>
+                    <button class="history-tab" onclick="filterHistory('referral')" data-i18n="history.referrals">Referrals</button>
+                    <button class="history-tab" onclick="filterHistory('staking')" data-i18n="history.staking">Staking</button>
                 </div>
                 <div class="history-list" id="historyList">
                     <div class="loading-spinner">
-                        <i class="fa-solid fa-spinner"></i> Loading history...
+                        <i class="fa-solid fa-spinner"></i> <span data-i18n="messages.loadingHistory">Loading history...</span>
                     </div>
                 </div>
             </div>
@@ -485,7 +490,7 @@
     <div id="notificationsModal" class="modal">
         <div class="modal-content notifications-modal">
             <div class="modal-header">
-                <h3>Notifications</h3>
+                <h3 data-i18n="notifications.title">Notifications</h3>
                 <button class="close-btn" onclick="closeModal('notificationsModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
@@ -550,7 +555,7 @@
     <div id="currencySelectorModal" class="modal currency-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Select Currency</h3>
+                <h3 data-i18n="currency.select">Select Currency</h3>
                 <button class="close-btn" onclick="closeModal('currencySelectorModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
@@ -578,30 +583,30 @@
                 <div class="p2p-icon">
                     <i class="fa-solid fa-handshake"></i>
                 </div>
-                <h2 class="p2p-title">Coming Soon!</h2>
-                <p class="p2p-text">
+                <h2 class="p2p-title" data-i18n="p2p.comingSoon">Coming Soon!</h2>
+                <p class="p2p-text" data-i18n="p2p.description">
                     We're working hard to bring you the best P2P trading experience. 
                     Stay tuned for exciting updates!
                 </p>
                 <div class="p2p-features">
                     <div class="feature-item">
                         <i class="fa-regular fa-circle-check"></i>
-                        <span>Trade directly with others</span>
+                        <span data-i18n="p2p.feature1">Trade directly with others</span>
                     </div>
                     <div class="feature-item">
                         <i class="fa-regular fa-circle-check"></i>
-                        <span>Best exchange rates</span>
+                        <span data-i18n="p2p.feature2">Best exchange rates</span>
                     </div>
                     <div class="feature-item">
                         <i class="fa-regular fa-circle-check"></i>
-                        <span>Secure escrow system</span>
+                        <span data-i18n="p2p.feature3">Secure escrow system</span>
                     </div>
                 </div>
                 <div class="p2p-countdown">
-                    <span>Launching in:</span>
+                    <span data-i18n="p2p.launching">Launching in:</span>
                     <div class="countdown-timer" id="p2pCountdown">7 days</div>
                 </div>
-                <button class="modal-btn" onclick="closeModal('p2pModal')">
+                <button class="modal-btn" onclick="closeModal('p2pModal')" data-i18n="actions.gotIt">
                     Got it!
                 </button>
             </div>
@@ -612,7 +617,7 @@
     <div id="stakingDetailsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Staking Details</h3>
+                <h3 data-i18n="staking.details">Staking Details</h3>
                 <button class="close-btn" onclick="closeModal('stakingDetailsModal')">
                     <i class="fa-solid fa-times"></i>
                 </button>
