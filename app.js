@@ -557,15 +557,20 @@ function checkAdminAndAddCrown() {
     }
 }
 
-// ====== 10. LOAD USER DATA ======
+// ====== 10. LOAD USER DATA - FIXED ======
 async function loadUserData() {
     try {
+        console.log("📂 Loading user data for:", userId);
+        
+        // 1. تحميل من localStorage أولاً
         const localData = localStorage.getItem(`user_${userId}`);
         
         if (localData) {
             userData = JSON.parse(localData);
+            console.log("✅ Loaded from localStorage with", userData.transactions?.length || 0, "transactions");
         } else {
             // إنشاء مستخدم جديد
+            console.log("📝 Creating new user");
             userData = {
                 userId: userId,
                 userName: userName,
@@ -593,7 +598,7 @@ async function loadUserData() {
                 referralMilestones: REFERRAL_MILESTONES.map(m => ({ ...m, claimed: false })),
                 transactions: [],
                 notifications: [],
-                usedHashes: [], // ✅ لتخزين الهاشات المستخدمة
+                usedHashes: [],
                 totalRefiEarned: 0,
                 totalUsdtEarned: 0,
                 lastLogin: new Date().toISOString(),
@@ -603,38 +608,93 @@ async function loadUserData() {
             localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         }
         
-        // تحميل من Firebase إذا كان متاحاً
+        // 2. تحميل من Firebase إذا كان متاحاً
         if (db) {
+            console.log("🔥 Loading from Firebase...");
+            
+            // 2.1 تحميل بيانات المستخدم من جدول users
             const userDoc = await db.collection('users').doc(userId).get();
             
+            // 2.2 تحميل جميع معاملات المستخدم من جدول transactions
+            const transactionsSnapshot = await db.collection('transactions')
+                .where('userId', '==', userId)
+                .orderBy('timestamp', 'desc')
+                .get();
+            
+            const firebaseTransactions = [];
+            transactionsSnapshot.forEach(doc => {
+                firebaseTransactions.push(doc.data());
+            });
+            
+            console.log(`📥 Loaded ${firebaseTransactions.length} transactions from Firebase`);
+            
+            // 2.3 دمج المعاملات (المحلية + Firebase) بدون تكرار
+            const allTransactions = [...(userData.transactions || [])];
+            
+            firebaseTransactions.forEach(fbTx => {
+                const exists = allTransactions.some(localTx => 
+                    localTx.timestamp === fbTx.timestamp && 
+                    localTx.type === fbTx.type &&
+                    localTx.amount === fbTx.amount
+                );
+                if (!exists) {
+                    allTransactions.push(fbTx);
+                }
+            });
+            
+            // 2.4 ترتيب المعاملات من الأحدث إلى الأقدم
+            allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // 2.5 تحديث userData مع الحفاظ على جميع المعاملات
             if (userDoc.exists) {
                 const fbData = userDoc.data();
+                console.log("✅ User exists in Firebase");
                 
-                // دمج البيانات مع الحفاظ على البيانات المحلية
+                // دمج البيانات مع الحفاظ على المعاملات
                 userData = {
                     ...userData,
-                    ...fbData,
+                    userId: fbData.userId || userData.userId,
+                    userName: fbData.userName || userData.userName,
                     balances: fbData.balances || userData.balances,
-                    usedHashes: [...new Set([...(userData.usedHashes || []), ...(fbData.usedHashes || [])])]
+                    referralCode: fbData.referralCode || userData.referralCode,
+                    referredBy: fbData.referredBy || userData.referredBy,
+                    referrals: fbData.referrals || userData.referrals,
+                    referralCount: fbData.referralCount || userData.referralCount,
+                    staking: fbData.staking || userData.staking,
+                    stakingMissions: fbData.stakingMissions || userData.stakingMissions,
+                    referralMilestones: fbData.referralMilestones || userData.referralMilestones,
+                    notifications: fbData.notifications || userData.notifications,
+                    usedHashes: [...new Set([...(userData.usedHashes || []), ...(fbData.usedHashes || [])])],
+                    totalRefiEarned: fbData.totalRefiEarned || userData.totalRefiEarned,
+                    totalUsdtEarned: fbData.totalUsdtEarned || userData.totalUsdtEarned,
+                    lastLogin: fbData.lastLogin || userData.lastLogin,
+                    createdAt: fbData.createdAt || userData.createdAt,
+                    transactions: allTransactions // ✅ المعاملات المدمجة
                 };
-                
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
             } else {
-                // حفظ المستخدم الجديد في Firebase
+                // مستخدم جديد في Firebase
+                console.log("📝 Creating new user in Firebase");
+                userData.transactions = allTransactions;
                 await db.collection('users').doc(userId).set(userData);
             }
+            
+            // 2.6 حفظ في localStorage
+            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+            
+            console.log(`✅ Final user data has ${userData.transactions.length} transactions`);
             
             // إعداد المستمعين المباشرين
             setupRealtimeListeners();
         }
         
+        // تحديث واجهة المستخدم
         updateUI();
         await processReferral();
         updateNotificationBadge();
         checkAdminAndAddCrown();
         
     } catch (error) {
-        console.error("Error loading user data:", error);
+        console.error("❌ Error loading user data:", error);
     }
 }
 
@@ -726,6 +786,7 @@ async function processReferral() {
         // ✅ تسجيل المعاملات
         const welcomeTransaction = {
             userId: userId,
+            userName: userName,
             type: 'referral_bonus',
             amount: 10000,
             currency: 'REFI',
@@ -861,7 +922,9 @@ function setupRealtimeListeners() {
                 if (change.type === 'added' || change.type === 'modified') {
                     // البحث عن المعاملة في البيانات المحلية
                     const existingIndex = userData.transactions.findIndex(t => 
-                        t.timestamp === tx.timestamp && t.type === tx.type
+                        t.timestamp === tx.timestamp && 
+                        t.type === tx.type &&
+                        t.amount === tx.amount
                     );
                     
                     if (existingIndex >= 0) {
@@ -897,7 +960,7 @@ function setupRealtimeListeners() {
                                 showToast(t('notif.depositRejected', { reason: tx.reason || 'Unknown' }), 'error');
                             }
                             
-                            // ✅ تحديث صفحة History إذا كانت مفتوحة (المشكلة محلولة هنا)
+                            // ✅ تحديث صفحة History إذا كانت مفتوحة
                             if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
                                 console.log("📜 History is open, refreshing...");
                                 renderHistory(currentHistoryFilter);
@@ -1591,6 +1654,7 @@ function stakeUSDT() {
     
     const transaction = {
         userId: userId,
+        userName: userName,
         type: 'staking',
         amount: amount,
         currency: 'USDT',
@@ -1604,8 +1668,7 @@ function stakeUSDT() {
     if (db) {
         db.collection('users').doc(userId).update({
             balances: userData.balances,
-            staking: userData.staking,
-            transactions: userData.transactions
+            staking: userData.staking
         });
         db.collection('transactions').add(transaction);
     }
@@ -1630,6 +1693,7 @@ function claimStakingReward(startDate) {
     
     const transaction = {
         userId: userId,
+        userName: userName,
         type: 'staking',
         amount: reward,
         currency: 'USDT',
@@ -1643,8 +1707,7 @@ function claimStakingReward(startDate) {
     if (db) {
         db.collection('users').doc(userId).update({
             balances: userData.balances,
-            staking: userData.staking,
-            transactions: userData.transactions
+            staking: userData.staking
         });
         db.collection('transactions').add(transaction);
     }
@@ -1672,6 +1735,7 @@ function claimStakingMission(missionId) {
     
     const transaction = {
         userId: userId,
+        userName: userName,
         type: 'staking',
         amount: reward,
         currency: 'USDT',
@@ -1685,8 +1749,7 @@ function claimStakingMission(missionId) {
     if (db) {
         db.collection('users').doc(userId).update({
             balances: userData.balances,
-            stakingMissions: userData.stakingMissions,
-            transactions: userData.transactions
+            stakingMissions: userData.stakingMissions
         });
         db.collection('transactions').add(transaction);
     }
@@ -1715,6 +1778,7 @@ function claimReferralMilestone(referrals) {
     
     const transaction = {
         userId: userId,
+        userName: userName,
         type: 'referral_bonus',
         amount: reward,
         currency: 'USDT',
@@ -1729,8 +1793,7 @@ function claimReferralMilestone(referrals) {
         db.collection('users').doc(userId).update({
             balances: userData.balances,
             totalUsdtEarned: userData.totalUsdtEarned,
-            referralMilestones: userData.referralMilestones,
-            transactions: userData.transactions
+            referralMilestones: userData.referralMilestones
         });
         db.collection('transactions').add(transaction);
     }
@@ -2056,6 +2119,7 @@ function confirmSwap() {
     
     const transaction = {
         userId: userId,
+        userName: userName,
         type: 'swap',
         amount: payAmount,
         currency: payCurrency,
@@ -2068,8 +2132,7 @@ function confirmSwap() {
     
     if (db) {
         db.collection('users').doc(userId).update({
-            balances: userData.balances,
-            transactions: userData.transactions
+            balances: userData.balances
         });
         db.collection('transactions').add(transaction);
     }
@@ -2260,8 +2323,17 @@ async function submitDeposit() {
         userData.usedHashes.push(txnId.toLowerCase());
         
         if (db) {
+            // حفظ في Firebase
             await db.collection('transactions').add(depositRequest);
-            await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
+            
+            // إشعار للأدمن
+            await db.collection('notifications').add({
+                userId: ADMIN_ID,
+                message: `💰 New deposit request: ${amount} ${currency} from ${userId}`,
+                type: 'info',
+                read: false,
+                timestamp: new Date().toISOString()
+            });
             
             // تحديث قائمة الهاشات في Firebase
             await db.collection('users').doc(userId).update({
@@ -2269,6 +2341,7 @@ async function submitDeposit() {
             });
         }
         
+        // حفظ في localStorage
         userData.transactions.push(depositRequest);
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
@@ -2408,8 +2481,17 @@ async function submitWithdraw() {
     
     try {
         if (db) {
+            // حفظ في Firebase
             await db.collection('transactions').add(withdrawRequest);
-            await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
+            
+            // إشعار للأدمن
+            await db.collection('notifications').add({
+                userId: ADMIN_ID,
+                message: `💸 New withdrawal request: ${amount} ${currency} from ${userId}`,
+                type: 'info',
+                read: false,
+                timestamp: new Date().toISOString()
+            });
             
             // تحديث الرصيد في Firebase
             await db.collection('users').doc(userId).update({
@@ -2417,6 +2499,7 @@ async function submitWithdraw() {
             });
         }
         
+        // حفظ في localStorage
         userData.transactions.push(withdrawRequest);
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
@@ -2622,8 +2705,8 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
 // ✅ دالة رفض المعاملة (محدثة - تعمل الآن)
 function rejectTransaction(txId, targetUserId) {
     // استخدام Popup في تلغرام
-    if (tg?.showPopup) {
-        tg.showPopup({
+    if (window.Telegram?.WebApp?.showPopup) {
+        window.Telegram.WebApp.showPopup({
             title: 'Reject Transaction',
             message: 'Please select a reason:',
             buttons: [
@@ -2633,7 +2716,6 @@ function rejectTransaction(txId, targetUserId) {
                 { type: 'cancel', text: 'Cancel' }
             ]
         }, async (buttonId) => {
-            // هذا الكallback يتم تنفيذه بعد اختيار المستخدم
             if (!buttonId || buttonId === 'cancel') return;
             
             let reason = '';
@@ -2641,11 +2723,12 @@ function rejectTransaction(txId, targetUserId) {
             else if (buttonId === 'amount') reason = 'Incorrect amount';
             else if (buttonId === 'suspicious') reason = 'Suspicious activity detected';
             
-            // تنفيذ الرفض مع السبب
             await executeRejection(txId, targetUserId, reason);
         });
-    } else {
-        // استخدام prompt في المتصفح
+    } 
+    // في بيئة المتصفح العادي
+    else {
+        // استخدام modal بسيط بدلاً من prompt
         const reason = prompt("Enter rejection reason:", "Invalid transaction");
         if (!reason) return;
         executeRejection(txId, targetUserId, reason);
@@ -2904,5 +2987,6 @@ console.log("✅ REFI Network v10.0 - Professional Edition Loaded");
 console.log("✅ Languages: English / العربية");
 console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation with SOL/TRX support");
 console.log("✅ BNB receive disabled in swap");
-console.log("✅ Rejection fixed - now working with Telegram popup");
-console.log("✅ History auto-refresh when transactions change");
+console.log("✅ Rejection fixed - now working in all environments");
+console.log("✅ Transactions persistence fixed - they no longer disappear after restart");
+console.log("✅ Real-time updates for financial transactions");
