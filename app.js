@@ -888,6 +888,7 @@ function shareReferral() {
     }
 }
 
+// ====== 15. ADD NOTIFICATION - FIXED with serverTimestamp ======
 async function addNotification(userId, message, type = 'info') {
     if (!db) return;
     
@@ -896,7 +897,7 @@ async function addNotification(userId, message, type = 'info') {
         message: message,
         type: type,
         read: false,
-        timestamp: new Date().toISOString()
+        timestamp: firebase.firestore.FieldValue.serverTimestamp() // ✅ استخدام serverTimestamp
     };
     
     try {
@@ -910,12 +911,18 @@ async function addNotification(userId, message, type = 'info') {
             updateNotificationBadge();
             showToast(message, type);
         }
+        
+        // إذا كان الإشعار للأدمن، نحدّث لوحة الأدمن
+        if (userId === ADMIN_ID) {
+            loadAdminPendingRequests();
+        }
+        
     } catch (error) {
         console.error("Error adding notification:", error);
     }
 }
 
-// ====== 15. REALTIME LISTENERS ======
+// ====== 16. REALTIME LISTENERS ======
 function setupRealtimeListeners() {
     if (!db) return;
     
@@ -1016,7 +1023,7 @@ function setupRealtimeListeners() {
         });
 }
 
-// ====== 16. PRICES ======
+// ====== 17. PRICES ======
 async function loadPricesOnce() {
     console.log("💰 Loading crypto prices...");
     await fetchLivePrices();
@@ -1057,7 +1064,7 @@ function refreshPrices() {
     showToast(t('messages.success'), 'success');
 }
 
-// ====== 17. RENDER FUNCTIONS ======
+// ====== 18. RENDER FUNCTIONS ======
 function renderAssets() {
     const assetsList = document.getElementById('assetsList');
     if (!assetsList || !userData) return;
@@ -1211,7 +1218,7 @@ function renderReferralMilestones() {
     }).join('');
 }
 
-// ====== 18. HISTORY FUNCTIONS ======
+// ====== 19. HISTORY FUNCTIONS ======
 function renderHistory(filter = 'all') {
     const historyList = document.getElementById('historyList');
     if (!historyList) return;
@@ -1301,7 +1308,7 @@ function filterHistory(filter) {
     renderHistory(filter);
 }
 
-// ====== 19. RENDER NOTIFICATIONS ======
+// ====== 20. RENDER NOTIFICATIONS ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
@@ -1319,10 +1326,21 @@ function renderNotifications() {
         return;
     }
     
-    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    notifications.sort((a, b) => {
+        // معالجة التواريخ من Firebase
+        const timeA = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime();
+        const timeB = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime();
+        return timeB - timeA;
+    });
     
     notificationsList.innerHTML = notifications.map(notif => {
-        const date = new Date(notif.timestamp);
+        let date = new Date();
+        if (notif.timestamp?.toDate) {
+            date = notif.timestamp.toDate();
+        } else if (notif.timestamp) {
+            date = new Date(notif.timestamp);
+        }
+        
         const formattedDate = date.toLocaleDateString() + ' ' + 
                              date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
@@ -1367,7 +1385,7 @@ async function markNotificationRead(notificationId) {
     }
 }
 
-// ====== 20. UTILITY FUNCTIONS ======
+// ====== 21. UTILITY FUNCTIONS ======
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
 }
@@ -1498,7 +1516,7 @@ function setupScrollListener() {
     });
 }
 
-// ====== 21. NAVIGATION FUNCTIONS ======
+// ====== 22. NAVIGATION FUNCTIONS ======
 function showWallet() {
     currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
@@ -1559,7 +1577,7 @@ function showReferral() {
     animateElement('.referral-link-card', 'pop');
 }
 
-// ====== 22. STAKING FUNCTIONS ======
+// ====== 23. STAKING FUNCTIONS ======
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -1828,7 +1846,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 23. SWAP FUNCTIONS ======
+// ====== 24. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2133,7 +2151,7 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== 24. DEPOSIT FUNCTIONS ======
+// ====== 25. DEPOSIT FUNCTIONS ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
@@ -2295,13 +2313,7 @@ async function submitDeposit() {
             await db.collection('users').doc(userId).update({
                 usedHashes: userData.usedHashes
             });
-            await db.collection('notifications').add({
-                userId: ADMIN_ID,
-                message: `💰 New deposit request: ${amount} ${currency} from ${userId}`,
-                type: 'info',
-                read: false,
-                timestamp: new Date().toISOString()
-            });
+            await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
         addTransaction(depositRequest);
@@ -2318,7 +2330,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== 25. WITHDRAW FUNCTIONS ======
+// ====== 26. WITHDRAW FUNCTIONS ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
     const feeWarning = document.getElementById('feeWarning');
@@ -2444,13 +2456,7 @@ async function submitWithdraw() {
             await db.collection('users').doc(userId).update({
                 balances: userData.balances
             });
-            await db.collection('notifications').add({
-                userId: ADMIN_ID,
-                message: `💸 New withdrawal request: ${amount} ${currency} from ${userId}`,
-                type: 'info',
-                read: false,
-                timestamp: new Date().toISOString()
-            });
+            await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
         addTransaction(withdrawRequest);
@@ -2474,7 +2480,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 26. ADMIN FUNCTIONS ======
+// ====== 27. ADMIN FUNCTIONS - FIXED with proper error handling ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -2621,36 +2627,69 @@ function renderAdminTransactionCard(tx, tab) {
     `;
 }
 
+// ✅ دالة الموافقة على المعاملة - FIXED with proper error handling
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
+    if (!isAdmin || !db) {
+        showToast('❌ Admin access required', 'error');
+        return;
+    }
+    
     try {
+        // التحقق من وجود المعاملة
+        const txDoc = await db.collection('transactions').doc(txId).get();
+        if (!txDoc.exists) {
+            showToast('❌ Transaction not found', 'error');
+            return;
+        }
+        
+        // تحديث في Firebase
         await db.collection('transactions').doc(txId).update({
             status: 'approved',
-            approvedAt: new Date().toISOString()
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
         if (type === 'deposit') {
+            // إضافة المبلغ للمستخدم
             await db.collection('users').doc(targetUserId).update({
                 [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
             });
+            
+            // تحديث محلي إذا كان المستخدم الحالي
+            if (targetUserId === userId) {
+                userData.balances[currency] = (userData.balances[currency] || 0) + amount;
+                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                updateUI();
+            }
+            
             await addNotification(targetUserId, t('notif.depositApproved', { amount, currency }), 'success');
+            
         } else if (type === 'withdraw') {
             const feeText = fee > 0 ? ` (Fee: ${fee} ${feeCurrency})` : '';
             await addNotification(targetUserId, `✅ Your withdrawal of ${amount} ${currency} has been approved${feeText}!`, 'success');
         }
         
-        showToast('Transaction approved!', 'success');
+        showToast('✅ Transaction approved!', 'success');
+        
+        // تحديث لوحة الأدمن
         showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
         
     } catch (error) {
-        console.error("Error approving transaction:", error);
-        showToast('Error approving transaction', 'error');
+        console.error("❌ Error approving transaction:", error);
+        showToast('❌ Error approving transaction: ' + error.message, 'error');
     }
 }
 
+// ✅ دالة رفض المعاملة - FIXED with proper error handling
 function rejectTransaction(txId, targetUserId) {
+    if (!isAdmin || !db) {
+        showToast('❌ Admin access required', 'error');
+        return;
+    }
+    
+    // استخدام Popup في تلغرام
     if (window.Telegram?.WebApp?.showPopup) {
         window.Telegram.WebApp.showPopup({
-            title: 'Reject Transaction',
+            title: '❌ Reject Transaction',
             message: 'Please select a reason:',
             buttons: [
                 { type: 'default', text: 'Invalid TXID', id: 'invalid' },
@@ -2669,6 +2708,7 @@ function rejectTransaction(txId, targetUserId) {
             await executeRejection(txId, targetUserId, reason);
         });
     } else {
+        // استخدام prompt في المتصفح
         const reason = prompt("Enter rejection reason:", "Invalid transaction");
         if (!reason) return;
         executeRejection(txId, targetUserId, reason);
@@ -2677,21 +2717,24 @@ function rejectTransaction(txId, targetUserId) {
 
 async function executeRejection(txId, targetUserId, reason) {
     try {
+        // التحقق من وجود المعاملة
         const txDoc = await db.collection('transactions').doc(txId).get();
         if (!txDoc.exists) {
-            showToast('Transaction not found', 'error');
+            showToast('❌ Transaction not found', 'error');
             return;
         }
         
         const txData = txDoc.data();
         
+        // تحديث في Firebase
         await db.collection('transactions').doc(txId).update({
             status: 'rejected',
             reason: reason,
-            rejectedAt: new Date().toISOString(),
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin'
         });
         
+        // إذا كانت سحب، نعيد المبلغ للمستخدم
         if (txData.type === 'withdraw') {
             const updates = {};
             updates[`balances.${txData.currency}`] = firebase.firestore.FieldValue.increment(txData.amount);
@@ -2701,20 +2744,33 @@ async function executeRejection(txId, targetUserId, reason) {
             }
             
             await db.collection('users').doc(targetUserId).update(updates);
+            
+            // تحديث محلي إذا كان المستخدم الحالي
+            if (targetUserId === userId) {
+                userData.balances[txData.currency] = (userData.balances[txData.currency] || 0) + txData.amount;
+                if (txData.fee) {
+                    userData.balances[txData.feeCurrency] = (userData.balances[txData.feeCurrency] || 0) + txData.fee;
+                }
+                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                updateUI();
+            }
         }
         
+        // إرسال إشعار للمستخدم
         await addNotification(targetUserId, t('notif.depositRejected', { reason }), 'error');
         
-        showToast('Transaction rejected!', 'success');
+        showToast('✅ Transaction rejected!', 'success');
+        
+        // تحديث لوحة الأدمن
         showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
         
     } catch (error) {
-        console.error("Error rejecting transaction:", error);
-        showToast('Error rejecting transaction', 'error');
+        console.error("❌ Error rejecting transaction:", error);
+        showToast('❌ Error rejecting transaction: ' + error.message, 'error');
     }
 }
 
-// ====== 27. MODAL FUNCTIONS ======
+// ====== 28. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
     updateDepositInfo();
@@ -2815,7 +2871,7 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 28. INITIALIZATION ======
+// ====== 29. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -2861,7 +2917,7 @@ async function initApp() {
     }
 }
 
-// ====== 29. EXPORT FUNCTIONS ======
+// ====== 30. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
 window.showStaking = showStaking;
@@ -2913,7 +2969,8 @@ window.copyToClipboard = copyToClipboard;
 console.log("✅ REFI Network v11.0 - ULTIMATE PROFESSIONAL EDITION");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Transactions stored SEPARATELY - NEVER disappear");
-console.log("✅ Rejection works in ALL environments");
+console.log("✅ Rejection works with proper error handling");
+console.log("✅ Approval works with proper error handling");
 console.log("✅ Real-time updates for ALL financial transactions");
 console.log("✅ BNB receive disabled in swap");
 console.log("✅ COMPLETELY FIXED - 100% RELIABLE");
