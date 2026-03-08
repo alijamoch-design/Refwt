@@ -3126,3 +3126,8 @@ body.rtl {
 .bg-pink { background: var(--gradient-pink); }
 .glow { box-shadow: var(--shadow-pink); }
 .rounded-full { border-radius: 9999px; }
+/* ====== إصلاح مشكلة الأرقام في السواب للغة العربية ====== */
+body.rtl input[type="number"] {
+    direction: ltr !important;
+    text-align: left !important;
+}
