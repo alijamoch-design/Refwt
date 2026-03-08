@@ -232,7 +232,6 @@ body.rtl {
     border: 1px solid var(--danger);
 }
 
-/* باقي الأنماط كما هي من ملفك الأصلي */
 /* ====== حاوية التطبيق ====== */
 .app-container {
     width: 100%;
@@ -2978,6 +2977,48 @@ body.rtl {
 .toast-content i {
     font-size: 18px;
     animation: pulseSlow 2s ease-in-out infinite;
+}
+
+/* ====== Floating Notifications (مثل Toast ولكن للإشعارات الوهمية) ====== */
+.floating-toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--gradient-pink);
+    padding: 12px 24px;
+    border-radius: 30px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2400;
+    box-shadow: var(--shadow-pink-strong);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease;
+    pointer-events: none;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floating-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* للأجهزة الصغيرة */
+@media (max-width: 428px) {
+    .floating-toast {
+        bottom: 90px;
+        padding: 10px 20px;
+        font-size: 13px;
+        white-space: normal;
+        line-height: 1.4;
+    }
 }
 
 /* ====== Scroll Top Button ====== */
