@@ -811,7 +811,7 @@ async function addNotification(userId, message, type = 'info') {
     }
 }
 
-// ====== 12. REALTIME LISTENERS - محسن للاستجابة الفورية ======
+// ====== 12. REALTIME LISTENERS - محسن للاستجابة الفورية مع تحديث History ======
 function setupRealtimeListeners() {
     if (!db) return;
     
@@ -897,14 +897,21 @@ function setupRealtimeListeners() {
                                 showToast(t('notif.depositRejected', { reason: tx.reason || 'Unknown' }), 'error');
                             }
                             
-                            // ✅ تحديث صفحة History إذا كانت مفتوحة
+                            // ✅ تحديث صفحة History إذا كانت مفتوحة (المشكلة محلولة هنا)
                             if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+                                console.log("📜 History is open, refreshing...");
                                 renderHistory(currentHistoryFilter);
                             }
                         }
                     } else {
                         // إضافة معاملة جديدة
                         userData.transactions.push(tx);
+                        
+                        // إذا كانت صفحة History مفتوحة، نقوم بتحديثها
+                        if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+                            console.log("📜 New transaction, refreshing history...");
+                            renderHistory(currentHistoryFilter);
+                        }
                         
                         // إذا كانت معاملة جديدة مكتملة (مثل تحويل)
                         if (tx.status === 'completed') {
@@ -2613,7 +2620,39 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
 }
 
 // ✅ دالة رفض المعاملة (محدثة - تعمل الآن)
-async function rejectTransaction(txId, targetUserId) {
+function rejectTransaction(txId, targetUserId) {
+    // استخدام Popup في تلغرام
+    if (tg?.showPopup) {
+        tg.showPopup({
+            title: 'Reject Transaction',
+            message: 'Please select a reason:',
+            buttons: [
+                { type: 'default', text: 'Invalid TXID', id: 'invalid' },
+                { type: 'default', text: 'Wrong amount', id: 'amount' },
+                { type: 'default', text: 'Suspicious', id: 'suspicious' },
+                { type: 'cancel', text: 'Cancel' }
+            ]
+        }, async (buttonId) => {
+            // هذا الكallback يتم تنفيذه بعد اختيار المستخدم
+            if (!buttonId || buttonId === 'cancel') return;
+            
+            let reason = '';
+            if (buttonId === 'invalid') reason = 'Invalid transaction ID';
+            else if (buttonId === 'amount') reason = 'Incorrect amount';
+            else if (buttonId === 'suspicious') reason = 'Suspicious activity detected';
+            
+            // تنفيذ الرفض مع السبب
+            await executeRejection(txId, targetUserId, reason);
+        });
+    } else {
+        // استخدام prompt في المتصفح
+        const reason = prompt("Enter rejection reason:", "Invalid transaction");
+        if (!reason) return;
+        executeRejection(txId, targetUserId, reason);
+    }
+}
+
+async function executeRejection(txId, targetUserId, reason) {
     try {
         // الحصول على بيانات المعاملة
         const txDoc = await db.collection('transactions').doc(txId).get();
@@ -2623,34 +2662,6 @@ async function rejectTransaction(txId, targetUserId) {
         }
         
         const txData = txDoc.data();
-        
-        // طلب سبب الرفض
-        let reason = '';
-        if (tg?.showPopup) {
-            // استخدام popup في تلغرام
-            const result = await new Promise((resolve) => {
-                tg.showPopup({
-                    title: 'Reject Transaction',
-                    message: 'Please select a reason:',
-                    buttons: [
-                        { type: 'default', text: 'Invalid TXID', id: 'invalid' },
-                        { type: 'default', text: 'Wrong amount', id: 'amount' },
-                        { type: 'default', text: 'Suspicious', id: 'suspicious' },
-                        { type: 'cancel', text: 'Cancel' }
-                    ]
-                }, (buttonId) => resolve(buttonId));
-            });
-            
-            if (!result || result === 'cancel') return;
-            
-            if (result === 'invalid') reason = 'Invalid transaction ID';
-            else if (result === 'amount') reason = 'Incorrect amount';
-            else if (result === 'suspicious') reason = 'Suspicious activity detected';
-        } else {
-            // استخدام prompt في المتصفح
-            reason = prompt("Enter rejection reason:", "Invalid transaction");
-            if (!reason) return;
-        }
         
         // تحديث حالة المعاملة إلى مرفوضة
         await db.collection('transactions').doc(txId).update({
@@ -2893,5 +2904,5 @@ console.log("✅ REFI Network v10.0 - Professional Edition Loaded");
 console.log("✅ Languages: English / العربية");
 console.log("✅ All fixes applied: Referral, Swap, MAX, Hash Validation with SOL/TRX support");
 console.log("✅ BNB receive disabled in swap");
-console.log("✅ Rejection fixed");
-console.log("✅ Real-time updates for financial transactions");
+console.log("✅ Rejection fixed - now working with Telegram popup");
+console.log("✅ History auto-refresh when transactions change");
