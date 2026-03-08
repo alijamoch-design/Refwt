@@ -1,6 +1,6 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 11.0 ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 12.0 ======
 // جميع الحقوق محفوظة • تم التطوير باحترافية عالية
-// الإصدار النهائي مع تخزين منفصل للمعاملات - 100% موثوق
+// الإصدار النهائي مع دعم المجلدات المنفصلة: deposit_requests, withdrawals, transactions
 
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
@@ -578,7 +578,7 @@ function saveLocalTransactions(transactions) {
     }
 }
 
-// ====== 11. LOAD USER DATA - ULTIMATE FIX ======
+// ====== 11. LOAD USER DATA ======
 async function loadUserData() {
     try {
         console.log("📂 Loading user data for:", userId);
@@ -639,18 +639,28 @@ async function loadUserData() {
             // 3.1 تحميل بيانات المستخدم
             const userDoc = await db.collection('users').doc(userId).get();
             
-            // 3.2 تحميل جميع معاملات المستخدم
-            const transactionsSnapshot = await db.collection('transactions')
-                .where('userId', '==', userId)
-                .orderBy('timestamp', 'desc')
-                .get();
+            // 3.2 تحميل جميع معاملات المستخدم من المجلدات المختلفة
+            const [depositsSnapshot, withdrawalsSnapshot, transactionsSnapshot] = await Promise.all([
+                db.collection('deposit_requests').where('userId', '==', userId).get(),
+                db.collection('withdrawals').where('userId', '==', userId).get(),
+                db.collection('transactions').where('userId', '==', userId).get()
+            ]);
             
             const firebaseTransactions = [];
-            transactionsSnapshot.forEach(doc => {
-                firebaseTransactions.push(doc.data());
+            
+            depositsSnapshot.forEach(doc => {
+                firebaseTransactions.push({ id: doc.id, ...doc.data() });
             });
             
-            console.log(`📥 Loaded ${firebaseTransactions.length} transactions from Firebase`);
+            withdrawalsSnapshot.forEach(doc => {
+                firebaseTransactions.push({ id: doc.id, ...doc.data() });
+            });
+            
+            transactionsSnapshot.forEach(doc => {
+                firebaseTransactions.push({ id: doc.id, ...doc.data() });
+            });
+            
+            console.log(`📥 Loaded ${firebaseTransactions.length} transactions from Firebase (all collections)`);
             
             // 3.3 دمج المعاملات (بدون تكرار)
             const allTransactions = [...localTransactions];
@@ -712,68 +722,19 @@ async function loadUserData() {
     }
 }
 
-// ====== 12. إضافة معاملة جديدة ======
-function addTransaction(transaction) {
-    // 1. إضافة إلى userData
-    if (!userData.transactions) userData.transactions = [];
-    userData.transactions.unshift(transaction);
-    
-    // 2. حفظ في المفتاح المنفصل
-    const allTransactions = loadLocalTransactions();
-    allTransactions.unshift(transaction);
-    saveLocalTransactions(allTransactions);
-    
-    // 3. حفظ userData
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-    
-    // 4. تحديث UI إذا كانت History مفتوحة
-    if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
-        renderHistory(currentHistoryFilter);
-    }
-}
-
-// ====== 13. تحديث معاملة ======
-function updateTransaction(updatedTx) {
-    // 1. تحديث في userData
-    if (userData.transactions) {
-        const index = userData.transactions.findIndex(t => 
-            t.timestamp === updatedTx.timestamp && t.type === updatedTx.type
-        );
-        if (index !== -1) {
-            userData.transactions[index] = updatedTx;
-        }
-    }
-    
-    // 2. تحديث في المفتاح المنفصل
-    const allTransactions = loadLocalTransactions();
-    const index = allTransactions.findIndex(t => 
-        t.timestamp === updatedTx.timestamp && t.type === updatedTx.type
-    );
-    if (index !== -1) {
-        allTransactions[index] = updatedTx;
-        saveLocalTransactions(allTransactions);
-    }
-    
-    // 3. حفظ userData
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-    
-    // 4. تحديث UI إذا كانت History مفتوحة
-    if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
-        renderHistory(currentHistoryFilter);
-    }
-}
-
-// ====== 14. REFERRAL SYSTEM ======
+// إنشاء كود إحالة فريد
 function generateReferralCode() {
     const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
     const userPart = userId.substring(0, 4).toUpperCase();
     return `REF${randomPart}${userPart}`;
 }
 
+// الحصول على رابط الإحالة الكامل
 function getReferralLink() {
     return `${BOT_LINK}?start=${userData.referralCode}`;
 }
 
+// ====== 12. REFERRAL SYSTEM ======
 async function processReferral() {
     try {
         console.log("🔍 Checking for referral...");
@@ -888,7 +849,58 @@ function shareReferral() {
     }
 }
 
-// ====== 15. ADD NOTIFICATION - FIXED with serverTimestamp ======
+// ====== 13. إضافة معاملة جديدة ======
+function addTransaction(transaction) {
+    // 1. إضافة إلى userData
+    if (!userData.transactions) userData.transactions = [];
+    userData.transactions.unshift(transaction);
+    
+    // 2. حفظ في المفتاح المنفصل
+    const allTransactions = loadLocalTransactions();
+    allTransactions.unshift(transaction);
+    saveLocalTransactions(allTransactions);
+    
+    // 3. حفظ userData
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    // 4. تحديث UI إذا كانت History مفتوحة
+    if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+        renderHistory(currentHistoryFilter);
+    }
+}
+
+// ====== 14. تحديث معاملة ======
+function updateTransaction(updatedTx) {
+    // 1. تحديث في userData
+    if (userData.transactions) {
+        const index = userData.transactions.findIndex(t => 
+            t.timestamp === updatedTx.timestamp && t.type === updatedTx.type
+        );
+        if (index !== -1) {
+            userData.transactions[index] = updatedTx;
+        }
+    }
+    
+    // 2. تحديث في المفتاح المنفصل
+    const allTransactions = loadLocalTransactions();
+    const index = allTransactions.findIndex(t => 
+        t.timestamp === updatedTx.timestamp && t.type === updatedTx.type
+    );
+    if (index !== -1) {
+        allTransactions[index] = updatedTx;
+        saveLocalTransactions(allTransactions);
+    }
+    
+    // 3. حفظ userData
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    // 4. تحديث UI إذا كانت History مفتوحة
+    if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+        renderHistory(currentHistoryFilter);
+    }
+}
+
+// ====== 15. ADD NOTIFICATION ======
 async function addNotification(userId, message, type = 'info') {
     if (!db) return;
     
@@ -897,7 +909,7 @@ async function addNotification(userId, message, type = 'info') {
         message: message,
         type: type,
         read: false,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp() // ✅ استخدام serverTimestamp
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
     
     try {
@@ -912,7 +924,6 @@ async function addNotification(userId, message, type = 'info') {
             showToast(message, type);
         }
         
-        // إذا كان الإشعار للأدمن، نحدّث لوحة الأدمن
         if (userId === ADMIN_ID) {
             loadAdminPendingRequests();
         }
@@ -957,70 +968,74 @@ function setupRealtimeListeners() {
         }
     });
     
-    db.collection('transactions')
-        .where('userId', '==', userId)
-        .orderBy('timestamp', 'desc')
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                const tx = change.doc.data();
-                console.log(`🔄 Transaction ${change.type}:`, tx.status);
-                
-                if (change.type === 'added' || change.type === 'modified') {
-                    const localTxs = loadLocalTransactions();
-                    const exists = localTxs.some(t => 
-                        t.timestamp === tx.timestamp && t.type === tx.type
-                    );
+    // الاستماع للتغييرات في جميع المجلدات
+    const collections = ['deposit_requests', 'withdrawals', 'transactions'];
+    
+    collections.forEach(collectionName => {
+        db.collection(collectionName)
+            .where('userId', '==', userId)
+            .onSnapshot((snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    const tx = { id: change.doc.id, ...change.doc.data() };
+                    console.log(`🔄 ${collectionName} ${change.type}:`, tx.status);
                     
-                    if (!exists) {
-                        localTxs.unshift(tx);
-                        saveLocalTransactions(localTxs);
-                    } else {
-                        const index = localTxs.findIndex(t => 
+                    if (change.type === 'added' || change.type === 'modified') {
+                        const localTxs = loadLocalTransactions();
+                        const exists = localTxs.some(t => 
                             t.timestamp === tx.timestamp && t.type === tx.type
                         );
-                        if (index !== -1) {
-                            const oldStatus = localTxs[index].status;
-                            localTxs[index] = tx;
+                        
+                        if (!exists) {
+                            localTxs.unshift(tx);
                             saveLocalTransactions(localTxs);
-                            
-                            if (oldStatus !== tx.status) {
-                                console.log(`📢 Status changed: ${oldStatus} → ${tx.status}`);
+                        } else {
+                            const index = localTxs.findIndex(t => 
+                                t.timestamp === tx.timestamp && t.type === tx.type
+                            );
+                            if (index !== -1) {
+                                const oldStatus = localTxs[index].status;
+                                localTxs[index] = tx;
+                                saveLocalTransactions(localTxs);
                                 
-                                if (tx.status === 'approved' && tx.type === 'deposit') {
-                                    userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
-                                    showToast(t('notif.depositApproved', { amount: tx.amount, currency: tx.currency }), 'success');
-                                }
-                                
-                                if (tx.status === 'rejected' && tx.type === 'withdraw') {
-                                    userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
-                                    if (tx.fee) {
-                                        userData.balances[tx.feeCurrency] = (userData.balances[tx.feeCurrency] || 0) + tx.fee;
+                                if (oldStatus !== tx.status) {
+                                    console.log(`📢 Status changed: ${oldStatus} → ${tx.status}`);
+                                    
+                                    if (tx.status === 'approved' && tx.type === 'deposit') {
+                                        userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                                        showToast(t('notif.depositApproved', { amount: tx.amount, currency: tx.currency }), 'success');
                                     }
-                                    showToast(t('notif.withdrawRejected', { reason: tx.reason }), 'error');
-                                }
-                                
-                                if (tx.status === 'approved' && tx.type === 'withdraw') {
-                                    showToast(t('notif.withdrawApproved', { amount: tx.amount }), 'success');
-                                }
-                                
-                                if (tx.status === 'rejected' && tx.type === 'deposit') {
-                                    showToast(t('notif.depositRejected', { reason: tx.reason }), 'error');
+                                    
+                                    if (tx.status === 'rejected' && tx.type === 'withdraw') {
+                                        userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
+                                        if (tx.fee) {
+                                            userData.balances[tx.feeCurrency] = (userData.balances[tx.feeCurrency] || 0) + tx.fee;
+                                        }
+                                        showToast(t('notif.withdrawRejected', { reason: tx.reason }), 'error');
+                                    }
+                                    
+                                    if (tx.status === 'approved' && tx.type === 'withdraw') {
+                                        showToast(t('notif.withdrawApproved', { amount: tx.amount }), 'success');
+                                    }
+                                    
+                                    if (tx.status === 'rejected' && tx.type === 'deposit') {
+                                        showToast(t('notif.depositRejected', { reason: tx.reason }), 'error');
+                                    }
                                 }
                             }
                         }
+                        
+                        userData.transactions = loadLocalTransactions();
+                        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+                        
+                        if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
+                            renderHistory(currentHistoryFilter);
+                        }
+                        
+                        updateUI();
                     }
-                    
-                    userData.transactions = loadLocalTransactions();
-                    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                    
-                    if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
-                        renderHistory(currentHistoryFilter);
-                    }
-                    
-                    updateUI();
-                }
+                });
             });
-        });
+    });
 }
 
 // ====== 17. PRICES ======
@@ -1327,7 +1342,6 @@ function renderNotifications() {
     }
     
     notifications.sort((a, b) => {
-        // معالجة التواريخ من Firebase
         const timeA = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime();
         const timeB = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime();
         return timeB - timeA;
@@ -2309,10 +2323,13 @@ async function submitDeposit() {
         userData.usedHashes.push(txnId.toLowerCase());
         
         if (db) {
-            await db.collection('transactions').add(depositRequest);
+            // حفظ في مجلد deposit_requests
+            await db.collection('deposit_requests').add(depositRequest);
+            
             await db.collection('users').doc(userId).update({
                 usedHashes: userData.usedHashes
             });
+            
             await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
@@ -2452,10 +2469,13 @@ async function submitWithdraw() {
     
     try {
         if (db) {
-            await db.collection('transactions').add(withdrawRequest);
+            // حفظ في مجلد withdrawals
+            await db.collection('withdrawals').add(withdrawRequest);
+            
             await db.collection('users').doc(userId).update({
                 balances: userData.balances
             });
+            
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
         }
         
@@ -2480,7 +2500,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 27. ADMIN FUNCTIONS - FIXED with proper error handling ======
+// ====== 27. ADMIN FUNCTIONS ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -2502,9 +2522,22 @@ async function loadAdminData() {
         const usersSnapshot = await db.collection('users').get();
         const totalUsers = usersSnapshot.size;
         
-        const transactionsSnapshot = await db.collection('transactions').get();
-        const pendingCount = transactionsSnapshot.docs.filter(d => d.data().status === 'pending').length;
-        const approvedCount = transactionsSnapshot.docs.filter(d => d.data().status === 'approved' || d.data().status === 'completed').length;
+        // جلب الطلبات المعلقة من المجلدات المختلفة
+        const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
+            db.collection('deposit_requests').where('status', '==', 'pending').get(),
+            db.collection('withdrawals').where('status', '==', 'pending').get()
+        ]);
+        
+        const pendingCount = depositsSnapshot.size + withdrawalsSnapshot.size;
+        
+        // جلب المكتملة من جميع المجلدات
+        const [approvedDeposits, approvedWithdrawals, completedTransactions] = await Promise.all([
+            db.collection('deposit_requests').where('status', '==', 'approved').get(),
+            db.collection('withdrawals').where('status', '==', 'completed').get(),
+            db.collection('transactions').where('status', '==', 'completed').get()
+        ]);
+        
+        const approvedCount = approvedDeposits.size + approvedWithdrawals.size + completedTransactions.size;
         
         const referralsCount = usersSnapshot.docs.reduce((sum, doc) => sum + (doc.data().referralCount || 0), 0);
         
@@ -2530,14 +2563,71 @@ async function showAdminTab(tab) {
     if (!db) return;
     
     let query;
+    let collectionName;
+    
     if (tab === 'deposits') {
-        query = db.collection('transactions').where('type', '==', 'deposit').where('status', '==', 'pending');
+        collectionName = 'deposit_requests';
+        query = db.collection(collectionName).where('status', '==', 'pending');
     } else if (tab === 'withdrawals') {
-        query = db.collection('transactions').where('type', '==', 'withdraw').where('status', '==', 'pending');
+        collectionName = 'withdrawals';
+        query = db.collection(collectionName).where('status', '==', 'pending');
     } else if (tab === 'completed') {
-        query = db.collection('transactions').where('status', 'in', ['approved', 'completed']);
+        // جلب المكتملة من جميع المجلدات
+        const [deposits, withdrawals, transactions] = await Promise.all([
+            db.collection('deposit_requests').where('status', 'in', ['approved', 'completed']).get(),
+            db.collection('withdrawals').where('status', '==', 'completed').get(),
+            db.collection('transactions').where('status', '==', 'completed').get()
+        ]);
+        
+        let html = '';
+        
+        deposits.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data(), collection: 'deposit_requests' };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        withdrawals.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data(), collection: 'withdrawals' };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        transactions.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data(), collection: 'transactions' };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        if (html === '') {
+            adminContent.innerHTML = '<div class="empty-state">No completed transactions found</div>';
+        } else {
+            adminContent.innerHTML = html;
+        }
+        return;
+        
     } else if (tab === 'rejected') {
-        query = db.collection('transactions').where('status', '==', 'rejected');
+        // جلب المرفوضة من جميع المجلدات
+        const [deposits, withdrawals] = await Promise.all([
+            db.collection('deposit_requests').where('status', '==', 'rejected').get(),
+            db.collection('withdrawals').where('status', '==', 'rejected').get()
+        ]);
+        
+        let html = '';
+        
+        deposits.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data(), collection: 'deposit_requests' };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        withdrawals.forEach(doc => {
+            const tx = { id: doc.id, ...doc.data(), collection: 'withdrawals' };
+            html += renderAdminTransactionCard(tx, tab);
+        });
+        
+        if (html === '') {
+            adminContent.innerHTML = '<div class="empty-state">No rejected transactions found</div>';
+        } else {
+            adminContent.innerHTML = html;
+        }
+        return;
     }
     
     const snapshot = await query.limit(50).get();
@@ -2549,7 +2639,7 @@ async function showAdminTab(tab) {
     
     let html = '';
     snapshot.forEach(doc => {
-        const tx = { id: doc.id, ...doc.data() };
+        const tx = { id: doc.id, collection: collectionName, ...doc.data() };
         html += renderAdminTransactionCard(tx, tab);
     });
     
@@ -2567,7 +2657,7 @@ function renderAdminTransactionCard(tx, tab) {
                 <button class="admin-approve-btn" onclick="approveTransaction('${tx.id}', '${tx.userId}', '${tx.type}', '${tx.currency}', ${tx.amount}, ${tx.fee || 0}, '${tx.feeCurrency || 'BNB'}')">
                     <i class="fa-regular fa-circle-check"></i> Approve
                 </button>
-                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.id}', '${tx.userId}')">
+                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.id}', '${tx.userId}', '${tx.type}')">
                     <i class="fa-regular fa-circle-xmark"></i> Reject
                 </button>
             </div>
@@ -2627,7 +2717,7 @@ function renderAdminTransactionCard(tx, tab) {
     `;
 }
 
-// ✅ دالة الموافقة على المعاملة - FIXED with proper error handling
+// ✅ دالة الموافقة على المعاملة - مع دعم المجلدات المختلفة
 async function approveTransaction(txId, targetUserId, type, currency, amount, fee, feeCurrency) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
@@ -2635,17 +2725,31 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
     
     try {
-        // التحقق من وجود المعاملة
-        const txDoc = await db.collection('transactions').doc(txId).get();
+        let collectionName = '';
+        if (type === 'deposit') {
+            collectionName = 'deposit_requests';
+        } else if (type === 'withdraw') {
+            collectionName = 'withdrawals';
+        } else {
+            collectionName = 'transactions';
+        }
+        
+        console.log(`🔍 Looking for ${type} in ${collectionName} with ID: ${txId}`);
+        
+        // التحقق من وجود المعاملة في المجلد الصحيح
+        const txDoc = await db.collection(collectionName).doc(txId).get();
         if (!txDoc.exists) {
-            showToast('❌ Transaction not found', 'error');
+            showToast(`❌ ${type} request not found in ${collectionName}`, 'error');
             return;
         }
         
+        const txData = txDoc.data();
+        
         // تحديث في Firebase
-        await db.collection('transactions').doc(txId).update({
+        await db.collection(collectionName).doc(txId).update({
             status: 'approved',
-            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            approvedBy: 'admin'
         });
         
         if (type === 'deposit') {
@@ -2679,8 +2783,8 @@ async function approveTransaction(txId, targetUserId, type, currency, amount, fe
     }
 }
 
-// ✅ دالة رفض المعاملة - FIXED with proper error handling
-function rejectTransaction(txId, targetUserId) {
+// ✅ دالة رفض المعاملة - مع دعم المجلدات المختلفة
+function rejectTransaction(txId, targetUserId, type) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
         return;
@@ -2705,29 +2809,40 @@ function rejectTransaction(txId, targetUserId) {
             else if (buttonId === 'amount') reason = 'Incorrect amount';
             else if (buttonId === 'suspicious') reason = 'Suspicious activity detected';
             
-            await executeRejection(txId, targetUserId, reason);
+            await executeRejection(txId, targetUserId, type, reason);
         });
     } else {
         // استخدام prompt في المتصفح
         const reason = prompt("Enter rejection reason:", "Invalid transaction");
         if (!reason) return;
-        executeRejection(txId, targetUserId, reason);
+        executeRejection(txId, targetUserId, type, reason);
     }
 }
 
-async function executeRejection(txId, targetUserId, reason) {
+async function executeRejection(txId, targetUserId, type, reason) {
     try {
+        let collectionName = '';
+        if (type === 'deposit') {
+            collectionName = 'deposit_requests';
+        } else if (type === 'withdraw') {
+            collectionName = 'withdrawals';
+        } else {
+            collectionName = 'transactions';
+        }
+        
+        console.log(`🔍 Looking for ${type} in ${collectionName} with ID: ${txId}`);
+        
         // التحقق من وجود المعاملة
-        const txDoc = await db.collection('transactions').doc(txId).get();
+        const txDoc = await db.collection(collectionName).doc(txId).get();
         if (!txDoc.exists) {
-            showToast('❌ Transaction not found', 'error');
+            showToast(`❌ ${type} request not found in ${collectionName}`, 'error');
             return;
         }
         
         const txData = txDoc.data();
         
         // تحديث في Firebase
-        await db.collection('transactions').doc(txId).update({
+        await db.collection(collectionName).doc(txId).update({
             status: 'rejected',
             reason: reason,
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2735,7 +2850,7 @@ async function executeRejection(txId, targetUserId, reason) {
         });
         
         // إذا كانت سحب، نعيد المبلغ للمستخدم
-        if (txData.type === 'withdraw') {
+        if (type === 'withdraw') {
             const updates = {};
             updates[`balances.${txData.currency}`] = firebase.firestore.FieldValue.increment(txData.amount);
             
@@ -2966,11 +3081,13 @@ window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Network v11.0 - ULTIMATE PROFESSIONAL EDITION");
+console.log("✅ REFI Network v12.0 - ULTIMATE PROFESSIONAL EDITION");
 console.log("✅ Languages: English / العربية");
-console.log("✅ Transactions stored SEPARATELY - NEVER disappear");
-console.log("✅ Rejection works with proper error handling");
-console.log("✅ Approval works with proper error handling");
+console.log("✅ Transactions stored in separate collections:");
+console.log("✅ - deposit_requests");
+console.log("✅ - withdrawals");
+console.log("✅ - transactions");
+console.log("✅ Admin approval/rejection works with proper collections");
 console.log("✅ Real-time updates for ALL financial transactions");
 console.log("✅ BNB receive disabled in swap");
 console.log("✅ COMPLETELY FIXED - 100% RELIABLE");
