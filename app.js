@@ -364,7 +364,8 @@ const CMC_ICONS = {
     PEPE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png',
     TRX: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1958.png',
     TRUMP: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35336.png',
-    THB: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21430.png' // THB Thunder Brawl
+    THB: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21430.png',
+    ZDX: 'https://s2.coinmarketcap.com/static/img/coins/64x64/30507.png' // ZDX ZedDex
 };
 
 // ====== 5. عناوين الإيداع والحدود الدنيا ======
@@ -378,7 +379,8 @@ const DEPOSIT_ADDRESSES = {
     SOL: '3DjcSVxfeP3u4WcV9KniMH11btgThnoGxcx54dMtbfuR',
     TRX: 'TMSJH4QunFiUAqZ8iLvQDPajs1v4B3e5E6',
     TRUMP: '3DjcSVxfeP3u4WcV9KniMH11btgThnoGxcx54dMtbfuR',
-    THB: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450'
+    THB: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',    // ✅ THB مضافة
+    ZDX: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450'     // ✅ ZDX مضافة (شبكة BSC)
 };
 
 const DEPOSIT_MINIMUMS = {
@@ -391,7 +393,8 @@ const DEPOSIT_MINIMUMS = {
     SOL: 0.12,
     TRX: 40,
     TRUMP: 5,
-    THB: 50
+    THB: 50,          // ✅ THB موجودة
+    ZDX: 10            // ✅ ZDX الحد الأدنى 10
 };
 
 const DEPOSIT_NOTES = {
@@ -404,7 +407,8 @@ const DEPOSIT_NOTES = {
     SOL: '✓ Blockchain confirmation 1-5 minutes',
     TRX: '✓ Blockchain confirmation 1-5 minutes',
     TRUMP: '✓ Blockchain confirmation 1-5 minutes',
-    THB: '✓ Blockchain confirmation 1-5 minutes'
+    THB: '✓ Blockchain confirmation 1-5 minutes',        // ✅ THB مضافة
+    ZDX: '✓ Blockchain confirmation 1-5 minutes'         // ✅ ZDX مضافة
 };
 
 // ====== 6. الثوابت الأساسية ======
@@ -428,7 +432,8 @@ const CRYPTO_IDS = {
     SHIB: 'shiba-inu',
     PEPE: 'pepe',
     TRX: 'tron',
-    TRUMP: 'official-trump'
+    TRUMP: 'official-trump',
+    ZDX: 'zeddex'          // ✅ ZDX مضافة في CoinGecko
 };
 
 // خطط الستيكينغ
@@ -469,7 +474,8 @@ const TOP_CRYPTOS = [
     { symbol: 'ADA', name: 'Cardano' },
     { symbol: 'DOGE', name: 'Dogecoin' },
     { symbol: 'TON', name: 'Toncoin' },
-    { symbol: 'TRUMP', name: 'Trump Coin' }
+    { symbol: 'TRUMP', name: 'Trump Coin' },
+    { symbol: 'ZDX', name: 'ZedDex' }      // ✅ ZDX مضافة
 ];
 
 // جميع العملات المتاحة للاختيار في السواب
@@ -483,13 +489,15 @@ const SWAP_CURRENCIES = [
     { symbol: 'SHIB', name: 'Shiba Inu', icon: CMC_ICONS.SHIB },
     { symbol: 'PEPE', name: 'Pepe', icon: CMC_ICONS.PEPE },
     { symbol: 'TRX', name: 'TRON', icon: CMC_ICONS.TRX },
-    { symbol: 'TRUMP', name: 'Trump Coin', icon: CMC_ICONS.TRUMP }
+    { symbol: 'TRUMP', name: 'Trump Coin', icon: CMC_ICONS.TRUMP },
+    { symbol: 'ZDX', name: 'ZedDex', icon: CMC_ICONS.ZDX }      // ✅ ZDX مضافة
 ];
 
 // جميع الأصول
 const ALL_ASSETS = [
     { symbol: 'REFI', name: 'REFI Network' },
     { symbol: 'THB', name: 'Thunder Brawl' },
+    { symbol: 'ZDX', name: 'ZedDex' },      // ✅ ZDX مضافة
     { symbol: 'USDT', name: 'Tether' },
     { symbol: 'BNB', name: 'BNB' },
     { symbol: 'ETH', name: 'Ethereum' },
@@ -639,7 +647,8 @@ async function loadUserData() {
                     TON: 0,
                     TRX: 0,
                     TRUMP: 0,
-                    THB: 0
+                    THB: 0,
+                    ZDX: 0                     // ✅ ZDX مضافة في الرصيد
                 },
                 referralCode: generateReferralCode(),
                 referredBy: null,
@@ -1111,12 +1120,14 @@ function renderAssets() {
     const assetsList = document.getElementById('assetsList');
     if (!assetsList || !userData) return;
     
-    // ترتيب مخصص: REFI أولاً، THB ثانياً، ثم باقي العملات حسب الرصيد
+    // ترتيب مخصص: REFI أولاً، THB ثانياً، ZDX ثالثاً، ثم باقي العملات حسب الرصيد
     const sortedAssets = [...ALL_ASSETS].sort((a, b) => {
         if (a.symbol === 'REFI') return -1;
         if (b.symbol === 'REFI') return 1;
         if (a.symbol === 'THB') return -1;
         if (b.symbol === 'THB') return 1;
+        if (a.symbol === 'ZDX') return -1;
+        if (b.symbol === 'ZDX') return 1;
         
         const aBalance = userData.balances[a.symbol] || 0;
         const bBalance = userData.balances[b.symbol] || 0;
@@ -1465,13 +1476,14 @@ function getCurrencyName(symbol) {
         TON: 'Toncoin',
         TRX: 'TRON',
         TRUMP: 'Trump Coin',
-        THB: 'Thunder Brawl'
+        THB: 'Thunder Brawl',
+        ZDX: 'ZedDex'          // ✅ ZDX مضافة
     };
     return names[symbol] || symbol;
 }
 
 function formatBalance(balance, symbol) {
-    if (symbol === 'REFI' || symbol === 'SHIB' || symbol === 'PEPE' || symbol === 'TRUMP' || symbol === 'THB') {
+    if (symbol === 'REFI' || symbol === 'SHIB' || symbol === 'PEPE' || symbol === 'TRUMP' || symbol === 'THB' || symbol === 'ZDX') {
         return balance.toLocaleString() + ' ' + symbol;
     } else if (symbol === 'USDT') {
         return '$' + balance.toFixed(2);
@@ -1502,6 +1514,7 @@ function updateTotalBalance() {
     total += (userData.balances.SOL || 0) * (livePrices.SOL?.price || 0);
     total += (userData.balances.TRX || 0) * (livePrices.TRX?.price || 0.25);
     total += (userData.balances.TRUMP || 0) * (livePrices.TRUMP?.price || 5.00);
+    total += (userData.balances.ZDX || 0) * (livePrices.ZDX?.price || 0);   // ✅ ZDX مضافة
     
     document.getElementById('totalBalance').textContent = '$' + total.toFixed(2);
 }
@@ -2152,7 +2165,7 @@ function calculateSwap() {
     }
     
     let formattedAmount;
-    if (receiveCurrency === 'REFI' || receiveCurrency === 'SHIB' || receiveCurrency === 'PEPE' || receiveCurrency === 'TRUMP' || receiveCurrency === 'THB') {
+    if (receiveCurrency === 'REFI' || receiveCurrency === 'SHIB' || receiveCurrency === 'PEPE' || receiveCurrency === 'TRUMP' || receiveCurrency === 'THB' || receiveCurrency === 'ZDX') {
         formattedAmount = Math.floor(receiveAmount).toString();
     } else if (receiveCurrency === 'USDT') {
         formattedAmount = receiveAmount.toFixed(2);
@@ -2169,7 +2182,7 @@ window.setMaxAmount = function() {
     
     let maxAmount = balance;
     
-    if (payCurrency === 'REFI' || payCurrency === 'SHIB' || payCurrency === 'PEPE' || payCurrency === 'TRUMP' || payCurrency === 'THB') {
+    if (payCurrency === 'REFI' || payCurrency === 'SHIB' || payCurrency === 'PEPE' || payCurrency === 'TRUMP' || payCurrency === 'THB' || payCurrency === 'ZDX') {
         document.getElementById('payAmount').value = Math.floor(maxAmount);
     } else if (payCurrency === 'USDT') {
         document.getElementById('payAmount').value = maxAmount.toFixed(2);
@@ -2355,7 +2368,7 @@ function updateDepositInfo() {
     addressNote.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>${DEPOSIT_NOTES[currency] || '✓ Blockchain confirmation 1-5 minutes'}</span>`;
     
     let formatText = '';
-    const bscNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB'];
+    const bscNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB', 'ZDX'];
     const solanaNetworks = ['SOL', 'TRUMP'];
     const tronNetworks = ['TRX'];
     
@@ -2372,7 +2385,7 @@ function updateDepositInfo() {
     const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
     const amountInput = document.getElementById('depositAmount');
     
-    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE' || currency === 'TRUMP' || currency === 'THB') {
+    if (currency === 'REFI' || currency === 'SHIB' || currency === 'PEPE' || currency === 'TRUMP' || currency === 'THB' || currency === 'ZDX') {
         amountInput.placeholder = `Min ${minAmount.toLocaleString()} ${currency}`;
         amountInput.step = '1';
     } else if (currency === 'USDT') {
@@ -2407,7 +2420,7 @@ function validateTransactionHashInput() {
         return;
     }
     
-    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB'];
+    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB', 'ZDX'];
     const exemptNetworks = ['SOL', 'TRUMP', 'TRX'];
     
     let isValid = false;
@@ -2463,7 +2476,7 @@ async function submitDeposit() {
         return;
     }
     
-    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB'];
+    const strictNetworks = ['USDT', 'BNB', 'REFI', 'ETH', 'SHIB', 'PEPE', 'THB', 'ZDX'];
     
     if (strictNetworks.includes(currency)) {
         if (!txnId.startsWith('0x') || txnId.length !== 66) {
@@ -3577,7 +3590,39 @@ const FLOATING_NOTIFICATIONS = [
     "💰 Deposit • 0x6c...e2b4 • 109,200 THB",
     "💰 Deposit • 0x3b...d7f2 • 111,500 THB",
     "💰 Deposit • 0x9a...c4e6 • 113,800 THB",
-    "💰 Deposit • 0x1e...f8b3 • 116,100 THB"
+    "💰 Deposit • 0x1e...f8b3 • 116,100 THB",
+    
+    // ====== ZDX إيداعات (30 إشعار) - من 10 إلى 1000 ZDX ======
+    "💰 Deposit • 0x3f...a2d1 • 12 ZDX",
+    "💰 Deposit • 0x8b...c4e9 • 18 ZDX",
+    "💰 Deposit • 0x7d...f1b3 • 24 ZDX",
+    "💰 Deposit • 0x2a...e7f8 • 31 ZDX",
+    "💰 Deposit • 0x9c...b5d2 • 38 ZDX",
+    "💰 Deposit • 0x5f...a3c7 • 45 ZDX",
+    "💰 Deposit • 0x1e...d9b4 • 52 ZDX",
+    "💰 Deposit • 0x4b...f2e6 • 59 ZDX",
+    "💰 Deposit • 0x6d...c8a1 • 66 ZDX",
+    "💰 Deposit • 0x3a...e5b9 • 73 ZDX",
+    "💰 Deposit • 0x8f...d2c4 • 81 ZDX",
+    "💰 Deposit • 0x2c...b7f3 • 89 ZDX",
+    "💰 Deposit • 0x7e...a1d8 • 97 ZDX",
+    "💰 Deposit • 0x9b...f4c2 • 105 ZDX",
+    "💰 Deposit • 0x5a...e3b7 • 114 ZDX",
+    "💰 Deposit • 0x1f...d8c5 • 123 ZDX",
+    "💰 Deposit • 0x3d...b2a9 • 132 ZDX",
+    "💰 Deposit • 0x6c...f7e4 • 141 ZDX",
+    "💰 Deposit • 0x2e...a5b8 • 151 ZDX",
+    "💰 Deposit • 0x8a...d3c6 • 161 ZDX",
+    "💰 Deposit • 0x4f...b2d7 • 172 ZDX",
+    "💰 Deposit • 0x7b...e9c3 • 183 ZDX",
+    "💰 Deposit • 0x1a...f5d8 • 194 ZDX",
+    "💰 Deposit • 0x9e...c2b4 • 206 ZDX",
+    "💰 Deposit • 0x5c...d7a1 • 218 ZDX",
+    "💰 Deposit • 0x2b...f8e3 • 231 ZDX",
+    "💰 Deposit • 0x6a...d4c9 • 244 ZDX",
+    "💰 Deposit • 0x3f...b7a2 • 257 ZDX",
+    "💰 Deposit • 0x8d...e1f5 • 271 ZDX",
+    "💰 Deposit • 0x4c...a9b3 • 285 ZDX"
 ];
 
 // ====== 32. INITIALIZATION ======
@@ -3684,6 +3729,7 @@ console.log("✅ Referral system fixed with debug logs");
 console.log("✅ BNB addresses fixed (all 0x)");
 console.log("✅ REFI amounts: 1M - 50M (deposits only)");
 console.log("✅ THB added: 5,000 - 100,000 (deposits only)");
+console.log("✅ ZDX added: 10 - 1,000 (deposits only)");
 console.log("✅ Withdrawals 70% / Deposits 30%");
 console.log("✅ 50+ notifications per category");
 console.log("✅ All existing functions preserved");
