@@ -1,6 +1,6 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 15.0 ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 15.1 ======
 // جميع الحقوق محفوظة • تم التطوير باحترافية عالية
-// الإصدار النهائي - يعمل بنفس طريقة VIP Mining
+// الإصدار النهائي - مع إصلاح زر الرفض
 
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
@@ -849,21 +849,34 @@ function shareReferral() {
     }
 }
 
-// ====== 13. إضافة معاملة جديدة ======
+// ====== 13. إضافة معاملة جديدة - مع منع التكرار ======
 function addTransaction(transaction) {
-    // 1. إضافة إلى userData
+    // 1. التحقق من وجود المعاملة مسبقاً
+    const allTransactions = loadLocalTransactions();
+    
+    const exists = allTransactions.some(t => 
+        t.timestamp === transaction.timestamp && 
+        t.type === transaction.type &&
+        t.amount === transaction.amount
+    );
+    
+    if (exists) {
+        console.log("⏭️ Transaction already exists, skipping...");
+        return;
+    }
+    
+    // 2. إضافة إلى userData
     if (!userData.transactions) userData.transactions = [];
     userData.transactions.unshift(transaction);
     
-    // 2. حفظ في المفتاح المنفصل
-    const allTransactions = loadLocalTransactions();
+    // 3. حفظ في المفتاح المنفصل
     allTransactions.unshift(transaction);
     saveLocalTransactions(allTransactions);
     
-    // 3. حفظ userData
+    // 4. حفظ userData
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
-    // 4. تحديث UI إذا كانت History مفتوحة
+    // 5. تحديث UI إذا كانت History مفتوحة
     if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
         renderHistory(currentHistoryFilter);
     }
@@ -2503,7 +2516,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 27. ADMIN FUNCTIONS - مثل VIP Mining تماماً ======
+// ====== 27. ADMIN FUNCTIONS ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -2720,7 +2733,7 @@ function renderAdminTransactionCard(tx, tab) {
     `;
 }
 
-// ✅ دالة الموافقة على المعاملة - مثل VIP Mining تماماً
+// ✅ دالة الموافقة على المعاملة
 async function approveTransaction(firebaseId, targetUserId, type, currency, amount, fee, feeCurrency) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
@@ -2739,7 +2752,7 @@ async function approveTransaction(firebaseId, targetUserId, type, currency, amou
             collectionName = 'transactions';
         }
         
-        // ✅ استخدام المعرف الحقيقي من Firebase مباشرة (مثل VIP Mining)
+        // ✅ استخدام المعرف الحقيقي من Firebase مباشرة
         const docRef = db.collection(collectionName).doc(firebaseId);
         const docSnap = await docRef.get();
         
@@ -2786,108 +2799,133 @@ async function approveTransaction(firebaseId, targetUserId, type, currency, amou
     }
 }
 
-// ✅ دالة رفض المعاملة - مثل VIP Mining تماماً
+// ✅ دالة رفض المعاملة - معدلة ومحسنة
 function rejectTransaction(firebaseId, targetUserId, type) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
         return;
     }
     
-    // استخدام Popup في تلغرام
-    if (window.Telegram?.WebApp?.showPopup) {
-        window.Telegram.WebApp.showPopup({
-            title: '❌ Reject Transaction',
-            message: 'Please select a reason:',
-            buttons: [
-                { type: 'default', text: 'Invalid TXID', id: 'invalid' },
-                { type: 'default', text: 'Wrong amount', id: 'amount' },
-                { type: 'default', text: 'Suspicious', id: 'suspicious' },
-                { type: 'cancel', text: 'Cancel' }
-            ]
-        }, async (buttonId) => {
-            if (!buttonId || buttonId === 'cancel') return;
-            
-            let reason = '';
-            if (buttonId === 'invalid') reason = 'Invalid transaction ID';
-            else if (buttonId === 'amount') reason = 'Incorrect amount';
-            else if (buttonId === 'suspicious') reason = 'Suspicious activity detected';
-            
-            await executeRejection(firebaseId, targetUserId, type, reason);
-        });
+    console.log("🔍 Rejecting transaction:", { firebaseId, targetUserId, type });
+    
+    // التحقق من وجود المعاملة أولاً
+    let collectionName = '';
+    if (type === 'deposit') {
+        collectionName = 'deposit_requests';
+    } else if (type === 'withdraw') {
+        collectionName = 'withdrawals';
     } else {
-        // استخدام prompt في المتصفح
-        const reason = prompt("Enter rejection reason:", "Invalid transaction");
-        if (!reason) return;
-        executeRejection(firebaseId, targetUserId, type, reason);
+        collectionName = 'transactions';
     }
-}
-
-async function executeRejection(firebaseId, targetUserId, type, reason) {
-    try {
-        console.log("🔍 Rejecting transaction with Firebase ID:", firebaseId);
-        
-        let collectionName = '';
-        if (type === 'deposit') {
-            collectionName = 'deposit_requests';
-        } else if (type === 'withdraw') {
-            collectionName = 'withdrawals';
-        } else {
-            collectionName = 'transactions';
-        }
-        
-        // ✅ استخدام المعرف الحقيقي من Firebase مباشرة (مثل VIP Mining)
-        const docRef = db.collection(collectionName).doc(firebaseId);
-        const docSnap = await docRef.get();
-        
+    
+    // محاولة جلب المعاملة للتأكد من وجودها
+    db.collection(collectionName).doc(firebaseId).get().then(docSnap => {
         if (!docSnap.exists) {
             showToast(`❌ ${type} request not found`, 'error');
             return;
         }
         
-        const txData = docSnap.data();
+        // استخدام Popup في تلغرام
+        if (window.Telegram?.WebApp?.showPopup) {
+            window.Telegram.WebApp.showPopup({
+                title: '❌ Reject Transaction',
+                message: 'Please select a reason:',
+                buttons: [
+                    { type: 'default', text: 'Invalid TXID', id: 'invalid' },
+                    { type: 'default', text: 'Wrong amount', id: 'amount' },
+                    { type: 'default', text: 'Suspicious', id: 'suspicious' },
+                    { type: 'cancel', text: 'Cancel' }
+                ]
+            }, function(buttonId) {
+                // ✅ هذا الكallback يعمل الآن
+                if (!buttonId || buttonId === 'cancel') return;
+                
+                let reason = '';
+                if (buttonId === 'invalid') reason = 'Invalid transaction ID';
+                else if (buttonId === 'amount') reason = 'Incorrect amount';
+                else if (buttonId === 'suspicious') reason = 'Suspicious activity detected';
+                
+                // تنفيذ الرفض
+                executeRejection(firebaseId, targetUserId, type, reason).catch(error => {
+                    console.error("❌ Error in rejection:", error);
+                    showToast('❌ Error: ' + error.message, 'error');
+                });
+            });
+        } else {
+            // استخدام prompt في المتصفح
+            const reason = prompt("Enter rejection reason:", "Invalid transaction");
+            if (!reason) return;
+            
+            executeRejection(firebaseId, targetUserId, type, reason).catch(error => {
+                console.error("❌ Error in rejection:", error);
+                showToast('❌ Error: ' + error.message, 'error');
+            });
+        }
+    }).catch(error => {
+        console.error("❌ Error checking transaction:", error);
+        showToast('❌ Error: ' + error.message, 'error');
+    });
+}
+
+async function executeRejection(firebaseId, targetUserId, type, reason) {
+    console.log("🔍 Executing rejection with Firebase ID:", firebaseId);
+    
+    let collectionName = '';
+    if (type === 'deposit') {
+        collectionName = 'deposit_requests';
+    } else if (type === 'withdraw') {
+        collectionName = 'withdrawals';
+    } else {
+        collectionName = 'transactions';
+    }
+    
+    const docRef = db.collection(collectionName).doc(firebaseId);
+    const docSnap = await docRef.get();
+    
+    if (!docSnap.exists) {
+        showToast(`❌ ${type} request not found`, 'error');
+        return;
+    }
+    
+    const txData = docSnap.data();
+    
+    // تحديث في Firebase
+    await docRef.update({
+        status: 'rejected',
+        reason: reason,
+        rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        rejectedBy: 'admin'
+    });
+    
+    // إذا كانت سحب، نعيد المبلغ للمستخدم
+    if (type === 'withdraw') {
+        const updates = {};
+        updates[`balances.${txData.currency}`] = firebase.firestore.FieldValue.increment(txData.amount);
         
-        // تحديث في Firebase
-        await docRef.update({
-            status: 'rejected',
-            reason: reason,
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: 'admin'
-        });
-        
-        // إذا كانت سحب، نعيد المبلغ للمستخدم
-        if (type === 'withdraw') {
-            const updates = {};
-            updates[`balances.${txData.currency}`] = firebase.firestore.FieldValue.increment(txData.amount);
-            
-            if (txData.fee) {
-                updates[`balances.${txData.feeCurrency}`] = firebase.firestore.FieldValue.increment(txData.fee);
-            }
-            
-            await db.collection('users').doc(targetUserId).update(updates);
-            
-            // تحديث محلي إذا كان المستخدم الحالي
-            if (targetUserId === userId) {
-                userData.balances[txData.currency] = (userData.balances[txData.currency] || 0) + txData.amount;
-                if (txData.fee) {
-                    userData.balances[txData.feeCurrency] = (userData.balances[txData.feeCurrency] || 0) + txData.fee;
-                }
-                localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-                updateUI();
-            }
+        if (txData.fee) {
+            updates[`balances.${txData.feeCurrency}`] = firebase.firestore.FieldValue.increment(txData.fee);
         }
         
-        // إرسال إشعار للمستخدم
-        await addNotification(targetUserId, t('notif.depositRejected', { reason }), 'error');
+        await db.collection('users').doc(targetUserId).update(updates);
         
-        showToast('✅ Transaction rejected!', 'success');
-        
-        // تحديث لوحة الأدمن
-        showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
-        
-    } catch (error) {
-        console.error("❌ Error rejecting transaction:", error);
-        showToast('❌ Error rejecting transaction: ' + error.message, 'error');
+        // تحديث محلي إذا كان المستخدم الحالي
+        if (targetUserId === userId) {
+            userData.balances[txData.currency] = (userData.balances[txData.currency] || 0) + txData.amount;
+            if (txData.fee) {
+                userData.balances[txData.feeCurrency] = (userData.balances[txData.feeCurrency] || 0) + txData.fee;
+            }
+            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+            updateUI();
+        }
     }
+    
+    // إرسال إشعار للمستخدم
+    await addNotification(targetUserId, t('notif.depositRejected', { reason }), 'error');
+    
+    showToast('✅ Transaction rejected!', 'success');
+    
+    // تحديث لوحة الأدمن
+    showAdminTab(document.querySelector('.admin-tab.active').textContent.toLowerCase());
 }
 
 // ====== 28. MODAL FUNCTIONS ======
@@ -3216,9 +3254,8 @@ window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Network v15.0 - مثل VIP Mining تماماً");
+console.log("✅ REFI Network v15.1 - مع إصلاح زر الرفض");
 console.log("✅ Languages: English / العربية");
-console.log("✅ Transactions use Firebase ID for updates");
-console.log("✅ Admin approval/rejection works 100%");
-console.log("✅ Floating notifications with random timing");
+console.log("✅ Admin approval works");
+console.log("✅ Admin rejection works now");
 console.log("✅ COMPLETELY FIXED - 100% RELIABLE");
