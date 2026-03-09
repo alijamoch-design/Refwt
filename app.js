@@ -618,6 +618,21 @@ function cleanupDuplicateTransactions() {
     }
 }
 
+// ====== LISTENER MANAGER - إضافة جديدة فقط ======
+let listenersActive = false;
+let unsubscribeFunctions = [];
+
+function cleanupListeners() {
+    console.log("🧹 تنظيف المستمعين القديمين...");
+    unsubscribeFunctions.forEach(unsubscribe => {
+        if (typeof unsubscribe === 'function') {
+            unsubscribe();
+        }
+    });
+    unsubscribeFunctions = [];
+    listenersActive = false;
+}
+
 // ====== 11. LOAD USER DATA ======
 async function loadUserData() {
     try {
@@ -747,7 +762,7 @@ async function loadUserData() {
         await processReferral();
         updateNotificationBadge();
         checkAdminAndAddCrown();
-        setupRealtimeListeners();
+        setupRealtimeListeners(); // سيتم إنشاء مستمعين جدد بعد تنظيف القديم
         
     } catch (error) {
         console.error("❌ Error loading user data:", error);
@@ -966,11 +981,14 @@ async function addNotification(userId, message, type = 'info') {
 
 // ====== 14. REALTIME LISTENERS ======
 function setupRealtimeListeners() {
+    // تنظيف المستمعين القديمين قبل إنشاء جديدة
+    cleanupListeners();
+    
     if (!db) return;
     
     console.log("👂 Setting up realtime listeners...");
     
-    db.collection('users').doc(userId).onSnapshot((doc) => {
+    const unsubscribeUsers = db.collection('users').doc(userId).onSnapshot((doc) => {
         if (doc.exists) {
             const fbData = doc.data();
             let needsUpdate = false;
@@ -998,11 +1016,12 @@ function setupRealtimeListeners() {
             }
         }
     });
+    unsubscribeFunctions.push(unsubscribeUsers);
     
     const collections = ['deposit_requests', 'withdrawals', 'transactions'];
     
     collections.forEach(collectionName => {
-        db.collection(collectionName)
+        const unsubscribe = db.collection(collectionName)
             .where('userId', '==', userId)
             .onSnapshot((snapshot) => {
                 snapshot.docChanges().forEach((change) => {
@@ -1071,8 +1090,22 @@ function setupRealtimeListeners() {
                     }
                 });
             });
+        unsubscribeFunctions.push(unsubscribe);
     });
+    
+    listenersActive = true;
 }
+
+// إضافة مستحدث visibility change لتوفير الموارد
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        console.log("📱 التطبيق أصبح في المقدمة");
+        // يمكن إعادة تفعيل أي شيء إذا لزم الأمر
+    } else {
+        console.log("📱 التطبيق أصبح في الخلفية");
+        // يمكن إيقاف المؤقتات الثقيلة هنا إذا وجدت
+    }
+});
 
 // ====== 15. PRICES ======
 async function loadPricesOnce() {
@@ -3733,3 +3766,4 @@ console.log("✅ ZDX added: 10 - 1,000 (deposits only)");
 console.log("✅ Withdrawals 70% / Deposits 30%");
 console.log("✅ 50+ notifications per category");
 console.log("✅ All existing functions preserved");
+console.log("✅ LISTENER MANAGER ADDED - preventing duplicate reads");
