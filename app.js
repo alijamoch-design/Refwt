@@ -3148,7 +3148,7 @@ function showP2P() {
     
     const countdown = document.getElementById('p2pCountdown');
     if (countdown) {
-        countdown.textContent = '7 days';
+        countdown.textContent = '90 days';
     }
 }
 
