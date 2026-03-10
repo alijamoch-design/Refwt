@@ -1,7 +1,7 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 24.5 (FINAL) ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 25.0 (FINAL PRO) ======
 // جميع الحقوق محفوظة • تم التطوير باحترافية عالية
 // نسخة محسنة مع مستمعين عند الطلب فقط - استهلاك Firebase يكاد يكون معدوماً
-// نظام إحالة فعال 100% • تحديث التاريخ عند الفتح • حفظ مجمع عند الخروج
+// نظام إحالة فعال 100% • تاريخ محدث • إشعارات تعمل • حفظ مجمع عند الخروج
 
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
@@ -485,7 +485,6 @@ async function saveBatchChanges() {
     try {
         console.log("💾 Saving batch changes to Firebase...");
         
-        // بناء كائن التحديثات (فقط الحقول التي تغيرت)
         const updates = {};
         
         if (pendingChanges.balances !== null) {
@@ -539,7 +538,6 @@ function ensureUnloadListener() {
         if (hasPendingChanges && db && userData) {
             console.log("🚪 Page closing - saving pending changes...");
             
-            // استخدام Beacon API للحفظ حتى لو كان الصفحة تغلق
             const updates = {};
             if (pendingChanges.balances !== null) {
                 updates.balances = pendingChanges.balances;
@@ -569,14 +567,12 @@ let activeListener = null;
 let listenerTimeout = null;
 
 function startOnDemandListener(collection, docId, callback, timeoutMs = 300000) {
-    // إذا كان هناك مستمع نشط، أوقفه أولاً
     if (activeListener) {
         console.log("🛑 Stopping previous listener");
         activeListener();
         activeListener = null;
     }
     
-    // إلغاء أي مؤقت سابق
     if (listenerTimeout) {
         clearTimeout(listenerTimeout);
         listenerTimeout = null;
@@ -584,14 +580,12 @@ function startOnDemandListener(collection, docId, callback, timeoutMs = 300000) 
     
     console.log(`👂 Starting on-demand listener for ${collection}/${docId}`);
     
-    // تشغيل المستمع الجديد
     activeListener = db.collection(collection).doc(docId).onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
             console.log(`📡 Listener update for ${collection}/${docId}:`, data.status);
             callback(data);
             
-            // إذا كانت الحالة نهائية (approved/rejected)، نوقف المستمع
             if (data.status === 'approved' || data.status === 'rejected' || data.status === 'completed') {
                 console.log(`✅ Final status reached, stopping listener for ${collection}/${docId}`);
                 stopOnDemandListener();
@@ -602,7 +596,6 @@ function startOnDemandListener(collection, docId, callback, timeoutMs = 300000) 
         stopOnDemandListener();
     });
     
-    // مؤقت أمان لإيقاف المستمع بعد timeoutMs
     listenerTimeout = setTimeout(() => {
         console.log(`⏰ Listener timeout (${timeoutMs}ms) for ${collection}/${docId}`);
         stopOnDemandListener();
@@ -644,7 +637,6 @@ async function checkPendingTransactions() {
     console.log(`⏳ Found ${pendingTxs.length} pending transactions, checking status...`);
     let updated = false;
     
-    // عرض مؤشر تحميل صغير
     showToast(`🔄 Checking ${pendingTxs.length} pending transactions...`, 'info');
     
     for (const tx of pendingTxs) {
@@ -660,7 +652,6 @@ async function checkPendingTransactions() {
             if (data.status !== tx.status) {
                 console.log(`🔄 Transaction ${tx.firebaseId} status changed: ${tx.status} → ${data.status}`);
                 
-                // تحديث المعاملة في الذاكرة
                 const allTxs = loadLocalTransactions();
                 const index = allTxs.findIndex(t => t.firebaseId === tx.firebaseId);
                 
@@ -668,7 +659,6 @@ async function checkPendingTransactions() {
                     allTxs[index] = { ...allTxs[index], ...data, status: data.status };
                     saveLocalTransactions(allTxs);
                     
-                    // تحديث في userData
                     if (userData.transactions) {
                         const userIndex = userData.transactions.findIndex(t => t.firebaseId === tx.firebaseId);
                         if (userIndex !== -1) {
@@ -676,14 +666,12 @@ async function checkPendingTransactions() {
                         }
                     }
                     
-                    // إذا كانت الحالة approved، أضف المبلغ للرصيد
                     if (data.status === 'approved' && tx.type === 'deposit') {
                         userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
                         registerChange('balances', userData.balances);
                         showToast(`✅ Your ${tx.amount} ${tx.currency} deposit has been approved!`, 'success');
                     }
                     
-                    // إذا كانت الحالة rejected وأصلية السحب، أعد المبلغ
                     if (data.status === 'rejected' && tx.type === 'withdraw') {
                         userData.balances[tx.currency] = (userData.balances[tx.currency] || 0) + tx.amount;
                         if (tx.fee) {
@@ -702,15 +690,12 @@ async function checkPendingTransactions() {
     }
     
     if (updated) {
-        // حفظ التغييرات في localStorage
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
-        // إعادة عرض التاريخ إذا كنا في صفحة التاريخ
         if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
             renderHistory(currentHistoryFilter);
         }
         
-        // تحديث الواجهة
         updateUI();
         
         showToast('✅ Transaction history updated!', 'success');
@@ -946,7 +931,6 @@ async function loadUserData() {
         updateNotificationBadge();
         checkAdminAndAddCrown();
         
-        // إضافة مستمع الحفظ عند الخروج
         ensureUnloadListener();
         
     } catch (error) {
@@ -969,7 +953,6 @@ async function processReferral() {
     try {
         console.log("🔍 Checking for referral...");
         
-        // التحقق من رابط الإحالة
         const urlParams = new URLSearchParams(window.location.search);
         let referralCode = urlParams.get('start') || urlParams.get('ref');
         
@@ -982,20 +965,17 @@ async function processReferral() {
             return;
         }
         
-        // التأكد من أن userData موجود
         if (!userData) {
             console.log("⏳ User data not loaded yet, waiting...");
             setTimeout(processReferral, 1000);
             return;
         }
         
-        // لا يمكن إحالة النفس
         if (referralCode === userData.referralCode) {
             console.log("⚠️ Cannot refer yourself");
             return;
         }
         
-        // إذا كان المستخدم لديه مُحيل بالفعل
         if (userData.referredBy) {
             console.log("✅ User already referred by:", userData.referredBy);
             return;
@@ -1003,14 +983,12 @@ async function processReferral() {
         
         console.log("🎯 Processing referral code:", referralCode);
         
-        // حفظ الكود مؤقتاً في حالة عدم وجود Firebase
         if (!db) {
             console.log("📦 Firebase not available, saving pending referral");
             localStorage.setItem('pending_referral', referralCode);
             return;
         }
         
-        // البحث عن المُحيل باستخدام referralCode
         const referrerQuery = await db.collection('users')
             .where('referralCode', '==', referralCode)
             .limit(1)
@@ -1025,13 +1003,11 @@ async function processReferral() {
         const referrerId = referrerDoc.id;
         const referrerData = referrerDoc.data();
         
-        // تأكد أن المُحيل ليس المستخدم نفسه
         if (referrerId === userId) {
             console.log("⚠️ Self-referral detected and blocked");
             return;
         }
         
-        // تأكد أن المستخدم لم يضف كإحالة سابقاً
         if (referrerData.referrals && referrerData.referrals.includes(userId)) {
             console.log("✅ User already in referrer's list");
             return;
@@ -1039,7 +1015,6 @@ async function processReferral() {
         
         console.log("✅ Valid referrer found:", referrerId);
         
-        // تحديث المُحيل
         const updatedReferrals = [...(referrerData.referrals || []), userId];
         const updatedReferralCount = (referrerData.referralCount || 0) + 1;
         const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
@@ -1051,11 +1026,9 @@ async function processReferral() {
             totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS
         });
         
-        // تحديث المستخدم الجديد
         userData.referredBy = referralCode;
-        userData.balances.REFI = (userData.balances.REFI || 0) + 10000; // مكافأة ترحيب
+        userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
         
-        // تسجيل التغييرات للحفظ المجمع
         registerChange('balances', userData.balances);
         registerChange('referredBy', referralCode);
         
@@ -1066,7 +1039,6 @@ async function processReferral() {
             'balances.REFI': userData.balances.REFI
         });
         
-        // تسجيل المعاملات
         const welcomeTransaction = {
             userId: userId,
             userName: userName,
@@ -1092,7 +1064,6 @@ async function processReferral() {
         };
         await db.collection('transactions').add(referrerTransaction);
         
-        // إرسال الإشعارات
         await addNotification(referrerId, t('notif.referralBonus', { amount: REFERRAL_BONUS.toLocaleString() }), 'success');
         await addNotification(userId, t('notif.welcomeBonus'), 'success');
         
@@ -1469,19 +1440,28 @@ function filterHistory(filter) {
     renderHistory(filter);
 }
 
-// ====== 20. HISTORY MODAL - مع زر التحديث ======
+// ====== 20. HISTORY MODAL - مع زر التحديث (بدون تعديل HTML) ======
 function showHistory() {
     currentPage = 'history';
     const modal = document.getElementById('historyModal');
     
-    // إضافة زر التحديث إذا لم يكن موجوداً
+    // البحث عن زر التحديث أو إضافته بطريقة آمنة
     const header = modal.querySelector('.modal-header');
-    if (!header.querySelector('.refresh-history-btn')) {
-        const refreshBtn = document.createElement('button');
+    let refreshBtn = header.querySelector('.refresh-history-btn');
+    
+    if (!refreshBtn) {
+        refreshBtn = document.createElement('button');
         refreshBtn.className = 'refresh-history-btn';
         refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
-        refreshBtn.onclick = function() {
-            checkPendingTransactions();
+        refreshBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.querySelector('i').classList.add('fa-spin');
+            checkPendingTransactions().finally(() => {
+                setTimeout(() => {
+                    this.querySelector('i').classList.remove('fa-spin');
+                }, 1000);
+            });
         };
         refreshBtn.style.marginLeft = '10px';
         refreshBtn.style.background = 'transparent';
@@ -1491,11 +1471,11 @@ function showHistory() {
         refreshBtn.style.cursor = 'pointer';
         refreshBtn.title = 'Check for updates';
         header.appendChild(refreshBtn);
+        console.log("✅ History refresh button added");
     }
     
     modal.classList.add('show');
     
-    // التحقق من الطلبات المعلقة عند فتح التاريخ
     setTimeout(() => {
         checkPendingTransactions();
     }, 500);
@@ -1504,7 +1484,7 @@ function showHistory() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
-// ====== 21. RENDER NOTIFICATIONS ======
+// ====== 21. NOTIFICATIONS FUNCTIONS - كما في الكود القديم تماماً ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
@@ -1576,7 +1556,50 @@ async function markNotificationRead(notificationId) {
     }
 }
 
-// ====== 22. UTILITY FUNCTIONS ======
+// ====== 22. دالة showNotifications - كما في الكود القديم تماماً ======
+function showNotifications() {
+    console.log("🔔 Opening notifications modal");
+    
+    const modal = document.getElementById('notificationsModal');
+    if (!modal) {
+        console.error("❌ Notifications modal not found");
+        showToast("Notifications modal not found", "error");
+        return;
+    }
+    
+    modal.classList.add('show');
+    renderNotifications();
+    animateElement('.modal-content', 'slideUpModal');
+}
+
+// ====== 23. إصلاح زر الإشعارات - يضمن عمله كما في الكود القديم ======
+function fixNotificationButton() {
+    console.log("🔧 Ensuring notification button works...");
+    
+    const notifBtn = document.getElementById('notificationBtn');
+    if (notifBtn) {
+        // إزالة أي مستمع قديم عن طريق استبدال الزر
+        const newBtn = notifBtn.cloneNode(true);
+        if (notifBtn.parentNode) {
+            notifBtn.parentNode.replaceChild(newBtn, notifBtn);
+        }
+        
+        // إضافة المستمع الجديد
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("🔔 Notification button clicked");
+            showNotifications();
+        });
+        
+        console.log("✅ Notification button fixed and ready");
+    } else {
+        console.warn("⚠️ Notification button not found, will retry...");
+        setTimeout(fixNotificationButton, 1000);
+    }
+}
+
+// ====== 24. UTILITY FUNCTIONS ======
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
 }
@@ -1711,7 +1734,7 @@ function setupScrollListener() {
     });
 }
 
-// ====== 23. NAVIGATION FUNCTIONS ======
+// ====== 25. NAVIGATION FUNCTIONS ======
 function showWallet() {
     currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
@@ -1772,7 +1795,7 @@ function showReferral() {
     animateElement('.referral-link-card', 'pop');
 }
 
-// ====== 24. STAKING FUNCTIONS ======
+// ====== 26. STAKING FUNCTIONS ======
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -1881,7 +1904,6 @@ function stakeUSDT() {
     userData.balances.USDT -= amount;
     userData.staking.push(stake);
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     registerChange('staking', userData.staking);
     
@@ -1918,7 +1940,6 @@ function claimStakingReward(startDate) {
     userData.balances.USDT += reward;
     stake.claimed = true;
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     registerChange('staking', userData.staking);
     
@@ -1958,7 +1979,6 @@ function claimStakingMission(missionId) {
     userData.balances.USDT += reward;
     userData.stakingMissions[missionIndex].claimed = true;
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     registerChange('stakingMissions', userData.stakingMissions);
     
@@ -1999,7 +2019,6 @@ function claimReferralMilestone(referrals) {
     userData.totalUsdtEarned += reward;
     userData.referralMilestones[milestoneIndex].claimed = true;
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     registerChange('totalUsdtEarned', userData.totalUsdtEarned);
     registerChange('referralMilestones', userData.referralMilestones);
@@ -2041,7 +2060,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 25. SWAP FUNCTIONS ======
+// ====== 27. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2360,7 +2379,6 @@ function confirmSwap() {
     userData.balances[payCurrency] -= payAmount;
     userData.balances[receiveCurrency] += receiveAmount;
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     
     const transaction = {
@@ -2394,7 +2412,7 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== 26. ADD TRANSACTION ======
+// ====== 28. ADD TRANSACTION ======
 function addTransaction(transaction) {
     try {
         const allTransactions = loadLocalTransactions();
@@ -2431,7 +2449,7 @@ function addTransaction(transaction) {
     }
 }
 
-// ====== 27. UPDATE TRANSACTION ======
+// ====== 29. UPDATE TRANSACTION ======
 function updateTransaction(updatedTx) {
     try {
         if (userData.transactions) {
@@ -2464,7 +2482,7 @@ function updateTransaction(updatedTx) {
     }
 }
 
-// ====== 28. DEPOSIT FUNCTIONS ======
+// ====== 30. DEPOSIT FUNCTIONS ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
@@ -2569,7 +2587,7 @@ function validateTransactionHashInput() {
     }
 }
 
-// ====== 29. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
+// ====== 31. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -2642,7 +2660,6 @@ async function submitDeposit() {
             
             await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا الإيداع المحدد
             startOnDemandListener('deposit_requests', docRef.id, (data) => {
                 console.log("📥 Deposit update received:", data);
                 
@@ -2705,7 +2722,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== 30. WITHDRAW FUNCTIONS ======
+// ====== 32. WITHDRAW FUNCTIONS ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
     const feeWarning = document.getElementById('feeWarning');
@@ -2769,7 +2786,7 @@ function validateWithdrawAddressInput() {
     }
 }
 
-// ====== 31. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
+// ====== 33. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
@@ -2818,7 +2835,6 @@ async function submitWithdraw() {
         userData.balances[feeCurrency] -= fee;
     }
     
-    // تسجيل التغيير للحفظ المجمع
     registerChange('balances', userData.balances);
     
     const withdrawRequest = {
@@ -2849,7 +2865,6 @@ async function submitWithdraw() {
             
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا السحب المحدد
             startOnDemandListener('withdrawals', docRef.id, (data) => {
                 console.log("📤 Withdrawal update received:", data);
                 
@@ -2863,7 +2878,6 @@ async function submitWithdraw() {
                     showToast(t('notif.withdrawApproved', { amount }), 'success');
                     
                 } else if (data.status === 'rejected') {
-                    // إعادة المبلغ في حالة الرفض
                     userData.balances[currency] += amount;
                     if (fee > 0) {
                         userData.balances[feeCurrency] += fee;
@@ -2924,7 +2938,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 32. ADMIN FUNCTIONS ======
+// ====== 34. ADMIN FUNCTIONS ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -3302,7 +3316,7 @@ function rejectTransaction(firebaseId, targetUserId, type) {
     }
 }
 
-// ====== 33. MODAL FUNCTIONS ======
+// ====== 35. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
     updateDepositInfo();
@@ -3399,7 +3413,7 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 34. FLOATING NOTIFICATIONS ======
+// ====== 36. FLOATING NOTIFICATIONS ======
 let notificationTimeouts = [];
 
 function initFloatingNotifications() {
@@ -3771,7 +3785,7 @@ const FLOATING_NOTIFICATIONS = [
     "💰 Deposit • 0x4c...a9b3 • 285 ZDX"
 ];
 
-// ====== 35. INITIALIZATION ======
+// ====== 37. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -3791,6 +3805,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mainContent').style.display = 'block';
         initFloatingNotifications();
     }, 2000);
+    
+    // إصلاح زر الإشعارات
+    setTimeout(fixNotificationButton, 1500);
     
     initApp();
 });
@@ -3815,13 +3832,14 @@ async function initApp() {
         console.log("✅ Referral system is now 100% functional");
         console.log("✅ Batch save on unload only - Firebase writes reduced by 99%");
         console.log("✅ History auto-refresh on open - no more stuck pending transactions");
+        console.log("✅ Notifications button fixed and working");
         
     } catch (error) {
         console.error("❌ Error initializing app:", error);
     }
 }
 
-// ====== 36. EXPORT FUNCTIONS ======
+// ====== 38. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
 window.showStaking = showStaking;
@@ -3873,10 +3891,11 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Network v24.5 - ULTIMATE OPTIMIZED VERSION");
+console.log("✅ REFI Network v25.0 - ULTIMATE OPTIMIZED VERSION");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: FIXED and 100% functional");
 console.log("✅ Listeners: ON-DEMAND only (run when deposit/withdrawal submitted, auto-stop after 5min)");
-console.log("✅ History: AUTO-REFRESH when opened - no more stuck pending transactions");
+console.log("✅ History: AUTO-REFRESH when opened + manual refresh button");
+console.log("✅ Notifications: WORKING as in original code");
 console.log("✅ Firebase writes: BATCH SAVE ON PAGE UNLOAD only");
 console.log("✅ Same user experience - Zero recurring Firebase cost");
