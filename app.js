@@ -1445,7 +1445,6 @@ function showHistory() {
     currentPage = 'history';
     const modal = document.getElementById('historyModal');
     
-    // البحث عن زر التحديث أو إضافته بطريقة آمنة
     const header = modal.querySelector('.modal-header');
     let refreshBtn = header.querySelector('.refresh-history-btn');
     
@@ -1541,6 +1540,7 @@ function renderNotifications() {
     }).join('');
 }
 
+// ====== 22. FIXED NOTIFICATION READ FUNCTION - اقتصادية 100% ======
 async function markNotificationRead(notificationId) {
     if (!userData.notifications) return;
     
@@ -1550,13 +1550,19 @@ async function markNotificationRead(notificationId) {
         unreadNotifications--;
         updateNotificationBadge();
         
+        // حفظ في localStorage فوراً (مجاني)
+        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+        
+        // تسجيل التغيير للحفظ المجمع (لا كتابة فورية)
         registerChange('notifications', userData.notifications);
         
         renderNotifications();
+        
+        console.log("✅ Notification marked as read (saved in batch)");
     }
 }
 
-// ====== 22. دالة showNotifications - كما في الكود القديم تماماً ======
+// ====== 23. دالة showNotifications - كما في الكود القديم تماماً ======
 function showNotifications() {
     console.log("🔔 Opening notifications modal");
     
@@ -1572,19 +1578,17 @@ function showNotifications() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
-// ====== 23. إصلاح زر الإشعارات - يضمن عمله كما في الكود القديم ======
+// ====== 24. إصلاح زر الإشعارات - يضمن عمله كما في الكود القديم ======
 function fixNotificationButton() {
     console.log("🔧 Ensuring notification button works...");
     
     const notifBtn = document.getElementById('notificationBtn');
     if (notifBtn) {
-        // إزالة أي مستمع قديم عن طريق استبدال الزر
         const newBtn = notifBtn.cloneNode(true);
         if (notifBtn.parentNode) {
             notifBtn.parentNode.replaceChild(newBtn, notifBtn);
         }
         
-        // إضافة المستمع الجديد
         newBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -1599,7 +1603,7 @@ function fixNotificationButton() {
     }
 }
 
-// ====== 24. UTILITY FUNCTIONS ======
+// ====== 25. UTILITY FUNCTIONS ======
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
 }
@@ -1734,7 +1738,7 @@ function setupScrollListener() {
     });
 }
 
-// ====== 25. NAVIGATION FUNCTIONS ======
+// ====== 26. NAVIGATION FUNCTIONS ======
 function showWallet() {
     currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
@@ -1795,7 +1799,7 @@ function showReferral() {
     animateElement('.referral-link-card', 'pop');
 }
 
-// ====== 26. STAKING FUNCTIONS ======
+// ====== 27. STAKING FUNCTIONS ======
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -2060,7 +2064,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 27. SWAP FUNCTIONS ======
+// ====== 28. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2412,7 +2416,7 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== 28. ADD TRANSACTION ======
+// ====== 29. ADD TRANSACTION ======
 function addTransaction(transaction) {
     try {
         const allTransactions = loadLocalTransactions();
@@ -2449,7 +2453,7 @@ function addTransaction(transaction) {
     }
 }
 
-// ====== 29. UPDATE TRANSACTION ======
+// ====== 30. UPDATE TRANSACTION ======
 function updateTransaction(updatedTx) {
     try {
         if (userData.transactions) {
@@ -2482,7 +2486,7 @@ function updateTransaction(updatedTx) {
     }
 }
 
-// ====== 30. DEPOSIT FUNCTIONS ======
+// ====== 31. DEPOSIT FUNCTIONS ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
@@ -2587,7 +2591,7 @@ function validateTransactionHashInput() {
     }
 }
 
-// ====== 31. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
+// ====== 32. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -2722,7 +2726,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== 32. WITHDRAW FUNCTIONS ======
+// ====== 33. WITHDRAW FUNCTIONS ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
     const feeWarning = document.getElementById('feeWarning');
@@ -2786,7 +2790,7 @@ function validateWithdrawAddressInput() {
     }
 }
 
-// ====== 33. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
+// ====== 34. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
@@ -2938,7 +2942,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 34. ADMIN FUNCTIONS ======
+// ====== 35. ADMIN FUNCTIONS ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -3316,7 +3320,7 @@ function rejectTransaction(firebaseId, targetUserId, type) {
     }
 }
 
-// ====== 35. MODAL FUNCTIONS ======
+// ====== 36. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
     updateDepositInfo();
@@ -3413,7 +3417,7 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 36. FLOATING NOTIFICATIONS ======
+// ====== 37. FLOATING NOTIFICATIONS ======
 let notificationTimeouts = [];
 
 function initFloatingNotifications() {
@@ -3785,7 +3789,7 @@ const FLOATING_NOTIFICATIONS = [
     "💰 Deposit • 0x4c...a9b3 • 285 ZDX"
 ];
 
-// ====== 37. INITIALIZATION ======
+// ====== 38. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -3806,7 +3810,6 @@ document.addEventListener('DOMContentLoaded', () => {
         initFloatingNotifications();
     }, 2000);
     
-    // إصلاح زر الإشعارات
     setTimeout(fixNotificationButton, 1500);
     
     initApp();
@@ -3832,14 +3835,15 @@ async function initApp() {
         console.log("✅ Referral system is now 100% functional");
         console.log("✅ Batch save on unload only - Firebase writes reduced by 99%");
         console.log("✅ History auto-refresh on open - no more stuck pending transactions");
-        console.log("✅ Notifications button fixed and working");
+        console.log("✅ Notifications: read status saved in localStorage + batch saved to Firebase");
+        console.log("✅ Zero extra Firebase reads/writes for notifications");
         
     } catch (error) {
         console.error("❌ Error initializing app:", error);
     }
 }
 
-// ====== 38. EXPORT FUNCTIONS ======
+// ====== 39. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
 window.showStaking = showStaking;
@@ -3896,6 +3900,6 @@ console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: FIXED and 100% functional");
 console.log("✅ Listeners: ON-DEMAND only (run when deposit/withdrawal submitted, auto-stop after 5min)");
 console.log("✅ History: AUTO-REFRESH when opened + manual refresh button");
-console.log("✅ Notifications: WORKING as in original code");
+console.log("✅ Notifications: READ STATUS PERSISTENT - saved in localStorage, batch saved to Firebase");
 console.log("✅ Firebase writes: BATCH SAVE ON PAGE UNLOAD only");
-console.log("✅ Same user experience - Zero recurring Firebase cost");
+console.log("✅ Zero extra Firebase reads/writes for notifications - ULTRA ECONOMICAL");
