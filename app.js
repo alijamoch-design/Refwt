@@ -1,7 +1,8 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 25.0 (FINAL PRO) ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 26.0 (FINAL LAUNCH) ======
 // جميع الحقوق محفوظة • تم التطوير باحترافية عالية
 // نسخة محسنة مع مستمعين عند الطلب فقط - استهلاك Firebase يكاد يكون معدوماً
 // نظام إحالة فعال 100% • تاريخ محدث • إشعارات تعمل • حفظ مجمع عند الخروج
+// إضافة أزرار تنظيف الإشعارات - اقتصادية 100% (بدون قراءات إضافية)
 
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
@@ -133,7 +134,17 @@ const translations = {
         'success.swapCompleted': '✅ Swapped {fromAmount} {fromCurrency} to {toAmount} {toCurrency}',
         'success.stakeCompleted': '✅ Successfully staked {amount} USDT!',
         'success.referralCopied': '✅ Referral link copied!',
-        'success.addressCopied': '✅ Address copied to clipboard!'
+        'success.addressCopied': '✅ Address copied to clipboard!',
+        'notifications.clear_read': 'Clear Read',
+        'notifications.clear_all': 'Clear All',
+        'notifications.refresh': 'Refresh',
+        'notifications.confirm_clear_read': 'Clear {count} read notification(s)? {unread} unread will remain.',
+        'notifications.confirm_clear_all': 'Delete all notifications?',
+        'notifications.confirm_clear_all_unread': 'Warning: You have {count} unread notifications. Delete all?',
+        'notifications.cleared': 'Cleared {count} read notifications',
+        'notifications.no_read': 'No read notifications to clear',
+        'notifications.no_notifications': 'No notifications',
+        'notifications.updated': 'Notifications updated'
     },
     ar: {
         'app.name': 'REFI Network',
@@ -231,7 +242,17 @@ const translations = {
         'success.swapCompleted': '✅ تم تحويل {fromAmount} {fromCurrency} إلى {toAmount} {toCurrency}',
         'success.stakeCompleted': '✅ تم تجميد {amount} USDT بنجاح!',
         'success.referralCopied': '✅ تم نسخ رابط الإحالة!',
-        'success.addressCopied': '✅ تم نسخ العنوان إلى الحافظة!'
+        'success.addressCopied': '✅ تم نسخ العنوان إلى الحافظة!',
+        'notifications.clear_read': 'حذف المقروء',
+        'notifications.clear_all': 'حذف الكل',
+        'notifications.refresh': 'تحديث',
+        'notifications.confirm_clear_read': 'حذف {count} إشعار مقروء؟ سيبقى {unread} إشعار غير مقروء.',
+        'notifications.confirm_clear_all': 'حذف جميع الإشعارات؟',
+        'notifications.confirm_clear_all_unread': 'تحذير: لديك {count} إشعار غير مقروء. حذف الكل؟',
+        'notifications.cleared': 'تم حذف {count} إشعار مقروء',
+        'notifications.no_read': 'لا توجد إشعارات مقروءة للحذف',
+        'notifications.no_notifications': 'لا توجد إشعارات',
+        'notifications.updated': 'تم تحديث الإشعارات'
     }
 };
 
@@ -1483,18 +1504,32 @@ function showHistory() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
-// ====== 21. NOTIFICATIONS FUNCTIONS - كما في الكود القديم تماماً ======
+// ====== 21. NOTIFICATIONS FUNCTIONS - مع أزرار التحكم الاقتصادية ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
     
     const notifications = userData.notifications || [];
     
+    // إضافة أزرار التحكم في الأعلى (بدون أي استهلاك من Firebase)
+    let controlsHTML = `
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; padding: 0 5px;">
+            <button onclick="clearReadNotifications()" 
+                    style="flex: 1; padding: 8px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2); border-radius: 8px; color: var(--quantum-blue); font-size: 12px; cursor: pointer;">
+                <i class="fa-regular fa-trash-can"></i> ${t('notifications.clear_read')}
+            </button>
+            <button onclick="clearAllNotifications()" 
+                    style="flex: 1; padding: 8px; background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.2); border-radius: 8px; color: #ff4444; font-size: 12px; cursor: pointer;">
+                <i class="fa-regular fa-bell-slash"></i> ${t('notifications.clear_all')}
+            </button>
+        </div>
+    `;
+    
     if (notifications.length === 0) {
-        notificationsList.innerHTML = `
+        notificationsList.innerHTML = controlsHTML + `
             <div class="empty-state">
                 <i class="fa-regular fa-bell-slash"></i>
-                <p>No notifications yet</p>
+                <p>${t('notifications.no_notifications')}</p>
                 <span>We'll notify you when something arrives</span>
             </div>
         `;
@@ -1507,7 +1542,8 @@ function renderNotifications() {
         return timeB - timeA;
     });
     
-    notificationsList.innerHTML = notifications.map(notif => {
+    let notificationsHTML = '';
+    notifications.forEach(notif => {
         let date = new Date();
         if (notif.timestamp?.toDate) {
             date = notif.timestamp.toDate();
@@ -1523,12 +1559,12 @@ function renderNotifications() {
         if (notif.type === 'success') icon = 'fa-circle-check';
         if (notif.type === 'error') icon = 'fa-circle-xmark';
         
-        return `
+        notificationsHTML += `
             <div class="notification-item ${unreadClass}" onclick="markNotificationRead('${notif.id}')">
                 <div class="notification-header">
                     <span class="notification-title">
                         <i class="fa-regular ${icon}"></i>
-                        Notification
+                        ${t('notifications.title')}
                     </span>
                     <span class="notification-time">${formattedDate}</span>
                 </div>
@@ -1537,10 +1573,12 @@ function renderNotifications() {
                 </div>
             </div>
         `;
-    }).join('');
+    });
+    
+    notificationsList.innerHTML = controlsHTML + notificationsHTML;
 }
 
-// ====== 22. FIXED NOTIFICATION READ FUNCTION - اقتصادية 100% ======
+// دالة علامة الإشعار كمقروء (اقتصادية)
 async function markNotificationRead(notificationId) {
     if (!userData.notifications) return;
     
@@ -1562,7 +1600,81 @@ async function markNotificationRead(notificationId) {
     }
 }
 
-// ====== 23. دالة showNotifications - كما في الكود القديم تماماً ======
+// دالة حذف الإشعارات المقروءة فقط (اقتصادية 100%)
+function clearReadNotifications() {
+    if (!userData.notifications || userData.notifications.length === 0) {
+        showToast(t('notifications.no_notifications'), 'info');
+        return;
+    }
+    
+    const readCount = userData.notifications.filter(n => n.read).length;
+    const unreadCount = userData.notifications.filter(n => !n.read).length;
+    
+    if (readCount === 0) {
+        showToast(t('notifications.no_read'), 'info');
+        return;
+    }
+    
+    if (confirm(t('notifications.confirm_clear_read', { count: readCount, unread: unreadCount }))) {
+        // الاحتفاظ فقط بالإشعارات غير المقروءة
+        userData.notifications = userData.notifications.filter(n => !n.read);
+        
+        // تحديث العداد
+        unreadNotifications = userData.notifications.length;
+        updateNotificationBadge();
+        
+        // حفظ في localStorage فقط (مجاني)
+        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+        
+        // تسجيل التغيير للحفظ المجمع (كتابة واحدة عند الخروج)
+        registerChange('notifications', userData.notifications);
+        
+        // إعادة عرض الإشعارات
+        renderNotifications();
+        
+        showToast(t('notifications.cleared', { count: readCount }), 'success');
+    }
+}
+
+// دالة حذف جميع الإشعارات (اقتصادية 100%)
+function clearAllNotifications() {
+    if (!userData.notifications || userData.notifications.length === 0) {
+        showToast(t('notifications.no_notifications'), 'info');
+        return;
+    }
+    
+    const unreadCount = userData.notifications.filter(n => !n.read).length;
+    
+    if (unreadCount > 0) {
+        if (!confirm(t('notifications.confirm_clear_all_unread', { count: unreadCount }))) {
+            return;
+        }
+    } else {
+        if (!confirm(t('notifications.confirm_clear_all'))) {
+            return;
+        }
+    }
+    
+    // حذف جميع الإشعارات
+    userData.notifications = [];
+    
+    // تحديث العداد
+    unreadNotifications = 0;
+    updateNotificationBadge();
+    
+    // حفظ في localStorage فقط (مجاني)
+    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    
+    // تسجيل التغيير للحفظ المجمع (كتابة واحدة عند الخروج)
+    registerChange('notifications', userData.notifications);
+    
+    // إعادة عرض الإشعارات
+    renderNotifications();
+    
+    showToast(t('notifications.cleared', { count: 'all' }), 'success');
+}
+
+// دالة showNotifications - كما في الكود القديم تماماً
 function showNotifications() {
     console.log("🔔 Opening notifications modal");
     
@@ -1578,7 +1690,7 @@ function showNotifications() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
-// ====== 24. إصلاح زر الإشعارات - يضمن عمله كما في الكود القديم ======
+// ====== 22. إصلاح زر الإشعارات - يضمن عمله كما في الكود القديم ======
 function fixNotificationButton() {
     console.log("🔧 Ensuring notification button works...");
     
@@ -1603,7 +1715,7 @@ function fixNotificationButton() {
     }
 }
 
-// ====== 25. UTILITY FUNCTIONS ======
+// ====== 23. UTILITY FUNCTIONS ======
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
 }
@@ -1738,7 +1850,7 @@ function setupScrollListener() {
     });
 }
 
-// ====== 26. NAVIGATION FUNCTIONS ======
+// ====== 24. NAVIGATION FUNCTIONS ======
 function showWallet() {
     currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
@@ -1799,7 +1911,7 @@ function showReferral() {
     animateElement('.referral-link-card', 'pop');
 }
 
-// ====== 27. STAKING FUNCTIONS ======
+// ====== 25. STAKING FUNCTIONS ======
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -2064,7 +2176,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 28. SWAP FUNCTIONS ======
+// ====== 26. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2416,7 +2528,7 @@ function confirmSwap() {
     animateElement('#swapBtn', 'pop');
 }
 
-// ====== 29. ADD TRANSACTION ======
+// ====== 27. ADD TRANSACTION ======
 function addTransaction(transaction) {
     try {
         const allTransactions = loadLocalTransactions();
@@ -2453,7 +2565,7 @@ function addTransaction(transaction) {
     }
 }
 
-// ====== 30. UPDATE TRANSACTION ======
+// ====== 28. UPDATE TRANSACTION ======
 function updateTransaction(updatedTx) {
     try {
         if (userData.transactions) {
@@ -2486,7 +2598,7 @@ function updateTransaction(updatedTx) {
     }
 }
 
-// ====== 31. DEPOSIT FUNCTIONS ======
+// ====== 29. DEPOSIT FUNCTIONS ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
@@ -2591,7 +2703,7 @@ function validateTransactionHashInput() {
     }
 }
 
-// ====== 32. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
+// ====== 30. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -2726,7 +2838,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== 33. WITHDRAW FUNCTIONS ======
+// ====== 31. WITHDRAW FUNCTIONS ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
     const feeWarning = document.getElementById('feeWarning');
@@ -2790,7 +2902,7 @@ function validateWithdrawAddressInput() {
     }
 }
 
-// ====== 34. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
+// ====== 32. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
 async function submitWithdraw() {
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
@@ -2942,7 +3054,7 @@ async function submitWithdraw() {
     }
 }
 
-// ====== 35. ADMIN FUNCTIONS ======
+// ====== 33. ADMIN FUNCTIONS ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -3320,7 +3432,7 @@ function rejectTransaction(firebaseId, targetUserId, type) {
     }
 }
 
-// ====== 36. MODAL FUNCTIONS ======
+// ====== 34. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
     updateDepositInfo();
@@ -3417,7 +3529,7 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 37. FLOATING NOTIFICATIONS ======
+// ====== 35. FLOATING NOTIFICATIONS ======
 let notificationTimeouts = [];
 
 function initFloatingNotifications() {
@@ -3789,7 +3901,7 @@ const FLOATING_NOTIFICATIONS = [
     "💰 Deposit • 0x4c...a9b3 • 285 ZDX"
 ];
 
-// ====== 38. INITIALIZATION ======
+// ====== 36. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -3835,7 +3947,7 @@ async function initApp() {
         console.log("✅ Referral system is now 100% functional");
         console.log("✅ Batch save on unload only - Firebase writes reduced by 99%");
         console.log("✅ History auto-refresh on open - no more stuck pending transactions");
-        console.log("✅ Notifications: read status saved in localStorage + batch saved to Firebase");
+        console.log("✅ Notifications: with cleanup buttons - 100% economical (no extra reads)");
         console.log("✅ Zero extra Firebase reads/writes for notifications");
         
     } catch (error) {
@@ -3843,7 +3955,7 @@ async function initApp() {
     }
 }
 
-// ====== 39. EXPORT FUNCTIONS ======
+// ====== 37. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
 window.showStaking = showStaking;
@@ -3887,6 +3999,8 @@ window.validateWithdrawAddressInput = validateWithdrawAddressInput;
 window.toggleLanguage = toggleLanguage;
 window.scrollToTop = scrollToTop;
 window.checkPendingTransactions = checkPendingTransactions;
+window.clearReadNotifications = clearReadNotifications;
+window.clearAllNotifications = clearAllNotifications;
 
 window.showAdminTab = showAdminTab;
 window.approveTransaction = approveTransaction;
@@ -3895,11 +4009,11 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
 
-console.log("✅ REFI Network v25.0 - ULTIMATE OPTIMIZED VERSION");
+console.log("✅ REFI Network v26.0 - ULTIMATE OPTIMIZED VERSION - READY FOR LAUNCH");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: FIXED and 100% functional");
 console.log("✅ Listeners: ON-DEMAND only (run when deposit/withdrawal submitted, auto-stop after 5min)");
 console.log("✅ History: AUTO-REFRESH when opened + manual refresh button");
-console.log("✅ Notifications: READ STATUS PERSISTENT - saved in localStorage, batch saved to Firebase");
-console.log("✅ Firebase writes: BATCH SAVE ON PAGE UNLOAD only");
+console.log("✅ Notifications: CLEANUP BUTTONS - delete read or all notifications");
 console.log("✅ Zero extra Firebase reads/writes for notifications - ULTRA ECONOMICAL");
+console.log("✅ Firebase writes: BATCH SAVE ON PAGE UNLOAD only");
