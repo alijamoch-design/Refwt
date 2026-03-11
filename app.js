@@ -462,6 +462,67 @@ let lastPricesLoadTime = 0;
 const USER_CACHE_TIME = 300000; // 5 دقائق
 const PRICES_CACHE_TIME = 10800000; // 3 ساعات
 
+// ====== ✅ NEW: STICKER SYSTEM ======
+// مصفوفة الستيكرات المميزة
+const WELCOME_STICKERS = [
+    '🤝', '🫣', '🥰', '🥳', '💲', '💰', '💸', '💵', '🤪', '😱', 
+    '😤', '😎', '🤑', '💯', '💖', '✨', '🌟', '⭐', '🔥', '⚡',
+    '💎', '🔔', '🎁', '🎈', '🎉', '🎊', '👑', '🚀', '💫', '⭐'
+];
+
+// متغيرات توقيت الستيكر
+let lastStickerTime = 0;
+const STICKER_COOLDOWN = 12 * 60 * 1000; // 12 دقيقة بالملي ثانية
+
+// دالة عرض الستيكر العشوائي
+function showRandomSticker() {
+    const now = Date.now();
+    
+    // التحقق: إذا مر أقل من 12 دقيقة على آخر ظهور، لا تفعل شيء
+    if (now - lastStickerTime < STICKER_COOLDOWN) {
+        return;
+    }
+    
+    const stickerElement = document.getElementById('welcomeSticker');
+    if (!stickerElement) return;
+    
+    // اختيار ستيكر عشوائي
+    const randomIndex = Math.floor(Math.random() * WELCOME_STICKERS.length);
+    const randomSticker = WELCOME_STICKERS[randomIndex];
+    
+    // وضع الستيكر في المكان المخصص
+    stickerElement.textContent = randomSticker;
+    
+    // إزالة أي كلاسات حركة سابقة
+    stickerElement.classList.remove('sticker-pop', 'sticker-shake');
+    
+    // فرض إعادة تدفق لإعادة تشغيل الحركة (هند الـ reflow)
+    void stickerElement.offsetWidth;
+    
+    // إضافة كلاسات الحركة
+    stickerElement.classList.add('sticker-pop');
+    
+    // بعد انتهاء حركة pop، نضيف حركة الاهتزاز
+    setTimeout(() => {
+        stickerElement.classList.add('sticker-shake');
+    }, 200);
+    
+    // بعد 3 ثواني، نخفي الستيكر
+    setTimeout(() => {
+        stickerElement.classList.remove('sticker-pop', 'sticker-shake');
+        // نمسح النص بعد انتهاء الحركة
+        setTimeout(() => {
+            stickerElement.textContent = '';
+        }, 300);
+    }, 3000);
+    
+    // تحديث وقت آخر ظهور
+    lastStickerTime = now;
+    
+    console.log('🎨 Welcome sticker displayed:', randomSticker);
+}
+// ====== END OF NEW STICKER SYSTEM ======
+
 // ====== 8. USER IDENTIFICATION ======
 const userId = tg?.initDataUnsafe?.user?.id?.toString() || 
                localStorage.getItem('refi_user_id') || 
@@ -1779,6 +1840,9 @@ function showWallet() {
     renderAssets();
     updateTotalBalance();
     animateElement('.balance-card', 'pop');
+    
+    // ✅ إضافة الستيكر عند العودة للمحفظة
+    showRandomSticker();
 }
 
 function showSwap() {
@@ -1794,6 +1858,9 @@ function showSwap() {
     updateSwapBalances();
     calculateSwap();
     animateElement('.swap-card', 'scaleIn');
+    
+    // ✅ إضافة الستيكر عند فتح السواب
+    showRandomSticker();
 }
 
 function showStaking() {
@@ -1809,6 +1876,9 @@ function showStaking() {
     updateStakingStats();
     renderStakingMissions();
     animateElement('.staking-stats', 'slideUp');
+    
+    // ✅ إضافة الستيكر عند فتح الستيكينغ
+    showRandomSticker();
 }
 
 function showReferral() {
@@ -1824,6 +1894,9 @@ function showReferral() {
     updateReferralStats();
     renderReferralMilestones();
     animateElement('.referral-link-card', 'pop');
+    
+    // ✅ إضافة الستيكر عند فتح الإحالة
+    showRandomSticker();
 }
 
 // ====== 23. STAKING FUNCTIONS ======
@@ -3781,6 +3854,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (splash) splash.classList.add('hidden');
         document.getElementById('mainContent').style.display = 'block';
         initFloatingNotifications();
+        
+        // ✅ عرض الستيكر عند فتح التطبيق لأول مرة
+        setTimeout(() => {
+            showRandomSticker();
+        }, 500);
     }, 2000);
     
     setTimeout(fixNotificationButton, 1500);
