@@ -472,7 +472,7 @@ const WELCOME_STICKERS = [
 
 // متغيرات توقيت الستيكر
 let lastStickerTime = 0;
-const STICKER_COOLDOWN = 12 * 60 * 1000; // 12 دقيقة بالملي ثانية
+const STICKER_COOLDOWN = 3 * 60 * 1000; // 12 دقيقة بالملي ثانية
 
 // دالة عرض الستيكر العشوائي
 function showRandomSticker() {
