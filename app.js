@@ -514,7 +514,7 @@ function showRandomSticker() {
         setTimeout(() => {
             stickerElement.textContent = '';
         }, 300);
-    }, 3000);
+    }, 6000);
     
     // تحديث وقت آخر ظهور
     lastStickerTime = now;
