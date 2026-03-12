@@ -40,10 +40,7 @@
                 <div class="header">
                     <div class="welcome-text">
                         <span class="welcome-title" data-i18n="welcome.title">Welcome back,</span>
-                        <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-                            <span class="user-name" id="userId">REFI User</span>
-                            <span id="welcomeSticker"></span>
-                        </div>
+                        <span class="user-name" id="userId">REFI User</span>
                     </div>
                     <div class="header-actions">
                         <button class="icon-btn" id="languageBtn" onclick="toggleLanguage()" title="Change Language">
@@ -512,9 +509,14 @@
         <div class="admin-header">
             <div class="admin-header-content">
                 <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
-                <button class="admin-close-btn" onclick="closeAdminPanel()">
-                    <i class="fa-solid fa-times"></i>
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="icon-btn" id="adminRefreshBtn" onclick="refreshAdminPanel()" title="Refresh" style="background: rgba(255,90,217,0.1); border: 1px solid rgba(255,90,217,0.3);">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button class="admin-close-btn" onclick="closeAdminPanel()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div class="admin-stats" id="adminStats">
                 <div class="admin-stat-card">
