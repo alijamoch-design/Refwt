@@ -629,7 +629,7 @@ let activeListeners = new Map(); // لتخزين المستمعين النشطي
 let listenerTimeouts = new Map();
 
 // بدء مستمع مؤقت لمستند معين
-function startOnDemandListener(collection, docId, callback, timeoutMs = 600000) { // 🔥 تم التخفيض من 30 دقيقة إلى 10 دقائق
+function startOnDemandListener(collection, docId, callback, timeoutMs = 600000) { // 10 دقائق
     const listenerId = `${collection}_${docId}`;
     
     // إذا كان هناك مستمع نشط لهذا المستند، أوقفه أولاً
@@ -712,7 +712,7 @@ async function checkPendingTransactions() {
     
     const now = Date.now();
     
-    // 🔥 التحقق من الكاش: إذا آخر فحص كان خلال 5 دقائق، لا نفحص مجدداً
+    // التحقق من الكاش: إذا آخر فحص كان خلال 5 دقائق، لا نفحص مجدداً
     if (now - lastHistoryCheckTime < HISTORY_CACHE_TIME) {
         console.log("📦 Using cached history check (less than 5 minutes old)");
         return;
@@ -729,15 +729,15 @@ async function checkPendingTransactions() {
     
     if (pendingTxs.length === 0) {
         console.log("✅ No pending transactions to check");
-        lastHistoryCheckTime = now; // 🔥 تحديث وقت آخر فحص
-        localStorage.setItem('last_history_check', now.toString()); // 🔥 حفظ في localStorage
+        lastHistoryCheckTime = now;
+        localStorage.setItem('last_history_check', now.toString());
         return;
     }
     
     console.log(`⏳ Found ${pendingTxs.length} pending transactions, checking status...`);
     let updated = false;
     
-    // 🔥 تجميع معرفات الطلبات حسب المجموعة
+    // تجميع معرفات الطلبات حسب المجموعة
     const depositIds = [];
     const withdrawalIds = [];
     
@@ -749,7 +749,7 @@ async function checkPendingTransactions() {
         }
     });
     
-    // 🔥 دالة مساعدة لتقسيم المصفوفة إلى أجزاء (Chunks)
+    // دالة مساعدة لتقسيم المصفوفة إلى أجزاء (Chunks)
     function chunkArray(array, size) {
         const chunks = [];
         for (let i = 0; i < array.length; i += size) {
@@ -758,9 +758,9 @@ async function checkPendingTransactions() {
         return chunks;
     }
     
-    // 🔥 فحص طلبات الإيداع
+    // فحص طلبات الإيداع
     if (depositIds.length > 0) {
-        const chunks = chunkArray(depositIds, 10); // 10 طلبات في كل قراءة
+        const chunks = chunkArray(depositIds, 10);
         for (const chunk of chunks) {
             try {
                 const snapshot = await db.collection('deposit_requests')
@@ -807,9 +807,9 @@ async function checkPendingTransactions() {
         }
     }
     
-    // 🔥 فحص طلبات السحب
+    // فحص طلبات السحب
     if (withdrawalIds.length > 0) {
-        const chunks = chunkArray(withdrawalIds, 10); // 10 طلبات في كل قراءة
+        const chunks = chunkArray(withdrawalIds, 10);
         for (const chunk of chunks) {
             try {
                 const snapshot = await db.collection('withdrawals')
@@ -871,7 +871,7 @@ async function checkPendingTransactions() {
         showToast('✅ Transaction history updated!', 'success');
     }
     
-    // 🔥 تحديث وقت آخر فحص
+    // تحديث وقت آخر فحص
     lastHistoryCheckTime = now;
     localStorage.setItem('last_history_check', now.toString());
 }
@@ -977,7 +977,7 @@ async function loadUserData(force = false) {
         updateNotificationBadge();
         checkAdminAndAddCrown();
         
-        // 🔥 استعادة آخر وقت فحص للتاريخ من localStorage
+        // استعادة آخر وقت فحص للتاريخ من localStorage
         const savedLastCheck = localStorage.getItem('last_history_check');
         if (savedLastCheck) {
             lastHistoryCheckTime = parseInt(savedLastCheck);
@@ -1551,7 +1551,7 @@ function showHistory() {
             e.preventDefault();
             e.stopPropagation();
             this.querySelector('i').classList.add('fa-spin');
-            // 🔥 إعادة تعيين وقت آخر فحص للسماح بالفحص الفوري عند الضغط على زر التحديث
+            // إعادة تعيين وقت آخر فحص للسماح بالفحص الفوري عند الضغط على زر التحديث
             lastHistoryCheckTime = 0;
             checkPendingTransactions().finally(() => {
                 setTimeout(() => {
@@ -1940,7 +1940,7 @@ function showWallet() {
     updateTotalBalance();
     animateElement('.balance-card', 'pop');
     
-    // ✅ إضافة الستيكر عند العودة للمحفظة
+    // إضافة الستيكر عند العودة للمحفظة
     showRandomSticker();
 }
 
@@ -1958,7 +1958,7 @@ function showSwap() {
     calculateSwap();
     animateElement('.swap-card', 'scaleIn');
     
-    // ✅ إضافة الستيكر عند فتح السواب
+    // إضافة الستيكر عند فتح السواب
     showRandomSticker();
 }
 
@@ -1976,7 +1976,7 @@ function showStaking() {
     renderStakingMissions();
     animateElement('.staking-stats', 'slideUp');
     
-    // ✅ إضافة الستيكر عند فتح الستيكينغ
+    // إضافة الستيكر عند فتح الستيكينغ
     showRandomSticker();
 }
 
@@ -1994,7 +1994,7 @@ function showReferral() {
     renderReferralMilestones();
     animateElement('.referral-link-card', 'pop');
     
-    // ✅ إضافة الستيكر عند فتح الإحالة
+    // إضافة الستيكر عند فتح الإحالة
     showRandomSticker();
 }
 
@@ -2877,7 +2877,7 @@ async function submitDeposit() {
             
             await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا الإيداع المحدد (لمدة 10 دقائق فقط) - 🔥 تم التخفيض من 30 إلى 10
+            // تشغيل مستمع عند الطلب لهذا الإيداع المحدد (لمدة 10 دقائق فقط)
             startOnDemandListener('deposit_requests', docRef.id, (data) => {
                 console.log("📥 Deposit update received:", data);
                 
@@ -2904,7 +2904,7 @@ async function submitDeposit() {
                     
                     showToast(t('notif.depositRejected', { reason: data.reason || 'Unknown reason' }), 'error');
                 }
-            }, 600000); // 🔥 10 دقائق
+            }, 600000);
         }
         
         const transactionToAdd = { 
@@ -3083,7 +3083,7 @@ async function submitWithdraw() {
             
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا السحب المحدد (لمدة 10 دقائق فقط) - 🔥 تم التخفيض من 30 إلى 10
+            // تشغيل مستمع عند الطلب لهذا السحب المحدد (لمدة 10 دقائق فقط)
             startOnDemandListener('withdrawals', docRef.id, (data) => {
                 console.log("📤 Withdrawal update received:", data);
                 
@@ -3114,7 +3114,7 @@ async function submitWithdraw() {
                     showToast(t('notif.withdrawRejected', { reason: data.reason || 'Unknown reason' }), 'error');
                     updateUI();
                 }
-            }, 600000); // 🔥 10 دقائق
+            }, 600000);
         }
         
         const transactionToAdd = { 
@@ -3178,7 +3178,7 @@ async function loadAdminData() {
     if (!db) return;
     
     try {
-        // ✅ نحمل فقط إحصائيات سريعة (بدون تحميل كل المستخدمين)
+        // نحمل فقط إحصائيات سريعة (بدون تحميل كل المستخدمين)
         const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
             db.collection('deposit_requests').where('status', '==', 'pending').get(),
             db.collection('withdrawals').where('status', '==', 'pending').get()
@@ -3186,13 +3186,13 @@ async function loadAdminData() {
         
         const pendingCount = depositsSnapshot.size + withdrawalsSnapshot.size;
         
-        // ✅ نعرض العدد فقط، ليس كل المستخدمين
+        // نعرض العدد فقط، ليس كل المستخدمين
         document.getElementById('totalUsers').textContent = '...';
         document.getElementById('pendingCount').textContent = pendingCount;
         document.getElementById('approvedCount').textContent = '...';
         document.getElementById('totalReferralsCount').textContent = '...';
         
-        // 🔥 استدعاء التبويب النشط مع تمرير false لأننا لا نأتي من حدث نقر
+        // استدعاء التبويب النشط مع تمرير false لأننا لا نأتي من حدث نقر
         showAdminTab('deposits', false);
         
     } catch (error) {
@@ -3206,7 +3206,7 @@ let currentAdminTab = 'deposits';
 let lastDocRef = null;
 let loadingMore = false;
 
-// 🔥 دالة showAdminTab المحسنة (التعديل الوحيد)
+// دالة showAdminTab المحسنة
 async function showAdminTab(tab, fromEvent = true) {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     
@@ -3229,7 +3229,7 @@ async function showAdminTab(tab, fromEvent = true) {
     await loadMoreTransactions(tab, true); // تحميل الصفحة الأولى
 }
 
-// 🔥 دالة جديدة لتحميل المزيد من المعاملات
+// دالة لتحميل المزيد من المعاملات
 async function loadMoreTransactions(tab, reset = false) {
     if (!db) return;
     if (loadingMore) return;
@@ -3245,13 +3245,13 @@ async function loadMoreTransactions(tab, reset = false) {
             query = db.collection(collectionName)
                 .where('status', '==', 'pending')
                 .orderBy('timestamp', 'desc')
-                .limit(20); // 🔥 أول 20 طلب فقط
+                .limit(20); // أول 20 طلب فقط
         } else if (tab === 'withdrawals') {
             collectionName = 'withdrawals';
             query = db.collection(collectionName)
                 .where('status', '==', 'pending')
                 .orderBy('timestamp', 'desc')
-                .limit(20); // 🔥 أول 20 طلب فقط
+                .limit(20);
         } else if (tab === 'completed') {
             collectionName = 'transactions';
             query = db.collection(collectionName)
@@ -3301,7 +3301,7 @@ async function loadMoreTransactions(tab, reset = false) {
         snapshot.forEach(doc => {
             const tx = { firebaseId: doc.id, ...doc.data() };
             
-            // ✅ التعديل الوحيد هنا: نمرر اسم التبويب الحالي لدالة render
+            // نمرر اسم التبويب الحالي لدالة render
             const txCard = renderAdminTransactionCard(tx, tab);
             
             const contentDiv = document.getElementById('adminContent');
@@ -3339,7 +3339,7 @@ async function loadMoreTransactions(tab, reset = false) {
     }
 }
 
-// ✅ دالة render المحسنة (التعديل الوحيد هنا) - مع قيم افتراضية آمنة
+// ✅ دالة render المحسنة والنهائية - آمنة 100%
 function renderAdminTransactionCard(tx, currentTab) {
     // التحقق من وجود البيانات الأساسية
     if (!tx) return '<div class="error-card">Invalid transaction data</div>';
@@ -4083,7 +4083,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mainContent').style.display = 'block';
         initFloatingNotifications();
         
-        // ✅ عرض الستيكر عند فتح التطبيق لأول مرة
+        // عرض الستيكر عند فتح التطبيق لأول مرة
         setTimeout(() => {
             showRandomSticker();
         }, 500);
@@ -4109,7 +4109,7 @@ async function initApp() {
         updateReferralStats();
         setupScrollListener();
         
-        // 🔥 استعادة آخر وقت فحص للتاريخ من localStorage
+        // استعادة آخر وقت فحص للتاريخ من localStorage
         const savedLastCheck = localStorage.getItem('last_history_check');
         if (savedLastCheck) {
             lastHistoryCheckTime = parseInt(savedLastCheck);
@@ -4184,7 +4184,7 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
 
-// ✅ دالة جديدة لتحديث لوحة المشرف يدوياً
+// دالة جديدة لتحديث لوحة المشرف يدوياً
 window.refreshAdminPanel = function() {
     if (!isAdmin) return;
     
