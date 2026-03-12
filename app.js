@@ -3339,14 +3339,23 @@ async function loadMoreTransactions(tab, reset = false) {
     }
 }
 
-// ✅ دالة render المحسنة (التعديل الوحيد هنا)
+// ✅ دالة render المحسنة (التعديل الوحيد هنا) - مع قيم افتراضية آمنة
 function renderAdminTransactionCard(tx, currentTab) {
-    const date = new Date(tx.timestamp);
-    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    // التحقق من وجود البيانات الأساسية
+    if (!tx) return '<div class="error-card">Invalid transaction data</div>';
+    
+    // تاريخ آمن
+    let formattedDate = 'Just now';
+    try {
+        const date = tx.timestamp ? new Date(tx.timestamp) : new Date();
+        formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    } catch (e) {
+        console.log("Date error:", e);
+    }
     
     // تحديد نوع المعاملة بناءً على التبويب الحالي
-    let transactionType = '';
-    let icon = '';
+    let transactionType = 'TRANSACTION';
+    let icon = 'fa-circle';
     
     if (currentTab === 'deposits') {
         transactionType = 'DEPOSIT';
@@ -3360,6 +3369,15 @@ function renderAdminTransactionCard(tx, currentTab) {
         icon = tx.type === 'deposit' ? 'fa-circle-down' : 'fa-circle-up';
     }
     
+    // قيم افتراضية آمنة للحقول المهمة
+    const userIdDisplay = tx.userId ? (tx.userName || tx.userId.substring(0, 8) + '...') : 'Unknown';
+    const amount = tx.amount || 0;
+    const currency = tx.currency || 'USDT';
+    const status = tx.status || 'pending';
+    const firebaseId = tx.firebaseId || '';
+    const fee = tx.fee || 0;
+    const feeCurrency = tx.feeCurrency || 'BNB';
+    
     return `
         <div class="admin-transaction-card">
             <div class="admin-tx-header">
@@ -3367,16 +3385,16 @@ function renderAdminTransactionCard(tx, currentTab) {
                     <i class="fa-regular ${icon}"></i>
                     <span>${transactionType}</span>
                 </div>
-                <span class="admin-tx-status ${tx.status}">${tx.status}</span>
+                <span class="admin-tx-status ${status}">${status}</span>
             </div>
             <div class="admin-tx-details">
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">User:</span>
-                    <span class="admin-tx-value">${tx.userName || tx.userId.substring(0, 8)}...</span>
+                    <span class="admin-tx-value">${userIdDisplay}</span>
                 </div>
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Amount:</span>
-                    <span class="admin-tx-value">${tx.amount} ${tx.currency}</span>
+                    <span class="admin-tx-value">${amount} ${currency}</span>
                 </div>
                 ${tx.txnId ? `
                 <div class="admin-tx-row">
@@ -3401,7 +3419,7 @@ function renderAdminTransactionCard(tx, currentTab) {
                 ${tx.fee ? `
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Fee:</span>
-                    <span class="admin-tx-value">${tx.fee} ${tx.feeCurrency}</span>
+                    <span class="admin-tx-value">${tx.fee} ${tx.feeCurrency || 'BNB'}</span>
                 </div>` : ''}
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Time:</span>
@@ -3409,10 +3427,10 @@ function renderAdminTransactionCard(tx, currentTab) {
                 </div>
             </div>
             <div class="admin-tx-actions">
-                <button class="admin-approve-btn" onclick="approveTransaction('${tx.firebaseId}', '${tx.userId}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}', '${tx.currency}', ${tx.amount}, ${tx.fee || 0}, '${tx.feeCurrency || 'BNB'}')">
+                <button class="admin-approve-btn" onclick="approveTransaction('${firebaseId}', '${tx.userId || ''}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}', '${currency}', ${amount}, ${fee}, '${feeCurrency}')">
                     <i class="fa-regular fa-circle-check"></i> Approve
                 </button>
-                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.firebaseId}', '${tx.userId}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}')">
+                <button class="admin-reject-btn" onclick="rejectTransaction('${firebaseId}', '${tx.userId || ''}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}')">
                     <i class="fa-regular fa-circle-xmark"></i> Reject
                 </button>
             </div>
