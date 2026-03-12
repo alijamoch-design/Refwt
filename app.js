@@ -3192,7 +3192,8 @@ async function loadAdminData() {
         document.getElementById('approvedCount').textContent = '...';
         document.getElementById('totalReferralsCount').textContent = '...';
         
-        showAdminTab('deposits');
+        // 🔥 استدعاء التبويب النشط مع تمرير false لأننا لا نأتي من حدث نقر
+        showAdminTab('deposits', false);
         
     } catch (error) {
         console.error("Error loading admin data:", error);
@@ -3205,9 +3206,19 @@ let currentAdminTab = 'deposits';
 let lastDocRef = null;
 let loadingMore = false;
 
-async function showAdminTab(tab) {
+// 🔥 دالة showAdminTab المحسنة (التعديل الوحيد)
+async function showAdminTab(tab, fromEvent = true) {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    
+    if (fromEvent && event) {
+        event.target.classList.add('active');
+    } else {
+        // لو الاستدعاء من داخل الكود (بدون حدث)، نشط التبويب المناسب
+        const tabButton = document.querySelector(`.admin-tab[onclick*="'${tab}'"]`);
+        if (tabButton) {
+            tabButton.classList.add('active');
+        }
+    }
     
     currentAdminTab = tab;
     lastDocRef = null; // إعادة تعيين المؤشر للصفحة الأولى
