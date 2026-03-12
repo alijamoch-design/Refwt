@@ -4072,6 +4072,7 @@ async function initApp() {
         console.log("✅ On-demand listeners: only when needed (10 min duration)");
         console.log("✅ History: checks only when opened (cached for 5 min)");
         console.log("✅ Admin: paginated loading (20 items at a time)");
+        console.log("✅ Admin: manual refresh button added");
         console.log("✅ Prices: cached for 3 hours");
         console.log("✅ Notifications: cleanup buttons added");
         console.log("✅ ZERO unnecessary reads - maximum economy");
@@ -4135,12 +4136,36 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
 
+// ✅ دالة جديدة لتحديث لوحة المشرف يدوياً
+window.refreshAdminPanel = function() {
+    if (!isAdmin) return;
+    
+    console.log("🔄 Manually refreshing admin panel...");
+    
+    // إظهار مؤشر التحميل
+    const refreshBtn = document.getElementById('adminRefreshBtn');
+    if (refreshBtn) {
+        refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+    
+    // إعادة تحميل البيانات
+    loadAdminData().finally(() => {
+        if (refreshBtn) {
+            setTimeout(() => {
+                refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
+            }, 500);
+        }
+        showToast('Admin panel refreshed', 'success');
+    });
+};
+
 console.log("✅ REFI Network v27.0 - ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: checks only when code present");
 console.log("✅ Listeners: ON-DEMAND only (10 min duration)");
 console.log("✅ History: checks pending transactions only when opened (cached 5 min)");
 console.log("✅ Admin: paginated loading (20 items at a time)");
+console.log("✅ Admin: manual refresh button added");
 console.log("✅ Prices: cached for 3 hours - manual refresh available");
 console.log("✅ Notifications: cleanup buttons - delete read or all");
 console.log("✅ ZERO unnecessary reads - maximum economy");
