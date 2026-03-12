@@ -1,4 +1,4 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 27.0 (ZERO WASTE) ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 28.0 (ZERO WASTE) ======
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
 const tg = window.Telegram?.WebApp;
 if (tg) {
@@ -462,6 +462,10 @@ let lastPricesLoadTime = 0;
 const USER_CACHE_TIME = 300000; // 5 دقائق
 const PRICES_CACHE_TIME = 10800000; // 3 ساعات
 
+// ====== التعديلات الاقتصادية الجديدة ======
+let lastHistoryCheckTime = 0;
+const HISTORY_CACHE_TIME = 600000; // 10 دقائق
+
 // ====== ✅ NEW: STICKER SYSTEM ======
 // مصفوفة الستيكرات المميزة
 const WELCOME_STICKERS = [
@@ -624,8 +628,8 @@ function cleanupDuplicateTransactions() {
 let activeListeners = new Map(); // لتخزين المستمعين النشطين
 let listenerTimeouts = new Map();
 
-// بدء مستمع مؤقت لمستند معين
-function startOnDemandListener(collection, docId, callback, timeoutMs = 1800000) { // 30 دقيقة
+// 🔥 التعديل: تقليل مدة المستمع من 30 دقيقة إلى 30 ثانية فقط
+function startOnDemandListener(collection, docId, callback, timeoutMs = 30000) { // 30 ثانية
     const listenerId = `${collection}_${docId}`;
     
     // إذا كان هناك مستمع نشط لهذا المستند، أوقفه أولاً
@@ -705,6 +709,14 @@ function stopAllListeners() {
 // ====== 12. PENDING TRANSACTIONS CHECKER - التحقق عند فتح التاريخ ======
 async function checkPendingTransactions() {
     if (!db || !userData) return;
+    
+    // 🔥 التعديل: التحقق من الكاش (مرة كل 10 دقائق)
+    const now = Date.now();
+    if (now - lastHistoryCheckTime < HISTORY_CACHE_TIME) {
+        console.log("📦 Using cached history (less than 10 minutes old)");
+        return;
+    }
+    lastHistoryCheckTime = now;
     
     console.log("🔍 Checking for updated pending transactions...");
     
@@ -1454,6 +1466,8 @@ function showHistory() {
             e.preventDefault();
             e.stopPropagation();
             this.querySelector('i').classList.add('fa-spin');
+            // 🔥 إعادة تعيين وقت آخر فحص للسماح بالفحص الفوري عند الضغط على زر التحديث
+            lastHistoryCheckTime = 0;
             checkPendingTransactions().finally(() => {
                 setTimeout(() => {
                     this.querySelector('i').classList.remove('fa-spin');
@@ -2778,7 +2792,7 @@ async function submitDeposit() {
             
             await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا الإيداع المحدد (لمدة 30 دقيقة)
+            // 🔥 التعديل: المستمع يعيش 30 ثانية فقط
             startOnDemandListener('deposit_requests', docRef.id, (data) => {
                 console.log("📥 Deposit update received:", data);
                 
@@ -2805,7 +2819,7 @@ async function submitDeposit() {
                     
                     showToast(t('notif.depositRejected', { reason: data.reason || 'Unknown reason' }), 'error');
                 }
-            });
+            }, 30000); // 🔥 30 ثانية
         }
         
         const transactionToAdd = { 
@@ -2984,7 +2998,7 @@ async function submitWithdraw() {
             
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // تشغيل مستمع عند الطلب لهذا السحب المحدد (لمدة 30 دقيقة)
+            // 🔥 التعديل: المستمع يعيش 30 ثانية فقط
             startOnDemandListener('withdrawals', docRef.id, (data) => {
                 console.log("📤 Withdrawal update received:", data);
                 
@@ -3015,7 +3029,7 @@ async function submitWithdraw() {
                     showToast(t('notif.withdrawRejected', { reason: data.reason || 'Unknown reason' }), 'error');
                     updateUI();
                 }
-            });
+            }, 30000); // 🔥 30 ثانية
         }
         
         const transactionToAdd = { 
@@ -3093,7 +3107,17 @@ async function loadAdminData() {
         document.getElementById('approvedCount').textContent = '...';
         document.getElementById('totalReferralsCount').textContent = '...';
         
-        showAdminTab('deposits');
+        // عرض رسالة بدلاً من التحميل التلقائي
+        const adminContent = document.getElementById('adminContent');
+        adminContent.innerHTML = `
+            <div style="text-align: center; padding: 30px;">
+                <i class="fa-solid fa-hand-pointer" style="font-size: 48px; color: var(--pink-1);"></i>
+                <p style="margin: 20px 0; color: var(--text-secondary);">اضغط على زر التحديث لعرض الطلبات</p>
+                <button onclick="refreshAdminPanel()" class="admin-approve-btn" style="width: auto; padding: 10px 20px; margin: 0 auto;">
+                    <i class="fa-solid fa-rotate-right"></i> تحديث
+                </button>
+            </div>
+        `;
         
     } catch (error) {
         console.error("Error loading admin data:", error);
@@ -3102,29 +3126,59 @@ async function loadAdminData() {
 }
 
 async function showAdminTab(tab) {
+    // هذه الدالة لن تستخدم للتحميل التلقائي بعد الآن
+    // سيتم استدعاؤها فقط من أزرار التبويب
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
     
+    // تخزين التبويب النشط
+    currentAdminTab = tab;
+    
+    // عرض رسالة للمستخدم
     const adminContent = document.getElementById('adminContent');
+    adminContent.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <i class="fa-solid fa-hand-pointer" style="font-size: 48px; color: var(--pink-1);"></i>
+            <p style="margin: 20px 0; color: var(--text-secondary);">اضغط على زر التحديث لعرض الطلبات</p>
+            <button onclick="refreshAdminPanel()" class="admin-approve-btn" style="width: auto; padding: 10px 20px; margin: 0 auto;">
+                <i class="fa-solid fa-rotate-right"></i> تحديث
+            </button>
+        </div>
+    `;
+}
+
+// 🔥 دالة جديدة لتحديث لوحة المشرف يدوياً
+window.refreshAdminPanel = async function() {
+    if (!isAdmin) return;
     
-    if (!db) return;
+    console.log("🔄 Manually refreshing admin panel...");
     
-    let query;
-    let collectionName;
-    
-    if (tab === 'deposits') {
-        collectionName = 'deposit_requests';
-        query = db.collection(collectionName).where('status', '==', 'pending');
-    } else if (tab === 'withdrawals') {
-        collectionName = 'withdrawals';
-        query = db.collection(collectionName).where('status', '==', 'pending');
-    } else {
-        adminContent.innerHTML = '<div class="empty-state">Select a tab</div>';
-        return;
+    // إظهار مؤشر التحميل
+    const refreshBtn = document.getElementById('adminRefreshBtn');
+    if (refreshBtn) {
+        refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     }
     
-    // ✅ نشغل مستمعاً للطلبات المعلقة (يغلق تلقائياً عند إغلاق اللوحة)
-    const unsubscribe = query.onSnapshot((snapshot) => {
+    const adminContent = document.getElementById('adminContent');
+    adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+    
+    try {
+        // تحديد التبويب النشط
+        const activeTab = document.querySelector('.admin-tab.active')?.textContent.toLowerCase().includes('deposit') ? 'deposits' : 'withdrawals';
+        
+        let query;
+        let collectionName;
+        
+        if (activeTab === 'deposits') {
+            collectionName = 'deposit_requests';
+            query = db.collection(collectionName).where('status', '==', 'pending');
+        } else {
+            collectionName = 'withdrawals';
+            query = db.collection(collectionName).where('status', '==', 'pending');
+        }
+        
+        const snapshot = await query.get();
+        
         if (snapshot.empty) {
             adminContent.innerHTML = '<div class="empty-state">No pending transactions found</div>';
             return;
@@ -3133,18 +3187,23 @@ async function showAdminTab(tab) {
         let html = '';
         snapshot.forEach(doc => {
             const tx = { firebaseId: doc.id, ...doc.data() };
-            html += renderAdminTransactionCard(tx, tab);
+            html += renderAdminTransactionCard(tx, activeTab);
         });
         
         adminContent.innerHTML = html;
-    }, (error) => {
-        console.error("❌ Admin listener error:", error);
-    });
-    
-    // ✅ نخزن المستمع لنوقفه عند إغلاق اللوحة
-    const listenerId = `admin_${tab}`;
-    activeListeners.set(listenerId, unsubscribe);
-}
+        showToast('Admin panel refreshed', 'success');
+        
+    } catch (error) {
+        console.error("❌ Error refreshing admin panel:", error);
+        adminContent.innerHTML = '<div class="empty-state">Error loading transactions</div>';
+    } finally {
+        if (refreshBtn) {
+            setTimeout(() => {
+                refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
+            }, 500);
+        }
+    }
+};
 
 function renderAdminTransactionCard(tx, tab) {
     const date = new Date(tx.timestamp);
@@ -3883,9 +3942,9 @@ async function initApp() {
         
         appInitialized = true;
         console.log("✅ App initialized successfully with ZERO WASTE architecture");
-        console.log("✅ On-demand listeners: only when needed");
-        console.log("✅ History: checks only when opened");
-        console.log("✅ Admin: lightweight (pending requests only)");
+        console.log("✅ On-demand listeners: only when needed (30 seconds)");
+        console.log("✅ History: checks only when opened (cached 10 min)");
+        console.log("✅ Admin: manual refresh only");
         console.log("✅ Prices: cached for 3 hours");
         console.log("✅ Notifications: cleanup buttons added");
         console.log("✅ ZERO unnecessary reads - maximum economy");
@@ -3894,6 +3953,9 @@ async function initApp() {
         console.error("❌ Error initializing app:", error);
     }
 }
+
+// متغير للتبويب النشط في لوحة المشرف
+let currentAdminTab = 'deposits';
 
 // ====== 35. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
@@ -3948,14 +4010,15 @@ window.rejectTransaction = rejectTransaction;
 window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
+window.refreshAdminPanel = refreshAdminPanel;
 
-console.log("✅ REFI Network v27.0 - ZERO WASTE ARCHITECTURE");
+console.log("✅ REFI Network v28.0 - ULTIMATE ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: checks only when code present");
-console.log("✅ Listeners: ON-DEMAND only - 0 listeners when idle");
-console.log("✅ History: checks pending transactions only when opened");
-console.log("✅ Admin: lightweight listeners (close when panel closes)");
+console.log("✅ Listeners: ON-DEMAND only - 30 seconds max");
+console.log("✅ History: checks pending transactions only when opened (cached 10 min)");
+console.log("✅ Admin: manual refresh only - zero auto reads");
 console.log("✅ Prices: cached for 3 hours - manual refresh available");
 console.log("✅ Notifications: cleanup buttons - delete read or all");
 console.log("✅ ZERO unnecessary reads - maximum economy");
-console.log("✅ All features preserved - same great experience");
+console.log("✅ Ready for 50,000+ users with minimal cost");
