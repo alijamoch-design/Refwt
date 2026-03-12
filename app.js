@@ -3300,6 +3300,8 @@ async function loadMoreTransactions(tab, reset = false) {
         // عرض النتائج
         snapshot.forEach(doc => {
             const tx = { firebaseId: doc.id, ...doc.data() };
+            
+            // ✅ التعديل الوحيد هنا: نمرر اسم التبويب الحالي لدالة render
             const txCard = renderAdminTransactionCard(tx, tab);
             
             const contentDiv = document.getElementById('adminContent');
@@ -3337,16 +3339,33 @@ async function loadMoreTransactions(tab, reset = false) {
     }
 }
 
-function renderAdminTransactionCard(tx, tab) {
+// ✅ دالة render المحسنة (التعديل الوحيد هنا)
+function renderAdminTransactionCard(tx, currentTab) {
     const date = new Date(tx.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    // تحديد نوع المعاملة بناءً على التبويب الحالي
+    let transactionType = '';
+    let icon = '';
+    
+    if (currentTab === 'deposits') {
+        transactionType = 'DEPOSIT';
+        icon = 'fa-circle-down';
+    } else if (currentTab === 'withdrawals') {
+        transactionType = 'WITHDRAWAL';
+        icon = 'fa-circle-up';
+    } else {
+        // للمعاملات المكتملة والمرفوضة، نحاول استخدام tx.type إذا كان موجوداً
+        transactionType = (tx.type || 'TRANSACTION').toUpperCase();
+        icon = tx.type === 'deposit' ? 'fa-circle-down' : 'fa-circle-up';
+    }
     
     return `
         <div class="admin-transaction-card">
             <div class="admin-tx-header">
-                <div class="admin-tx-type ${tx.type}">
-                    <i class="fa-regular ${tx.type === 'deposit' || tx.type === 'deposit_requests' ? 'fa-circle-down' : 'fa-circle-up'}"></i>
-                    <span>${tx.type === 'deposit_requests' ? 'DEPOSIT' : (tx.type || '').toUpperCase()}</span>
+                <div class="admin-tx-type">
+                    <i class="fa-regular ${icon}"></i>
+                    <span>${transactionType}</span>
                 </div>
                 <span class="admin-tx-status ${tx.status}">${tx.status}</span>
             </div>
@@ -3390,10 +3409,10 @@ function renderAdminTransactionCard(tx, tab) {
                 </div>
             </div>
             <div class="admin-tx-actions">
-                <button class="admin-approve-btn" onclick="approveTransaction('${tx.firebaseId}', '${tx.userId}', '${tx.type === 'deposit_requests' ? 'deposit' : (tx.type || 'withdraw')}', '${tx.currency}', ${tx.amount}, ${tx.fee || 0}, '${tx.feeCurrency || 'BNB'}')">
+                <button class="admin-approve-btn" onclick="approveTransaction('${tx.firebaseId}', '${tx.userId}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}', '${tx.currency}', ${tx.amount}, ${tx.fee || 0}, '${tx.feeCurrency || 'BNB'}')">
                     <i class="fa-regular fa-circle-check"></i> Approve
                 </button>
-                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.firebaseId}', '${tx.userId}', '${tx.type === 'deposit_requests' ? 'deposit' : (tx.type || 'withdraw')}')">
+                <button class="admin-reject-btn" onclick="rejectTransaction('${tx.firebaseId}', '${tx.userId}', '${currentTab === 'deposits' ? 'deposit' : 'withdraw'}')">
                     <i class="fa-regular fa-circle-xmark"></i> Reject
                 </button>
             </div>
