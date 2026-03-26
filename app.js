@@ -549,7 +549,7 @@ function hasReferralCode() {
 
 // توليد كود الإحالة (ثابت لكل مستخدم)
 function generateReferralCode() {
-    return `REFI_${userId}`;
+    return userId;
 }
 
 // الحصول على رابط الإحالة
