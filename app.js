@@ -544,7 +544,7 @@ if (userIdEl) userIdEl.textContent = userName;
 // التحقق من وجود كود إحالة في الرابط
 function hasReferralCode() {
     const urlParams = new URLSearchParams(window.location.search);
-    return !!(urlParams.get('start') || urlParams.get('ref') || tg?.initDataUnsafe?.start_param);
+    return !!(urlParams.get('startapp') || urlParams.get('ref') || tg?.initDataUnsafe?.start_param);
 }
 
 // توليد كود الإحالة (ثابت لكل مستخدم)
