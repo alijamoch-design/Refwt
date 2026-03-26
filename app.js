@@ -554,7 +554,7 @@ function generateReferralCode() {
 
 // الحصول على رابط الإحالة
 function getReferralLink() {
-    return `${BOT_LINK}?start=${userData.referralCode}`;
+    return `${BOT_LINK}?startapp=${userData.referralCode}`;
 }
 
 // ====== 9. ADMIN SYSTEM ======
