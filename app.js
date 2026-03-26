@@ -941,11 +941,12 @@ function getReferralLink() {
     return `${BOT_LINK}?start=${userData.referralCode}`;
 }
 
-// ====== ✅ 14. REFERRAL SYSTEM - يتحقق فقط عند وجود كود ======
+// ====== ✅ 14. REFERRAL SYSTEM - يعمل فوراً ويمنع التكرار ======
 async function processReferral() {
     try {
         console.log("🔍 Checking for referral...");
         
+        // 1. استخراج كود الإحالة من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         let referralCode = urlParams.get('start') || urlParams.get('ref');
         
@@ -958,49 +959,60 @@ async function processReferral() {
             return;
         }
         
+        // 2. انتظار تحميل بيانات المستخدم
         if (!userData) {
             console.log("⏳ User data not loaded yet, waiting...");
             setTimeout(processReferral, 1000);
             return;
         }
         
+        // 3. منع الإحالة الذاتية
         if (referralCode === userData.referralCode) {
             console.log("⚠️ Cannot refer yourself");
             return;
         }
         
+        // 4. منع تكرار الإحالة (إذا سبق وأحيل)
         if (userData.referredBy) {
             console.log("✅ User already referred by:", userData.referredBy);
             return;
         }
         
+        // 5. التحقق من وجود كود إحالة معلق في localStorage (منع التكرار)
+        const pendingReferralKey = `processed_referral_${userId}`;
+        if (localStorage.getItem(pendingReferralKey) === referralCode) {
+            console.log("⚠️ This referral already processed");
+            return;
+        }
+        
         console.log("🎯 Processing referral code:", referralCode);
         
+        // 6. استخراج معرف المحيل من الكود (REFI_123456 → 123456)
+        const referrerId = referralCode.replace('REFI_', '');
+        
+        // 7. التحقق من صحة معرف المحيل
+        if (!referrerId || referrerId === userId) {
+            console.log("⚠️ Invalid referrer ID");
+            return;
+        }
+        
+        // 8. البحث عن المحيل في Firebase
         if (!db) {
             console.log("📦 Firebase not available, saving pending referral");
             localStorage.setItem('pending_referral', referralCode);
             return;
         }
         
-        const referrerQuery = await db.collection('users')
-            .where('referralCode', '==', referralCode)
-            .limit(1)
-            .get();
+        const referrerDoc = await db.collection('users').doc(referrerId).get();
         
-        if (referrerQuery.empty) {
+        if (!referrerDoc.exists) {
             console.log("❌ No referrer found with code:", referralCode);
             return;
         }
         
-        const referrerDoc = referrerQuery.docs[0];
-        const referrerId = referrerDoc.id;
         const referrerData = referrerDoc.data();
         
-        if (referrerId === userId) {
-            console.log("⚠️ Self-referral detected and blocked");
-            return;
-        }
-        
+        // 9. منع إضافة نفس المستخدم مرتين في قائمة الإحالات
         if (referrerData.referrals && referrerData.referrals.includes(userId)) {
             console.log("✅ User already in referrer's list");
             return;
@@ -1008,7 +1020,7 @@ async function processReferral() {
         
         console.log("✅ Valid referrer found:", referrerId);
         
-        // تحديث المحيل
+        // 10. تحديث المحيل (إضافة المكافأة فوراً)
         const updatedReferrals = [...(referrerData.referrals || []), userId];
         const updatedReferralCount = (referrerData.referralCount || 0) + 1;
         const updatedRefiBalance = (referrerData.balances?.REFI || 0) + REFERRAL_BONUS;
@@ -1017,20 +1029,28 @@ async function processReferral() {
             referrals: updatedReferrals,
             referralCount: updatedReferralCount,
             'balances.REFI': updatedRefiBalance,
-            totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS
+            totalRefiEarned: (referrerData.totalRefiEarned || 0) + REFERRAL_BONUS,
+            lastReferralAt: new Date().toISOString()
         });
         
-        // تحديث المستخدم الجديد
+        // 11. تحديث المستخدم الجديد (إضافة المكافأة فوراً)
         userData.referredBy = referralCode;
         userData.balances.REFI = (userData.balances.REFI || 0) + 10000;
         
+        // 12. حفظ في localStorage قبل Firebase (لضمان عدم فقدان البيانات)
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
+        // 13. تسجيل منع تكرار الإحالة
+        localStorage.setItem(pendingReferralKey, referralCode);
+        
+        // 14. تحديث Firebase للمستخدم الجديد
         await db.collection('users').doc(userId).update({
             referredBy: referralCode,
-            'balances.REFI': userData.balances.REFI
+            'balances.REFI': userData.balances.REFI,
+            referredAt: new Date().toISOString()
         });
         
+        // 15. إضافة معاملة الترحيب للمستخدم الجديد
         const welcomeTransaction = {
             userId: userId,
             userName: userName,
@@ -1043,8 +1063,14 @@ async function processReferral() {
         };
         
         addTransaction(welcomeTransaction);
-        await db.collection('transactions').add(welcomeTransaction);
         
+        try {
+            await db.collection('transactions').add(welcomeTransaction);
+        } catch (error) {
+            console.error("❌ Error saving welcome transaction to Firebase:", error);
+        }
+        
+        // 16. إضافة معاملة مكافأة الإحالة للمحيل
         const referrerTransaction = {
             userId: referrerId,
             type: 'referral_bonus',
@@ -1052,16 +1078,32 @@ async function processReferral() {
             currency: 'REFI',
             status: 'completed',
             timestamp: new Date().toISOString(),
-            details: `Referral bonus from ${userId}`
+            details: `Referral bonus from ${userId} (${userName})`
         };
-        await db.collection('transactions').add(referrerTransaction);
         
+        try {
+            await db.collection('transactions').add(referrerTransaction);
+        } catch (error) {
+            console.error("❌ Error saving referrer transaction to Firebase:", error);
+        }
+        
+        // 17. إرسال إشعارات
         await addNotification(referrerId, t('notif.referralBonus', { amount: REFERRAL_BONUS.toLocaleString() }), 'success');
         await addNotification(userId, t('notif.welcomeBonus'), 'success');
         
+        // 18. عرض رسالة نجاح للمستخدم الجديد
         showToast(t('notif.welcomeBonus'), 'success');
         
+        // 19. تحديث الواجهة
         updateUI();
+        
+        // 20. تحديث إحصائيات الإحالة في الواجهة
+        if (currentPage === 'referral') {
+            updateReferralStats();
+            renderReferralMilestones();
+        }
+        
+        console.log("✅ Referral processed successfully!");
         
     } catch (error) {
         console.error("❌ Error processing referral:", error);
@@ -1088,38 +1130,6 @@ function shareReferral() {
 }
 
 // ====== ✅ 15. ADD NOTIFICATION ======
-async function addNotification(targetUserId, message, type = 'info') {
-    if (!db) return;
-    
-    const notification = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-        message: message,
-        type: type,
-        read: false,
-        timestamp: new Date().toISOString()
-    };
-    
-    try {
-        await db.collection('users').doc(targetUserId).update({
-            notifications: firebase.firestore.FieldValue.arrayUnion(notification)
-        });
-        
-        if (targetUserId === userData?.userId) {
-            if (!userData.notifications) userData.notifications = [];
-            userData.notifications.push(notification);
-            updateNotificationBadge();
-            showToast(message, type);
-            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-        }
-        
-        console.log("✅ Notification added:", notification);
-        
-    } catch (error) {
-        console.error("❌ Error adding notification:", error);
-    }
-}
-
-// ====== 16. PRICES - مع تخزين مؤقت 3 ساعات ======
 async function loadPricesOnce() {
     console.log("💰 Loading crypto prices...");
     await fetchLivePrices();
