@@ -982,7 +982,7 @@ async function processReferral() {
         
         console.log("🎯 Processing referral code:", referralCode);
         
-        const referrerId = referralCode.replace('REFI_', '');
+        const referrerId = referralCode;
         
         if (!referrerId || referrerId === userId) {
             console.log("⚠️ Invalid referrer ID");
