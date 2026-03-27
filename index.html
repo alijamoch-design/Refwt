@@ -505,59 +505,63 @@
     </div>
 
     <!-- ADMIN PANEL -->
-    <div id="adminPanel" class="admin-panel hidden">
-        <div class="admin-header">
-            <div class="admin-header-content">
-                <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button class="icon-btn" id="adminRefreshBtn" onclick="refreshAdminPanel()" title="Refresh" style="background: rgba(255,90,217,0.1); border: 1px solid rgba(255,90,217,0.3);">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                    <button class="admin-close-btn" onclick="closeAdminPanel()">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="admin-stats" id="adminStats">
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Total Users</span>
-                    <span class="admin-stat-value" id="totalUsers">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Pending</span>
-                    <span class="admin-stat-value" id="pendingCount">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Approved</span>
-                    <span class="admin-stat-value" id="approvedCount">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Total Referrals</span>
-                    <span class="admin-stat-value" id="totalReferralsCount">0</span>
-                </div>
-            </div>
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="showAdminTab('deposits')">
-                    <i class="fa-regular fa-circle-down"></i> Deposits
+<div id="adminPanel" class="admin-panel hidden">
+    <div class="admin-header">
+        <div class="admin-header-content">
+            <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="icon-btn" id="adminRefreshBtn" onclick="refreshAdminPanel()" title="Refresh" style="background: rgba(255,90,217,0.1); border: 1px solid rgba(255,90,217,0.3);">
+                    <i class="fa-solid fa-rotate-right"></i>
                 </button>
-                <button class="admin-tab" onclick="showAdminTab('withdrawals')">
-                    <i class="fa-regular fa-circle-up"></i> Withdrawals
-                </button>
-                <button class="admin-tab" onclick="showAdminTab('completed')">
-                    <i class="fa-regular fa-circle-check"></i> Completed
-                </button>
-                <button class="admin-tab" onclick="showAdminTab('rejected')">
-                    <i class="fa-regular fa-circle-xmark"></i> Rejected
+                <button class="admin-close-btn" onclick="closeAdminPanel()">
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
         </div>
-        
-        <div class="admin-content" id="adminContent">
-            <div class="loading-spinner">
-                <i class="fa-solid fa-spinner"></i> Loading admin panel...
+        <div class="admin-stats" id="adminStats">
+            <div class="admin-stat-card">
+                <span class="admin-stat-label">Total Users</span>
+                <span class="admin-stat-value" id="totalUsers">0</span>
             </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-label">Pending</span>
+                <span class="admin-stat-value" id="pendingCount">0</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-label">Approved</span>
+                <span class="admin-stat-value" id="approvedCount">0</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-label">Total Referrals</span>
+                <span class="admin-stat-value" id="totalReferralsCount">0</span>
+            </div>
+        </div>
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="showAdminTab('deposits')">
+                <i class="fa-regular fa-circle-down"></i> Deposits
+            </button>
+            <button class="admin-tab" onclick="showAdminTab('withdrawals')">
+                <i class="fa-regular fa-circle-up"></i> Withdrawals
+            </button>
+            <button class="admin-tab" onclick="showAdminTab('completed')">
+                <i class="fa-regular fa-circle-check"></i> Completed
+            </button>
+            <button class="admin-tab" onclick="showAdminTab('rejected')">
+                <i class="fa-regular fa-circle-xmark"></i> Rejected
+            </button>
+            <!-- ✅ أضف هذا الزر الجديد -->
+            <button class="admin-tab" onclick="showUsersCount()">
+                <i class="fa-solid fa-users"></i> Users Count
+            </button>
         </div>
     </div>
+    
+    <div class="admin-content" id="adminContent">
+        <div class="loading-spinner">
+            <i class="fa-solid fa-spinner"></i> Loading admin panel...
+        </div>
+    </div>
+</div>
 
     <!-- نافذة اختيار العملة -->
     <div id="currencySelectorModal" class="modal currency-modal">
