@@ -3690,6 +3690,48 @@ async function adminRefreshUserData() {
     if (!currentManageUserId) return;
     await adminLoadUser();
 }
+// ====== عرض عدد المستخدمين الكلي ======
+async function showUsersCount() {
+    if (!isAdmin) {
+        showToast('Access denied', 'error');
+        return;
+    }
+    
+    const adminContent = document.getElementById('adminContent');
+    adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading users count...</div>';
+    
+    try {
+        // ✅ استخدام count() للحصول على العدد فقط (بدون تحميل البيانات)
+        const usersSnapshot = await db.collection('users').count().get();
+        const totalUsers = usersSnapshot.data().count;
+        
+        adminContent.innerHTML = `
+            <div style="text-align: center; padding: 30px;">
+                <i class="fa-solid fa-users" style="font-size: 48px; color: var(--pink-1);"></i>
+                <h1 style="font-size: 48px; margin: 20px 0; color: var(--quantum-blue);">${totalUsers.toLocaleString()}</h1>
+                <p style="color: var(--text-secondary);">Total Registered Users</p>
+                <button onclick="showUsersCount()" style="margin-top: 20px; background: transparent; border: 1px solid var(--quantum-blue); padding: 8px 20px; border-radius: 8px; cursor: pointer;">
+                    <i class="fa-solid fa-rotate-right"></i> Refresh
+                </button>
+            </div>
+        `;
+        
+        showToast(`📊 Total users: ${totalUsers}`, 'success');
+        
+    } catch (error) {
+        console.error('Error getting users count:', error);
+        adminContent.innerHTML = `
+            <div style="text-align: center; color: var(--danger); padding: 30px;">
+                <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px;"></i>
+                <p style="margin-top: 10px;">Error loading users count</p>
+                <small>${error.message}</small>
+                <button onclick="showUsersCount()" style="margin-top: 20px; background: transparent; border: 1px solid var(--danger); padding: 8px 20px; border-radius: 8px; cursor: pointer;">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+}
 // ====== 32. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
@@ -4281,7 +4323,7 @@ window.adminLoadUser = adminLoadUser;
 window.adminAddBalance = adminAddBalance;
 window.adminRemoveBalance = adminRemoveBalance;
 window.adminRefreshUserData = adminRefreshUserData;
-
+window.showUsersCount = showUsersCount;
 console.log("✅ REFI Network v28.0 - ULTIMATE ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: checks only when code present");
