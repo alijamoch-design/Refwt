@@ -4276,6 +4276,11 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.copyToClipboard = copyToClipboard;
 window.refreshAdminPanel = refreshAdminPanel;
+window.showUserManagementInterface = showUserManagementInterface;
+window.adminLoadUser = adminLoadUser;
+window.adminAddBalance = adminAddBalance;
+window.adminRemoveBalance = adminRemoveBalance;
+window.adminRefreshUserData = adminRefreshUserData;
 
 console.log("✅ REFI Network v28.0 - ULTIMATE ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
