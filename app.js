@@ -3469,6 +3469,9 @@ showAdminPanel = function() {
 function showUserManagementInterface() {
     const adminContent = document.getElementById('adminContent');
     
+    // ✅ هذا السطر هو اللي بينظف الشاشة
+    adminContent.innerHTML = '';
+    
     adminContent.innerHTML = `
         <div style="padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
