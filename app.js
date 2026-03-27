@@ -3444,7 +3444,195 @@ function rejectTransaction(firebaseId, targetUserId, type) {
         showToast('❌ Unsupported transaction type', 'error');
     }
 }
+// ====== ADMIN USER MANAGEMENT ======
+let currentManageUserId = null;
 
+// تعديل دالة showAdminPanel لإضافة زر إدارة المستخدمين
+const originalShowAdminPanel = showAdminPanel;
+showAdminPanel = function() {
+    originalShowAdminPanel();
+    
+    setTimeout(() => {
+        const adminHeader = document.querySelector('#adminPanel .admin-header');
+        if (adminHeader && !document.getElementById('adminUserManageBtn')) {
+            const userManageBtn = document.createElement('button');
+            userManageBtn.id = 'adminUserManageBtn';
+            userManageBtn.className = 'admin-tab';
+            userManageBtn.innerHTML = '<i class="fa-solid fa-user-gear"></i> Manage Users';
+            userManageBtn.onclick = showUserManagementInterface;
+            userManageBtn.style.background = 'linear-gradient(135deg, var(--pink-1), var(--quantum-blue))';
+            adminHeader.appendChild(userManageBtn);
+        }
+    }, 100);
+};
+
+function showUserManagementInterface() {
+    const adminContent = document.getElementById('adminContent');
+    
+    adminContent.innerHTML = `
+        <div style="padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <i class="fa-solid fa-user-plus" style="font-size: 48px; color: var(--pink-1);"></i>
+                <h3 style="margin-top: 10px;">User Management</h3>
+                <p style="color: var(--text-secondary);">Enter Telegram User ID to manage balance and view stats</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="adminUserIdInput" placeholder="Enter User ID (e.g., 1653918641)" 
+                       style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; color: white;">
+                <button onclick="adminLoadUser()" style="background: var(--quantum-blue); border: none; padding: 0 20px; border-radius: 12px; cursor: pointer;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Load
+                </button>
+            </div>
+            
+            <div id="adminUserStats" style="display: none;"></div>
+        </div>
+    `;
+}
+
+async function adminLoadUser() {
+    const userId = document.getElementById('adminUserIdInput').value.trim();
+    if (!userId) {
+        showToast('Please enter User ID', 'error');
+        return;
+    }
+    
+    const statsDiv = document.getElementById('adminUserStats');
+    statsDiv.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+    statsDiv.style.display = 'block';
+    
+    try {
+        const userDoc = await db.collection('users').doc(userId).get();
+        
+        if (!userDoc.exists) {
+            statsDiv.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">❌ User not found!</div>';
+            return;
+        }
+        
+        const user = userDoc.data();
+        currentManageUserId = userId;
+        
+        const now = new Date();
+        const activeStakes = (user.staking || []).filter(s => new Date(s.endDate) > now);
+        const pendingRewards = (user.staking || []).filter(s => new Date(s.endDate) <= now && !s.claimed);
+        
+        statsDiv.innerHTML = `
+            <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;">
+                <h4 style="margin-bottom: 15px;">👤 ${user.userName || 'User'}</h4>
+                <p><strong>🆔 ID:</strong> ${userId}</p>
+                <p><strong>👥 Referrals:</strong> ${user.referralCount || 0}</p>
+                <p><strong>🔒 Active Stakes:</strong> ${activeStakes.length}</p>
+                <p><strong>🎁 Pending Rewards:</strong> ${pendingRewards.length}</p>
+                ${activeStakes.length > 0 ? `<details><summary>📋 Staking Plans</summary>${activeStakes.map(s => `<small>• ${s.plan.name}: ${s.amount} USDT (${s.plan.return}% return)</small><br>`).join('')}</details>` : ''}
+                
+                <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
+                
+                <h4>💰 Balances</h4>
+                ${Object.entries(user.balances || {}).filter(([_, v]) => v > 0).map(([c, v]) => 
+                    `<p><strong>${c}:</strong> ${c === 'USDT' ? v.toFixed(2) : v.toLocaleString()}</p>`
+                ).join('') || '<p>No balances</p>'}
+                
+                <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="adminAddBalance()" style="flex:1; background: #10b981; border: none; padding: 10px; border-radius: 8px; color: white; cursor: pointer;">
+                        ➕ Add Balance
+                    </button>
+                    <button onclick="adminRemoveBalance()" style="flex:1; background: #ef4444; border: none; padding: 10px; border-radius: 8px; color: white; cursor: pointer;">
+                        ➖ Remove Balance
+                    </button>
+                </div>
+                
+                <div style="margin-top: 10px;">
+                    <button onclick="adminRefreshUserData()" style="width:100%; background: rgba(0,212,255,0.2); border: 1px solid var(--quantum-blue); padding: 10px; border-radius: 8px; cursor: pointer;">
+                        <i class="fa-solid fa-rotate-right"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading user:', error);
+        statsDiv.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">❌ Error loading user data</div>';
+    }
+}
+
+async function adminAddBalance() {
+    if (!isAdmin || !currentManageUserId) return;
+    
+    const currency = prompt('Currency (USDT, REFI, BNB, etc.):', 'USDT');
+    if (!currency) return;
+    
+    const amount = parseFloat(prompt(`Amount to ADD (${currency}):`, '0'));
+    if (isNaN(amount) || amount <= 0) {
+        showToast('Invalid amount', 'error');
+        return;
+    }
+    
+    try {
+        await db.collection('users').doc(currentManageUserId).update({
+            [`balances.${currency}`]: firebase.firestore.FieldValue.increment(amount)
+        });
+        
+        await db.collection('transactions').add({
+            userId: currentManageUserId,
+            type: 'admin_add',
+            amount: amount,
+            currency: currency,
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+            details: `Admin added ${amount} ${currency}`
+        });
+        
+        showToast(`✅ Added ${amount} ${currency} to user`, 'success');
+        adminLoadUser();
+        
+    } catch (error) {
+        console.error('Error adding balance:', error);
+        showToast('Error adding balance', 'error');
+    }
+}
+
+async function adminRemoveBalance() {
+    if (!isAdmin || !currentManageUserId) return;
+    
+    const currency = prompt('Currency (USDT, REFI, BNB, etc.):', 'USDT');
+    if (!currency) return;
+    
+    const amount = parseFloat(prompt(`Amount to REMOVE (${currency}):`, '0'));
+    if (isNaN(amount) || amount <= 0) {
+        showToast('Invalid amount', 'error');
+        return;
+    }
+    
+    try {
+        await db.collection('users').doc(currentManageUserId).update({
+            [`balances.${currency}`]: firebase.firestore.FieldValue.increment(-amount)
+        });
+        
+        await db.collection('transactions').add({
+            userId: currentManageUserId,
+            type: 'admin_remove',
+            amount: amount,
+            currency: currency,
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+            details: `Admin removed ${amount} ${currency}`
+        });
+        
+        showToast(`✅ Removed ${amount} ${currency} from user`, 'success');
+        adminLoadUser();
+        
+    } catch (error) {
+        console.error('Error removing balance:', error);
+        showToast('Error removing balance', 'error');
+    }
+}
+
+async function adminRefreshUserData() {
+    if (!currentManageUserId) return;
+    await adminLoadUser();
+}
 // ====== 32. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
