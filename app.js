@@ -3701,9 +3701,9 @@ async function showUsersCount() {
     adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading users count...</div>';
     
     try {
-        // ✅ استخدام get() بدلاً من count() (لأن SDK القديم لا يدعم count)
+        // ✅ استخدام get() بدلاً من count()
         const usersSnapshot = await db.collection('users').get();
-        const totalUsers = usersSnapshot.size;  // عدد المستخدمين
+        const totalUsers = usersSnapshot.size;
         
         adminContent.innerHTML = `
             <div style="text-align: center; padding: 30px;">
