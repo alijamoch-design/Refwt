@@ -3701,9 +3701,9 @@ async function showUsersCount() {
     adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading users count...</div>';
     
     try {
-        // ✅ استخدام count() للحصول على العدد فقط (بدون تحميل البيانات)
-        const usersSnapshot = await db.collection('users').count().get();
-        const totalUsers = usersSnapshot.data().count;
+        // ✅ استخدام get() بدلاً من count() (لأن SDK القديم لا يدعم count)
+        const usersSnapshot = await db.collection('users').get();
+        const totalUsers = usersSnapshot.size;  // عدد المستخدمين
         
         adminContent.innerHTML = `
             <div style="text-align: center; padding: 30px;">
@@ -3723,8 +3723,7 @@ async function showUsersCount() {
         adminContent.innerHTML = `
             <div style="text-align: center; color: var(--danger); padding: 30px;">
                 <i class="fa-solid fa-exclamation-triangle" style="font-size: 48px;"></i>
-                <p style="margin-top: 10px;">Error loading users count</p>
-                <small>${error.message}</small>
+                <p>Error loading users count</p>
                 <button onclick="showUsersCount()" style="margin-top: 20px; background: transparent; border: 1px solid var(--danger); padding: 8px 20px; border-radius: 8px; cursor: pointer;">
                     Try Again
                 </button>
