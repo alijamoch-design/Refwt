@@ -3466,12 +3466,14 @@ showAdminPanel = function() {
     }, 100);
 };
 
+// واجهة إدارة المستخدمين (مع حقل إدخال وزر بحث)
 function showUserManagementInterface() {
     const adminContent = document.getElementById('adminContent');
     
-    // ✅ هذا السطر هو اللي بينظف الشاشة
+    // تنظيف الشاشة بالكامل
     adminContent.innerHTML = '';
     
+    // عرض واجهة البحث
     adminContent.innerHTML = `
         <div style="padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -3482,33 +3484,57 @@ function showUserManagementInterface() {
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <input type="text" id="adminUserIdInput" placeholder="Enter User ID (e.g., 1653918641)" 
-                       style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; color: white;">
-                <button onclick="adminLoadUser()" style="background: var(--quantum-blue); border: none; padding: 0 20px; border-radius: 12px; cursor: pointer;">
-                    <i class="fa-solid fa-magnifying-glass"></i> Load
+                       style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; color: white; font-size: 16px;">
+                <button id="adminSearchBtn" style="background: var(--quantum-blue); border: none; padding: 0 20px; border-radius: 12px; cursor: pointer; font-size: 16px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
                 </button>
             </div>
             
             <div id="adminUserStats" style="display: none;"></div>
         </div>
     `;
+    
+    // ربط زر البحث بالدالة
+    const searchBtn = document.getElementById('adminSearchBtn');
+    if (searchBtn) {
+        searchBtn.onclick = adminLoadUser;
+    }
+    
+    // أيضاً عند الضغط على Enter في حقل الإدخال
+    const inputField = document.getElementById('adminUserIdInput');
+    if (inputField) {
+        inputField.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                adminLoadUser();
+            }
+        };
+    }
 }
 
+// دالة البحث عن المستخدم وتحميل بياناته
 async function adminLoadUser() {
     const userId = document.getElementById('adminUserIdInput').value.trim();
+    const statsDiv = document.getElementById('adminUserStats');
+    
     if (!userId) {
         showToast('Please enter User ID', 'error');
+        statsDiv.style.display = 'none';
         return;
     }
     
-    const statsDiv = document.getElementById('adminUserStats');
-    statsDiv.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
     statsDiv.style.display = 'block';
+    statsDiv.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading user data...</div>';
     
     try {
         const userDoc = await db.collection('users').doc(userId).get();
         
         if (!userDoc.exists) {
-            statsDiv.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">❌ User not found!</div>';
+            statsDiv.innerHTML = `
+                <div style="text-align: center; color: var(--danger); padding: 30px; background: rgba(255,68,68,0.1); border-radius: 16px;">
+                    <i class="fa-solid fa-user-slash" style="font-size: 32px;"></i>
+                    <p style="margin-top: 10px;">❌ User not found!<br><small>Check the User ID and try again</small></p>
+                </div>
+            `;
             return;
         }
         
@@ -3520,20 +3546,44 @@ async function adminLoadUser() {
         const pendingRewards = (user.staking || []).filter(s => new Date(s.endDate) <= now && !s.claimed);
         
         statsDiv.innerHTML = `
-            <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;">
-                <h4 style="margin-bottom: 15px;">👤 ${user.userName || 'User'}</h4>
-                <p><strong>🆔 ID:</strong> ${userId}</p>
-                <p><strong>👥 Referrals:</strong> ${user.referralCount || 0}</p>
-                <p><strong>🔒 Active Stakes:</strong> ${activeStakes.length}</p>
-                <p><strong>🎁 Pending Rewards:</strong> ${pendingRewards.length}</p>
-                ${activeStakes.length > 0 ? `<details><summary>📋 Staking Plans</summary>${activeStakes.map(s => `<small>• ${s.plan.name}: ${s.amount} USDT (${s.plan.return}% return)</small><br>`).join('')}</details>` : ''}
+            <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0;">👤 ${user.userName || 'User'}</h4>
+                    <span style="font-size: 12px; color: var(--text-secondary);">🆔 ${userId}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <div style="background: rgba(0,212,255,0.1); border-radius: 12px; padding: 10px; text-align: center;">
+                        <div style="font-size: 20px;">👥</div>
+                        <div style="font-weight: bold;">${user.referralCount || 0}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">Referrals</div>
+                    </div>
+                    <div style="background: rgba(0,212,255,0.1); border-radius: 12px; padding: 10px; text-align: center;">
+                        <div style="font-size: 20px;">🔒</div>
+                        <div style="font-weight: bold;">${activeStakes.length}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">Active Stakes</div>
+                    </div>
+                </div>
+                
+                ${activeStakes.length > 0 ? `
+                <details style="margin-bottom: 15px;">
+                    <summary style="cursor: pointer; color: var(--quantum-blue); padding: 5px 0;">📋 Staking Plans (${activeStakes.length})</summary>
+                    <div style="margin-top: 8px; padding-left: 10px; border-left: 2px solid var(--quantum-blue);">
+                        ${activeStakes.map(s => `<small>• ${s.plan.name}: ${s.amount} USDT (+${s.plan.return}% return)</small><br>`).join('')}
+                    </div>
+                </details>
+                ` : ''}
                 
                 <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
                 
-                <h4>💰 Balances</h4>
-                ${Object.entries(user.balances || {}).filter(([_, v]) => v > 0).map(([c, v]) => 
-                    `<p><strong>${c}:</strong> ${c === 'USDT' ? v.toFixed(2) : v.toLocaleString()}</p>`
-                ).join('') || '<p>No balances</p>'}
+                <h4 style="margin-bottom: 10px;">💰 Balances</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                    ${Object.entries(user.balances || {}).filter(([_, v]) => v > 0).map(([c, v]) => `
+                        <span style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 10px; font-size: 12px;">
+                            <strong>${c}</strong>: ${c === 'USDT' ? v.toFixed(2) : v.toLocaleString()}
+                        </span>
+                    `).join('') || '<span style="color: var(--text-secondary);">No balances</span>'}
+                </div>
                 
                 <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
                 
@@ -3556,7 +3606,11 @@ async function adminLoadUser() {
         
     } catch (error) {
         console.error('Error loading user:', error);
-        statsDiv.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">❌ Error loading user data</div>';
+        statsDiv.innerHTML = `
+            <div style="text-align: center; color: var(--danger); padding: 20px; background: rgba(255,68,68,0.1); border-radius: 16px;">
+                ❌ Error loading user data<br><small>${error.message}</small>
+            </div>
+        `;
     }
 }
 
