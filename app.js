@@ -3205,10 +3205,28 @@ window.refreshAdminPanel = async function() {
         }
         
         let html = '';
-        snapshot.forEach(doc => {
+        
+        // ✅ جلب بيانات المستخدمين (عدد الإحالات) لكل معاملة
+        for (const doc of snapshot.docs) {
             const tx = { firebaseId: doc.id, ...doc.data() };
+            
+            // جلب بيانات المستخدم من Firestore لجلب referralCount
+            try {
+                const userDoc = await db.collection('users').doc(tx.userId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    tx.userReferralCount = userData.referralCount || 0;
+                    tx.userName = userData.userName || tx.userName;
+                } else {
+                    tx.userReferralCount = 0;
+                }
+            } catch (err) {
+                console.error("Error fetching user data:", err);
+                tx.userReferralCount = 0;
+            }
+            
             html += renderAdminTransactionCard(tx, activeTab);
-        });
+        }
         
         adminContent.innerHTML = html;
         showToast('Admin panel refreshed', 'success');
@@ -3225,9 +3243,15 @@ window.refreshAdminPanel = async function() {
     }
 };
 
+// ✅ دالة عرض بطاقة المعاملة مع المعلومات الجديدة
 function renderAdminTransactionCard(tx, tab) {
     const date = new Date(tx.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    // ✅ معلومات المستخدم الجديدة
+    const userId = tx.userId || '';
+    const referralCount = tx.userReferralCount || 0;
+    const userName = tx.userName || userId.substring(0, 8);
     
     return `
         <div class="admin-transaction-card">
@@ -3239,9 +3263,26 @@ function renderAdminTransactionCard(tx, tab) {
                 <span class="admin-tx-status ${tx.status}">${tx.status}</span>
             </div>
             <div class="admin-tx-details">
+                <!-- ✅ User ID مع زر نسخ -->
                 <div class="admin-tx-row">
-                    <span class="admin-tx-label">User:</span>
-                    <span class="admin-tx-value">${tx.userName || tx.userId.substring(0, 8)}...</span>
+                    <span class="admin-tx-label">User ID:</span>
+                    <div class="admin-address-container">
+                        <code style="font-size: 12px;">${userId}</code>
+                        <button class="admin-copy-btn" onclick="copyToClipboard('${userId}')">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">User Name:</span>
+                    <span class="admin-tx-value">${userName}</span>
+                </div>
+                <!-- ✅ عدد الإحالات الكلي -->
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Total Referrals:</span>
+                    <span class="admin-tx-value" style="color: var(--quantum-blue); font-weight: bold;">
+                        <i class="fa-regular fa-users"></i> ${referralCount} referrals
+                    </span>
                 </div>
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Amount:</span>
