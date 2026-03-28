@@ -3225,9 +3225,14 @@ window.refreshAdminPanel = async function() {
     }
 };
 
+// ✅ دالة عرض بطاقة المعاملة للمشرف (مع إضافة Telegram ID قابل للنسخ)
 function renderAdminTransactionCard(tx, tab) {
     const date = new Date(tx.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    // الحصول على Telegram ID (userId) وعرضه كاملاً
+    const telegramId = tx.userId || 'N/A';
+    const displayUserId = tx.userName ? `${tx.userName}` : telegramId.substring(0, 8);
     
     return `
         <div class="admin-transaction-card">
@@ -3241,7 +3246,17 @@ function renderAdminTransactionCard(tx, tab) {
             <div class="admin-tx-details">
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">User:</span>
-                    <span class="admin-tx-value">${tx.userName || tx.userId.substring(0, 8)}...</span>
+                    <span class="admin-tx-value">${displayUserId}</span>
+                </div>
+                <!-- ✅ NEW: Telegram ID with copy button -->
+                <div class="admin-tx-row">
+                    <span class="admin-tx-label">Telegram ID:</span>
+                    <div class="admin-address-container">
+                        <code style="font-size: 12px; word-break: break-all;">${telegramId}</code>
+                        <button class="admin-copy-btn" onclick="copyToClipboard('${telegramId}')" title="Copy Telegram ID">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Amount:</span>
@@ -3444,6 +3459,7 @@ function rejectTransaction(firebaseId, targetUserId, type) {
         showToast('❌ Unsupported transaction type', 'error');
     }
 }
+
 // ====== ADMIN USER MANAGEMENT ======
 let currentManageUserId = null;
 
@@ -3549,7 +3565,12 @@ async function adminLoadUser() {
             <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-top: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h4 style="margin: 0;">👤 ${user.userName || 'User'}</h4>
-                    <span style="font-size: 12px; color: var(--text-secondary);">🆔 ${userId}</span>
+                    <div class="admin-address-container">
+                        <span style="font-size: 12px; color: var(--text-secondary);">🆔 ${userId}</span>
+                        <button class="admin-copy-btn" onclick="copyToClipboard('${userId}')" title="Copy Telegram ID">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
