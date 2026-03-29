@@ -2955,8 +2955,21 @@ async function submitWithdraw() {
         return;
     }
     
+    // ✅ التحقق من الحد الأدنى للسحب
+    const minAmounts = {
+        USDT: 10,
+        REFI: 2500000,
+        BNB: 0.02
+    };
+    
+    const minForCurrency = minAmounts[currency];
+    if (minForCurrency && amount < minForCurrency) {
+        showToast(`Minimum withdrawal is ${minForCurrency} ${currency}`, 'error');
+        return;
+    }
+    
     if (!userData.balances[currency] || userData.balances[currency] < amount) {
-        showToast(t('error.insufficientBalance', { currency }), 'error');
+        showToast(`Insufficient ${currency} balance`, 'error');
         return;
     }
     
@@ -3018,7 +3031,7 @@ async function submitWithdraw() {
             
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
             
-            // 🔥 التعديل: المستمع يعيش 30 ثانية فقط
+            // مستمع عند الطلب لمدة 30 ثانية
             startOnDemandListener('withdrawals', docRef.id, (data) => {
                 console.log("📤 Withdrawal update received:", data);
                 
@@ -3029,7 +3042,7 @@ async function submitWithdraw() {
                         status: 'approved'
                     });
                     
-                    showToast(t('notif.withdrawApproved', { amount }), 'success');
+                    showToast(`✅ Your withdrawal of ${amount} ${currency} has been approved!`, 'success');
                     
                 } else if (data.status === 'rejected') {
                     // إعادة المبلغ في حالة الرفض
@@ -3046,10 +3059,10 @@ async function submitWithdraw() {
                         reason: data.reason || 'Unknown reason'
                     });
                     
-                    showToast(t('notif.withdrawRejected', { reason: data.reason || 'Unknown reason' }), 'error');
+                    showToast(`❌ Your withdrawal was rejected: ${data.reason || 'Unknown reason'}`, 'error');
                     updateUI();
                 }
-            }, 30000); // 🔥 30 ثانية
+            }, 30000);
         }
         
         const transactionToAdd = { 
@@ -3061,7 +3074,7 @@ async function submitWithdraw() {
             addTransaction(transactionToAdd);
         }, 100);
         
-        showToast(t('success.withdrawSubmitted', { amount }), 'success');
+        showToast(`✅ Withdrawal request submitted for ${amount} ${currency}`, 'success');
         closeModal('withdrawModal');
         
         document.getElementById('withdrawAmount').value = '';
