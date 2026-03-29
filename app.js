@@ -333,17 +333,17 @@ const DEPOSIT_MINIMUMS = {
 };
 
 const DEPOSIT_NOTES = {
-    REFI: '✓ Blockchain confirmation 1-5 minutes',
-    USDT: '✓ Blockchain confirmation 1-5 minutes',
-    BNB: '✓ Blockchain confirmation 1-5 minutes',
-    ETH: '✓ Blockchain confirmation 1-5 minutes',
-    SHIB: '✓ Blockchain confirmation 1-5 minutes',
-    PEPE: '✓ Blockchain confirmation 1-5 minutes',
-    SOL: '✓ Blockchain confirmation 1-5 minutes',
-    TRX: '✓ Blockchain confirmation 1-5 minutes',
-    TRUMP: '✓ Blockchain confirmation 1-5 minutes',
-    THB: '✓ Blockchain confirmation 1-5 minutes',
-    ZDX: '✓ Blockchain confirmation 1-5 minutes'
+    REFI: '✓ Blockchain confirmation 1-15 minutes',
+    USDT: '✓ Blockchain confirmation 1-15 minutes',
+    BNB: '✓ Blockchain confirmation 1-15 minutes',
+    ETH: '✓ Blockchain confirmation 1-15 minutes',
+    SHIB: '✓ Blockchain confirmation 1-15 minutes',
+    PEPE: '✓ Blockchain confirmation 1-15 minutes',
+    SOL: '✓ Blockchain confirmation 1-15 minutes',
+    TRX: '✓ Blockchain confirmation 1-15 minutes',
+    TRUMP: '✓ Blockchain confirmation 1-15 minutes',
+    THB: '✓ Blockchain confirmation 1-15 minutes',
+    ZDX: '✓ Blockchain confirmation 1-15 minutes'
 };
 
 // ====== 6. الثوابت الأساسية ======
@@ -469,9 +469,9 @@ const HISTORY_CACHE_TIME = 600000; // 10 دقائق
 // ====== ✅ NEW: STICKER SYSTEM ======
 // مصفوفة الستيكرات المميزة
 const WELCOME_STICKERS = [
-    '🤝', '🫣', '🥰', '🥳', '💲', '💰', '💸', '💵', '🤪', '😱', 
-    '😤', '😎', '🤑', '💯', '💖', '✨', '🌟', '⭐', '🔥', '⚡',
-    '💎', '🔔', '🎁', '🎈', '🎉', '🎊', '👑', '🚀', '💫', '⭐'
+    '🐸', '🫅', '🥰', '🥳', '💲', '💰', '💸', '💵', '🤪', '😱', 
+    '😤', '😎', '🤑', '💯', '💖', '👑', '❤️‍🔥', '🫂', '🔥', '🧡',
+    '🤑', '🧟', '🎁', '💌', '🎉', '❤️‍🔥', '👑', '🚀', '💟', '🤍'
 ];
 
 // متغيرات توقيت الستيكر
