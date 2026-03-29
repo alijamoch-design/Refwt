@@ -2939,8 +2939,14 @@ function validateWithdrawAddressInput() {
     }
 }
 
-// ====== 30. SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
+// ====== SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
 async function submitWithdraw() {
+    // ====== PERMANENT BLOCK CHECK - USER CANNOT WITHDRAW IF BLOCKED ======
+    if (userData && userData.withdrawBlocked === true) {
+        showToast('⛔ Your account is permanently blocked from withdrawals. Contact support.', 'error');
+        return;
+    }
+    
     const currency = document.getElementById('withdrawCurrency').value;
     const amount = parseFloat(document.getElementById('withdrawAmount').value);
     const address = document.getElementById('walletAddress').value.trim();
@@ -3104,7 +3110,6 @@ async function submitWithdraw() {
         }
     }
 }
-
 // ====== 31. ADMIN FUNCTIONS - محسنة (بدون تحميل كل المستخدمين) ======
 function showAdminPanel() {
     if (!isAdmin) {
@@ -3473,6 +3478,48 @@ function rejectTransaction(firebaseId, targetUserId, type) {
     }
 }
 
+// ====== PERMANENT BLOCK USER FROM WITHDRAWALS (NO UNDO) ======
+async function blockUserWithdrawals(targetUserId) {
+    // Check admin permission
+    if (!isAdmin) {
+        showToast('❌ Access denied. Admin only.', 'error');
+        return;
+    }
+    
+    // Confirm with admin - permanent action warning
+    if (!confirm(`⚠️⚠️⚠️ PERMANENT ACTION WARNING ⚠️⚠️⚠️\n\nAre you ABSOLUTELY sure you want to permanently block this user from withdrawals?\n\nTHIS ACTION CANNOT BE UNDONE!`)) {
+        return;
+    }
+    
+    try {
+        // Update in Firebase
+        if (db) {
+            await db.collection('users').doc(targetUserId).update({
+                withdrawBlocked: true,
+                withdrawBlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                withdrawBlockedBy: ADMIN_ID,
+                withdrawBlockedPermanent: true,
+                withdrawBlockedReason: 'Admin action - permanent block'
+            });
+        }
+        
+        // Update localStorage if current user is the same
+        if (targetUserId === userId) {
+            userData.withdrawBlocked = true;
+            userData.withdrawBlockedPermanent = true;
+            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+        }
+        
+        showToast('✅ User has been PERMANENTLY blocked from withdrawals', 'success');
+        
+        // Reload user data to update UI
+        await adminLoadUser();
+        
+    } catch (error) {
+        console.error("❌ Error blocking user:", error);
+        showToast('❌ Failed to block user: ' + error.message, 'error');
+    }
+}
 // ====== ADMIN USER MANAGEMENT ======
 let currentManageUserId = null;
 
@@ -3630,6 +3677,23 @@ async function adminLoadUser() {
                     </button>
                 </div>
                 
+                <!-- ====== PERMANENT BLOCK WITHDRAWALS BUTTON ====== -->
+                <div style="margin-top: 15px;">
+                    ${user.withdrawBlocked ? `
+                        <div style="background: rgba(239,68,68,0.2); border-radius: 12px; padding: 10px; text-align: center; margin-bottom: 10px;">
+                            <i class="fa-solid fa-ban"></i> ⚠️ USER IS <strong>PERMANENTLY BLOCKED</strong> FROM WITHDRAWALS
+                            <div style="font-size: 11px; margin-top: 5px;">This action cannot be reversed</div>
+                        </div>
+                    ` : `
+                        <button onclick="blockUserWithdrawals('${userId}')" style="width:100%; background: #ef4444; border: none; padding: 10px; border-radius: 8px; color: white; cursor: pointer; margin-bottom: 10px;">
+                            <i class="fa-solid fa-ban"></i> 🔒 PERMANENTLY BLOCK FROM WITHDRAWALS
+                        </button>
+                    `}
+                    <div style="font-size: 11px; color: var(--text-secondary); text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <i class="fa-regular fa-circle-info"></i> ⚠️ WARNING: This action is PERMANENT and cannot be undone
+                    </div>
+                </div>
+                
                 <div style="margin-top: 10px;">
                     <button onclick="adminRefreshUserData()" style="width:100%; background: rgba(0,212,255,0.2); border: 1px solid var(--quantum-blue); padding: 10px; border-radius: 8px; cursor: pointer;">
                         <i class="fa-solid fa-rotate-right"></i> Refresh
@@ -3724,6 +3788,7 @@ async function adminRefreshUserData() {
     if (!currentManageUserId) return;
     await adminLoadUser();
 }
+
 // ====== عرض عدد المستخدمين الكلي ======
 async function showUsersCount() {
     if (!isAdmin) {
