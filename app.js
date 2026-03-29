@@ -2958,7 +2958,7 @@ async function submitWithdraw() {
     // ✅ التحقق من الحد الأدنى للسحب
     const minAmounts = {
         USDT: 10,
-        REFI: 2500000,
+        REFI: 10000,
         BNB: 0.02
     };
     
