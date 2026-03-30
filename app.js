@@ -3185,7 +3185,7 @@ async function showAdminTab(tab) {
     `;
 }
 
-// 🔥 دالة جديدة لتحديث لوحة المشرف يدوياً
+// 🔥 دالة جديدة لتحديث لوحة المشرف يدوياً (مع جلب referralCount)
 window.refreshAdminPanel = async function() {
     if (!isAdmin) return;
     
@@ -3222,10 +3222,41 @@ window.refreshAdminPanel = async function() {
             return;
         }
         
-        let html = '';
+        // ✅ جمع الـ userIds الفريدة من الطلبات
+        const userIds = [];
+        const transactions = [];
+        
         snapshot.forEach(doc => {
             const tx = { firebaseId: doc.id, ...doc.data() };
-            html += renderAdminTransactionCard(tx, activeTab);
+            transactions.push(tx);
+            if (tx.userId && !userIds.includes(tx.userId)) {
+                userIds.push(tx.userId);
+            }
+        });
+        
+        // ✅ جلب referralCount لكل المستخدمين دفعة واحدة
+        const referralCounts = {};
+        if (userIds.length > 0) {
+            // تقسيم userIds إلى مجموعات من 30 (قيود Firebase)
+            const chunks = [];
+            for (let i = 0; i < userIds.length; i += 30) {
+                chunks.push(userIds.slice(i, i + 30));
+            }
+            
+            for (const chunk of chunks) {
+                const usersSnapshot = await db.collection('users').where('userId', 'in', chunk).get();
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    referralCounts[userData.userId] = userData.referralCount || 0;
+                });
+            }
+        }
+        
+        // ✅ عرض البطاقات مع referralCount
+        let html = '';
+        transactions.forEach(tx => {
+            const referralCount = referralCounts[tx.userId] || 0;
+            html += renderAdminTransactionCard(tx, activeTab, referralCount);
         });
         
         adminContent.innerHTML = html;
@@ -3243,8 +3274,8 @@ window.refreshAdminPanel = async function() {
     }
 };
 
-// ✅ دالة عرض بطاقة المعاملة للمشرف (مع إضافة Telegram ID قابل للنسخ)
-function renderAdminTransactionCard(tx, tab) {
+// ✅ دالة عرض بطاقة المعاملة للمشرف (مع Total Referrals)
+function renderAdminTransactionCard(tx, tab, referralCount = 0) {
     const date = new Date(tx.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     
@@ -3266,14 +3297,21 @@ function renderAdminTransactionCard(tx, tab) {
                     <span class="admin-tx-label">User:</span>
                     <span class="admin-tx-value">${displayUserId}</span>
                 </div>
-                <!-- ✅ NEW: Telegram ID with copy button -->
+                <!-- ✅ Telegram ID with Total Referrals -->
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Telegram ID:</span>
-                    <div class="admin-address-container">
-                        <code style="font-size: 12px; word-break: break-all;">${telegramId}</code>
-                        <button class="admin-copy-btn" onclick="copyToClipboard('${telegramId}')" title="Copy Telegram ID">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
+                    <div class="admin-address-container" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <code style="font-size: 12px; word-break: break-all;">${telegramId}</code>
+                            <button class="admin-copy-btn" onclick="copyToClipboard('${telegramId}')" title="Copy Telegram ID">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 20px;">
+                            <i class="fa-solid fa-users" style="color: var(--pink-1);"></i>
+                            <span style="color: var(--text-secondary);">Total Referrals:</span>
+                            <strong style="color: var(--pink-1);">${referralCount.toLocaleString()}</strong>
+                        </div>
                     </div>
                 </div>
                 <div class="admin-tx-row">
@@ -3520,6 +3558,7 @@ async function blockUserWithdrawals(targetUserId) {
         showToast('❌ Failed to block user: ' + error.message, 'error');
     }
 }
+
 // ====== ADMIN USER MANAGEMENT ======
 let currentManageUserId = null;
 
