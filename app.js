@@ -389,11 +389,11 @@ const STAKING_MISSIONS = [
 
 // مهام الإحالة
 const REFERRAL_MILESTONES = [
-    { referrals: 10, reward: 50, unit: 'USDT', icon: 'fa-medal' },
-    { referrals: 25, reward: 120, unit: 'USDT', icon: 'fa-medal' },
-    { referrals: 50, reward: 250, unit: 'USDT', icon: 'fa-crown' },
-    { referrals: 100, reward: 500, unit: 'USDT', icon: 'fa-crown' },
-    { referrals: 250, reward: 1000, unit: 'USDT', icon: 'fa-gem' }
+    { referrals: 10, reward: 3, unit: 'USDT', icon: 'fa-medal' },
+    { referrals: 25, reward: 50, unit: 'USDT', icon: 'fa-medal' },
+    { referrals: 50, reward: 120, unit: 'USDT', icon: 'fa-crown' },
+    { referrals: 100, reward: 250, unit: 'USDT', icon: 'fa-crown' },
+    { referrals: 250, reward: 500, unit: 'USDT', icon: 'fa-gem' }
 ];
 
 // قائمة العملات للعرض
