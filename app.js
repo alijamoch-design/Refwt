@@ -321,7 +321,7 @@ const DEPOSIT_ADDRESSES = {
 const DEPOSIT_MINIMUMS = {
     REFI: 500000,
     USDT: 10,
-    BNB: 0.02,
+    BNB: 0.01,
     ETH: 0.005,
     SHIB: 2000000,
     PEPE: 3000000,
