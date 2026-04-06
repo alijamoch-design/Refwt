@@ -2522,7 +2522,7 @@ function confirmSwap() {
     
     // ✅ منع تحويل USDT إلى أي عملة أخرى
     if (payCurrency === 'USDT') {
-        showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
+        showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
         return;
     }
     
