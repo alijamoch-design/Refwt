@@ -2246,7 +2246,7 @@ function selectCurrency(symbol) {
     if (currentCurrencySelector === 'pay') {
         // ✅ منع تحويل USDT إلى أي عملة أخرى
         if (symbol === 'USDT') {
-            showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
+            showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
             return;
         }
         
