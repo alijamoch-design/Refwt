@@ -2244,6 +2244,12 @@ function selectCurrency(symbol) {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     if (currentCurrencySelector === 'pay') {
+        // ✅ منع تحويل USDT إلى أي عملة أخرى
+        if (symbol === 'USDT') {
+            showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
+            return;
+        }
+        
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
@@ -2348,6 +2354,12 @@ function filterCurrencies() {
 function flipSwapPair() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
+    // ✅ منع التقليب إذا كانت النتيجة أن USDT تصبح عملة الدفع
+    if (receiveCurrency === 'USDT') {
+        showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
+        return;
+    }
     
     if (payCurrency === 'BNB') {
         showToast(t('swap.bnbNotAllowed'), 'warning');
