@@ -2210,7 +2210,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 24. SWAP FUNCTIONS ======
+// ==// ====== 24. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2517,6 +2517,12 @@ function confirmSwap() {
     if (!payAmount || payAmount <= 0) {
         showToast(t('error.enterAmount'), 'error');
         animateElement('#payAmount', 'shake');
+        return;
+    }
+    
+    // ✅ منع تحويل USDT إلى أي عملة أخرى
+    if (payCurrency === 'USDT') {
+        showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
         return;
     }
     
