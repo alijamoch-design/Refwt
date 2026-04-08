@@ -137,7 +137,11 @@ const translations = {
         'notifications.confirm_clear_all_unread': 'Warning: You have {count} unread notifications. Delete all?',
         'notifications.cleared': 'Cleared {count} read notifications',
         'notifications.no_read': 'No read notifications to clear',
-        'notifications.no_notifications': 'No notifications'
+        'notifications.no_notifications': 'No notifications',
+        'popup.title': 'REFI NETWORK',
+        'popup.close': 'Got it!',
+        'popup.auto_close': 'Closes automatically in',
+        'popup.seconds': 'seconds'
     },
     ar: {
         'app.name': 'REFI Network',
@@ -243,7 +247,11 @@ const translations = {
         'notifications.confirm_clear_all_unread': 'تحذير: لديك {count} إشعار غير مقروء. حذف الكل؟',
         'notifications.cleared': 'تم حذف {count} إشعار مقروء',
         'notifications.no_read': 'لا توجد إشعارات مقروءة للحذف',
-        'notifications.no_notifications': 'لا توجد إشعارات'
+        'notifications.no_notifications': 'لا توجد إشعارات',
+        'popup.title': 'REFI NETWORK',
+        'popup.close': 'حسناً!',
+        'popup.auto_close': 'تغلق تلقائياً خلال',
+        'popup.seconds': 'ثانية'
     }
 };
 
@@ -4403,6 +4411,12 @@ async function initApp() {
         setupScrollListener();
         
         appInitialized = true;
+        
+        // ✅ عرض النافذة المنبثقة عند فتح التطبيق
+        setTimeout(function() { 
+            showLaunchPopup(); 
+        }, 1000);
+        
         console.log("✅ App initialized successfully with ZERO WASTE architecture");
         console.log("✅ On-demand listeners: only when needed (30 seconds)");
         console.log("✅ History: checks only when opened (cached 10 min)");
@@ -4465,7 +4479,6 @@ window.scrollToTop = scrollToTop;
 window.checkPendingTransactions = checkPendingTransactions;
 window.clearReadNotifications = clearReadNotifications;
 window.clearAllNotifications = clearAllNotifications;
-
 window.showAdminTab = showAdminTab;
 window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
@@ -4479,6 +4492,78 @@ window.adminAddBalance = adminAddBalance;
 window.adminRemoveBalance = adminRemoveBalance;
 window.adminRefreshUserData = adminRefreshUserData;
 window.showUsersCount = showUsersCount;
+
+// ====== 36. LAUNCH POPUP - WELCOME WINDOW ======
+let popupAutoCloseTimer = null;
+let popupCountdownInterval = null;
+
+function showLaunchPopup() {
+    const popup = document.getElementById('launchPopup');
+    if (!popup) return;
+    
+    const titleEl = document.querySelector('#launchPopup .launch-popup-header h2');
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-rocket"></i> ' + t('popup.title');
+    
+    const gotItBtn = document.querySelector('#launchPopup .popup-gotit-btn');
+    if (gotItBtn) gotItBtn.innerHTML = t('popup.close') + ' <i class="fa-regular fa-circle-check"></i>';
+    
+    const autoCloseText = document.querySelector('#launchPopup .popup-auto-close');
+    if (autoCloseText) autoCloseText.innerHTML = '✨ ' + t('popup.auto_close') + ' <span id="popupCountdown">10</span> ' + t('popup.seconds');
+    
+    popup.classList.add('show');
+    
+    let secondsLeft = 10;
+    const countdownSpan = document.getElementById('popupCountdown');
+    if (countdownSpan) countdownSpan.textContent = secondsLeft;
+    
+    if (popupCountdownInterval) clearInterval(popupCountdownInterval);
+    if (popupAutoCloseTimer) clearTimeout(popupAutoCloseTimer);
+    
+    popupCountdownInterval = setInterval(function() {
+        secondsLeft--;
+        if (countdownSpan) countdownSpan.textContent = secondsLeft;
+        if (secondsLeft <= 0) {
+            clearInterval(popupCountdownInterval);
+            popupCountdownInterval = null;
+        }
+    }, 1000);
+    
+    popupAutoCloseTimer = setTimeout(function() {
+        hideLaunchPopup();
+    }, 10000);
+}
+
+function hideLaunchPopup() {
+    const popup = document.getElementById('launchPopup');
+    if (popup) popup.classList.remove('show');
+    if (popupAutoCloseTimer) {
+        clearTimeout(popupAutoCloseTimer);
+        popupAutoCloseTimer = null;
+    }
+    if (popupCountdownInterval) {
+        clearInterval(popupCountdownInterval);
+        popupCountdownInterval = null;
+    }
+}
+
+function closeLaunchPopup() {
+    hideLaunchPopup();
+}
+
+function refreshPopupLanguage() {
+    const titleEl = document.querySelector('#launchPopup .launch-popup-header h2');
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-rocket"></i> ' + t('popup.title');
+    const gotItBtn = document.querySelector('#launchPopup .popup-gotit-btn');
+    if (gotItBtn) gotItBtn.innerHTML = t('popup.close') + ' <i class="fa-regular fa-circle-check"></i>';
+    const autoCloseText = document.querySelector('#launchPopup .popup-auto-close');
+    if (autoCloseText) autoCloseText.innerHTML = '✨ ' + t('popup.auto_close') + ' <span id="popupCountdown">10</span> ' + t('popup.seconds');
+}
+
+// إضافة التصديرات الجديدة
+window.showLaunchPopup = showLaunchPopup;
+window.closeLaunchPopup = closeLaunchPopup;
+window.refreshPopupLanguage = refreshPopupLanguage;
+
 console.log("✅ REFI Network v28.0 - ULTIMATE ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: checks only when code present");
