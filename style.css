@@ -3261,3 +3261,370 @@ body.rtl input[type="number"] {
     padding: 15px !important;
     color: white !important;
 }
+/* ====== 36. LAUNCH POPUP - COMPLETE TEXT WINDOW ====== */
+/* نافذة واحدة تحتوي على الفقرة الكاملة كما طلبت */
+
+.launch-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(12px);
+    z-index: 3500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.launch-popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.launch-popup-container {
+    width: 92%;
+    max-width: 400px;
+    max-height: 88vh;
+    background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 90, 217, 0.4);
+    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 90, 217, 0.2);
+    overflow: hidden;
+    animation: popupScaleIn 0.4s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes popupScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* رأس النافذة */
+.launch-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, rgba(255, 90, 217, 0.1), rgba(176, 0, 122, 0.05));
+    border-bottom: 1px solid rgba(255, 90, 217, 0.2);
+    flex-shrink: 0;
+}
+
+.launch-popup-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #ff5ad9, #ff8ee8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.launch-popup-header h2 i {
+    font-size: 24px;
+    color: var(--pink-1);
+    -webkit-text-fill-color: initial;
+}
+
+.launch-popup-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 90, 217, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.launch-popup-close:hover {
+    background: #ef4444;
+    color: white;
+    transform: rotate(90deg);
+    border-color: transparent;
+}
+
+/* جسم النافذة - مع تمرير */
+.launch-popup-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+}
+
+.launch-popup-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.launch-popup-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.launch-popup-body::-webkit-scrollbar-thumb {
+    background: var(--pink-1);
+    border-radius: 4px;
+}
+
+/* النص الرئيسي */
+.popup-main-text {
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.popup-main-text h1 {
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ff5ad9, #ff8ee8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 5px 0;
+    text-align: center;
+}
+
+.popup-main-text .launch-emoji {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.popup-main-text p {
+    margin: 12px 0;
+    color: #e0e0e0;
+}
+
+.popup-main-text strong {
+    color: var(--pink-1);
+}
+
+.popup-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--pink-1);
+    margin: 18px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-section-title i {
+    font-size: 18px;
+}
+
+.popup-list {
+    margin: 8px 0 0 20px;
+    padding-left: 0;
+    list-style: none;
+}
+
+.popup-list li {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c0c0d0;
+}
+
+.popup-list li i {
+    color: var(--pink-1);
+    font-size: 12px;
+    min-width: 16px;
+}
+
+.support-telegram-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 180, 216, 0.15);
+    padding: 8px 16px;
+    border-radius: 40px;
+    text-decoration: none;
+    color: #00b4d8;
+    font-weight: 600;
+    margin: 10px 0;
+    border: 1px solid rgba(0, 180, 216, 0.3);
+    transition: all 0.3s ease;
+}
+
+.support-telegram-link:hover {
+    background: rgba(0, 180, 216, 0.3);
+    transform: translateX(5px);
+}
+
+.highlight-box {
+    background: rgba(255, 90, 217, 0.08);
+    border-left: 3px solid var(--pink-1);
+    padding: 12px 15px;
+    margin: 15px 0;
+    border-radius: 12px;
+}
+
+/* أزرار الروابط */
+.popup-buttons-row {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0 10px;
+}
+
+.popup-btn-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.popup-btn-link i {
+    font-size: 16px;
+}
+
+.support-btn {
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 180, 216, 0.3);
+}
+
+.support-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 180, 216, 0.5);
+}
+
+.channel-btn {
+    background: linear-gradient(135deg, #8338ec, #3a0ca3);
+    color: white;
+    box-shadow: 0 2px 10px rgba(131, 56, 236, 0.3);
+}
+
+.channel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(131, 56, 236, 0.5);
+}
+
+/* تذييل النافذة */
+.launch-popup-footer {
+    padding: 15px 20px 20px;
+    border-top: 1px solid rgba(255, 90, 217, 0.12);
+    background: rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.popup-gotit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ff5ad9, #b0007a);
+    border: none;
+    border-radius: 40px;
+    padding: 14px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.popup-gotit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 90, 217, 0.4);
+}
+
+.popup-gotit-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.popup-auto-close {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.popup-auto-close span {
+    color: var(--pink-1);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* ====== دعم اللغة العربية ====== */
+body.rtl .launch-popup-header {
+    flex-direction: row-reverse;
+}
+
+body.rtl .popup-list li {
+    flex-direction: row-reverse;
+}
+
+body.rtl .popup-buttons-row {
+    flex-direction: row-reverse;
+}
+
+body.rtl .support-telegram-link:hover {
+    transform: translateX(-5px);
+}
+
+body.rtl .highlight-box {
+    border-left: none;
+    border-right: 3px solid var(--pink-1);
+}
+
+body.rtl .launch-popup-close:hover {
+    transform: rotate(-90deg);
+}
+
+/* ====== تحسين للأجهزة الصغيرة ====== */
+@media (max-width: 428px) {
+    .launch-popup-container {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .popup-main-text {
+        font-size: 13px;
+    }
+    
+    .popup-main-text h1 {
+        font-size: 18px;
+    }
+    
+    .popup-section-title {
+        font-size: 15px;
+    }
+    
+    .popup-btn-link {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+    
+    .popup-gotit-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+}
