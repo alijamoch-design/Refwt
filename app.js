@@ -2219,6 +2219,10 @@ function updateReferralStats() {
 }
 
 // ==// ====== 24. SWAP FUNCTIONS ======
+// ثابت رسوم السواب
+const SWAP_FEE = 0.0029; // 0.0029 BNB لكل عملية سواب
+const SWAP_FEE_CURRENCY = 'BNB';
+
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2252,9 +2256,9 @@ function selectCurrency(symbol) {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     if (currentCurrencySelector === 'pay') {
-        // ✅ منع تحويل USDT إلى أي عملة أخرى
-        if (symbol === 'USDT') {
-            showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
+        // ✅ منع اختيار نفس العملة الموجودة في حقل الاستلام
+        if (symbol === receiveCurrency) {
+            showToast(`❌ Cannot select same currency as "To" field!`, 'warning');
             return;
         }
         
@@ -2279,11 +2283,13 @@ function selectCurrency(symbol) {
             swapMode = 'to-refi';
         }
     } else {
-        if (symbol === 'BNB') {
-            showToast(t('swap.bnbNotAllowed'), 'warning');
+        // ✅ منع اختيار نفس العملة الموجودة في حقل الدفع
+        if (symbol === payCurrency) {
+            showToast(`❌ Cannot select same currency as "From" field!`, 'warning');
             return;
         }
         
+        // ✅ السماح باختيار BNB كعملة مستلمة (تم إزالة المنع)
         document.getElementById('receiveCurrency').textContent = symbol;
         document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
         
@@ -2309,6 +2315,12 @@ function updateSwapNote() {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     const swapNote = document.getElementById('swapNote');
     const swapRate = document.getElementById('swapRate');
+    
+    // عرض رسوم السواب
+    const feeElement = document.getElementById('swapFeeDisplay');
+    if (feeElement) {
+        feeElement.textContent = `${SWAP_FEE} ${SWAP_FEE_CURRENCY}`;
+    }
     
     if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
         swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
@@ -2363,14 +2375,9 @@ function flipSwapPair() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
-    // ✅ منع التقليب إذا كانت النتيجة أن USDT تصبح عملة الدفع
-    if (receiveCurrency === 'USDT') {
-        showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
-        return;
-    }
-    
-    if (payCurrency === 'BNB') {
-        showToast(t('swap.bnbNotAllowed'), 'warning');
+    // ✅ منع قلب نفس العملة
+    if (payCurrency === receiveCurrency) {
+        showToast(`Cannot flip same currency`, 'warning');
         return;
     }
     
@@ -2491,6 +2498,7 @@ window.setMaxAmount = function() {
     }
     
     calculateSwap();
+    updateSwapBalances();
     animateElement('.max-btn', 'pop');
     showToast(`Max amount set: ${formatBalance(maxAmount, payCurrency)}`, 'success');
 }
@@ -2528,31 +2536,54 @@ function confirmSwap() {
         return;
     }
     
-    // ✅ منع تحويل USDT إلى أي عملة أخرى
-    if (payCurrency === 'USDT') {
-        showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
+    // ✅ منع نفس العملة
+    if (payCurrency === receiveCurrency) {
+        showToast(`❌ Cannot swap ${payCurrency} to itself! Please select different currencies.`, 'error');
+        animateElement('#swapBtn', 'shake');
         return;
     }
     
+    // ✅ التحقق من رصيد BNB للرسوم
+    const bnbBalance = userData.balances.BNB || 0;
+    if (bnbBalance < SWAP_FEE) {
+        showToast(`❌ You need ${SWAP_FEE} BNB for swap fee! Your BNB balance: ${bnbBalance.toFixed(4)} BNB`, 'error');
+        animateElement('#swapBtn', 'shake');
+        return;
+    }
+    
+    // ✅ التحقق من رصيد العملة المراد صرفها
     if (!userData.balances[payCurrency] || userData.balances[payCurrency] < payAmount) {
         showToast(t('error.insufficientBalance', { currency: payCurrency }), 'error');
         return;
     }
     
-    if (payCurrency === 'USDT' && payAmount < 0.01) {
-        showToast(t('error.minSwap', { min: '0.01', currency: 'USDT' }), 'error');
-        return;
-    }
-    if (payCurrency === 'REFI' && payAmount < 1000) {
-        showToast(t('error.minSwap', { min: '1,000', currency: 'REFI' }), 'error');
-        return;
-    }
-    if (payCurrency === 'THB' && payAmount < 10) {
-        showToast(t('error.minSwap', { min: '10', currency: 'THB' }), 'error');
+    // ✅ التحقق من الحد الأدنى للعملات
+    const minAmounts = {
+        USDT: 0.01,
+        REFI: 1000,
+        THB: 10,
+        BNB: 0.001,
+        ETH: 0.0001,
+        SOL: 0.01,
+        TRX: 10,
+        SHIB: 100000,
+        PEPE: 100000,
+        TRUMP: 1,
+        ZDX: 1
+    };
+    const minForCurrency = minAmounts[payCurrency] || 0.01;
+    if (payAmount < minForCurrency) {
+        showToast(t('error.minSwap', { min: minForCurrency, currency: payCurrency }), 'error');
         return;
     }
     
+    // ✅ خصم المبلغ المراد صرفه
     userData.balances[payCurrency] -= payAmount;
+    
+    // ✅ خصم رسوم BNB
+    userData.balances.BNB -= SWAP_FEE;
+    
+    // ✅ إضافة المبلغ المستلم
     userData.balances[receiveCurrency] += receiveAmount;
     
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
@@ -2563,9 +2594,11 @@ function confirmSwap() {
         type: 'swap',
         amount: payAmount,
         currency: payCurrency,
+        fee: SWAP_FEE,
+        feeCurrency: SWAP_FEE_CURRENCY,
         status: 'completed',
         timestamp: new Date().toISOString(),
-        details: `Swapped to ${receiveAmount} ${receiveCurrency}`
+        details: `Swapped ${payAmount} ${payCurrency} to ${receiveAmount} ${receiveCurrency} (Fee: ${SWAP_FEE} BNB)`
     };
     
     addTransaction(transaction);
@@ -2582,7 +2615,7 @@ function confirmSwap() {
         fromCurrency: payCurrency,
         toAmount: formatBalance(receiveAmount, receiveCurrency),
         toCurrency: receiveCurrency
-    }), 'success');
+    }) + ` (Fee: ${SWAP_FEE} BNB)`, 'success');
     
     document.getElementById('payAmount').value = '1';
     calculateSwap();
@@ -2592,43 +2625,6 @@ function confirmSwap() {
 }
 
 // ====== 25. ADD TRANSACTION ======
-function addTransaction(transaction) {
-    try {
-        const allTransactions = loadLocalTransactions();
-        
-        const exists = allTransactions.some(t => 
-            (t.firebaseId && t.firebaseId === transaction.firebaseId) ||
-            (t.timestamp === transaction.timestamp && 
-             t.type === transaction.type &&
-             t.amount === transaction.amount)
-        );
-        
-        if (exists) {
-            console.log("⏭️ Transaction already exists, skipping...");
-            return;
-        }
-        
-        if (!userData.transactions) userData.transactions = [];
-        userData.transactions.unshift(transaction);
-        
-        allTransactions.unshift(transaction);
-        saveLocalTransactions(allTransactions);
-        
-        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-        
-        if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
-            renderHistory(currentHistoryFilter);
-        }
-        
-        console.log("✅ Transaction added successfully");
-        return true;
-    } catch (error) {
-        console.error("❌ Error in addTransaction:", error);
-        return false;
-    }
-}
-
-// ====== 26. UPDATE TRANSACTION ======
 function updateTransaction(updatedTx) {
     try {
         if (userData.transactions) {
