@@ -354,18 +354,18 @@
                     <label data-i18n="deposit.selectCurrency">Select Currency</label>
                     <div class="currency-select-wrapper">
                         <select id="depositCurrency" class="form-select" onchange="updateDepositInfo()">
-                            <option value="REFI">REFI (Min: 500,000)</option>
-                            <option value="USDT">USDT (Min: 5)</option>
-                            <option value="BNB">BNB (Min: 0.015)</option>
-                            <option value="ETH">ETH (Min: 0.005)</option>
-                            <option value="SHIB">SHIB (Min: 2,000,000)</option>
+                            <option value="REFI">REFI BEP20 (Min: 500,000)</option>
+                            <option value="USDT">USDT BEP20/ERC20 (Min: 5)</option>
+                            <option value="BNB">BNB BEP20 (Min: 0.015)</option>
+                            <option value="ETH">ETH ERC20 (Min: 0.005)</option>
+                            <option value="SHIB">SHIB BEP20/ERC20 (Min: 2,000,000)</option>
                             <option value="PEPE">PEPE (Min: 3,000,000)</option>
                             <option value="SOL">SOL (Min: 0.12)</option>
                             <option value="TRX">TRX (Min: 40)</option>
                             <option value="TRUMP">TRUMP (Min: 5)</option>
                             <!-- العملات الجديدة المضافة -->
-                            <option value="THB">THB (Min: 50)</option>
-                            <option value="ZDX">ZDX (Min: 10)</option>
+                            <option value="THB">THB BEP20 (Min: 50)</option>
+                            <option value="ZDX">ZDX BEP20 (Min: 10)</option>
                         </select>
                         <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="depositIcon">
                     </div>
@@ -419,9 +419,9 @@
                     <label data-i18n="withdraw.selectCurrency">Select Currency</label>
                     <div class="currency-select-wrapper">
                         <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
-                            <option value="REFI">REFI (Minimum withdraw 2,500,000 REFI)</option>
-                            <option value="USDT">USDT (Minimum withdraw 10 USDT)</option>
-                            <option value="BNB">BNB (Minimum withdraw 0.02 BNB)</option>
+                            <option value="REFI">REFI BEP20 (Min: 2,500,000 REFI)</option>
+                            <option value="USDT">USDT BEP20 (Min: withdraw 10 USDT)</option>
+                            <option value="BNB">BNB BEP20 (Min: withdraw 0.02 BNB)</option>
                         </select>
                         <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
                     </div>
