@@ -349,10 +349,11 @@ const DEPOSIT_NOTES = {
 // ====== 6. الثوابت الأساسية ======
 const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
 const ADMIN_ID = "1653918641";
-const SWAP_RATE = 500000; // 1 USDT = 500,000 REFI
-const REFERRAL_BONUS = 250000; // REFI per referral
+const SWAP_RATE = 500000;
+const REFERRAL_BONUS = 250000; // REFI per 
 const REFI_PRICE = 0.000002;
 const THB_PRICE = 0.0227;
+const SWAP_FEE_BNB = 0.0008;
 
 // معرفات العملات في CoinGecko
 const CRYPTO_IDS = {
@@ -2210,7 +2211,36 @@ function updateReferralStats() {
     }
 }
 
-// ==// ====== 24. SWAP FUNCTIONS ======
+// ====== 24. SWAP FUNCTIONS ======
+
+// رسوم السواب الثابتة
+const SWAP_FEE_BNB = 0.0008;
+
+// الأزواج الممنوعة
+const FORBIDDEN_PAIRS = [
+    ['REFI', 'THB'], ['THB', 'REFI'],
+    ['REFI', 'ZDX'], ['ZDX', 'REFI'],
+    ['THB', 'ZDX'], ['ZDX', 'THB']
+];
+
+// التحقق من صحة الزوج
+function isValidPair(pay, receive) {
+    if (pay === receive) return false;
+    for (const pair of FORBIDDEN_PAIRS) {
+        if (pair[0] === pay && pair[1] === receive) return false;
+    }
+    return true;
+}
+
+// الحصول على سعر العملة بالدولار
+function getUsdPrice(symbol) {
+    if (symbol === 'USDT') return 1;
+    if (symbol === 'REFI') return 0.000002;
+    if (symbol === 'THB') return 0.0227;
+    if (symbol === 'ZDX') return 0.10;
+    return livePrices[symbol]?.price || 0;
+}
+
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2240,53 +2270,34 @@ function showCurrencySelector(type) {
 }
 
 function selectCurrency(symbol) {
-    const payCurrency = document.getElementById('payCurrency').textContent;
-    const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    const currentPay = document.getElementById('payCurrency').textContent;
+    const currentReceive = document.getElementById('receiveCurrency').textContent;
     
     if (currentCurrencySelector === 'pay') {
-        // ✅ منع تحويل USDT إلى أي عملة أخرى
-        if (symbol === 'USDT') {
-            showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
+        if (symbol === currentReceive) {
+            showToast('Cannot select same currency', 'warning');
+            closeModal('currencySelectorModal');
             return;
         }
         
         document.getElementById('payCurrency').textContent = symbol;
         document.getElementById('payCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        if (symbol === 'USDT') {
-            document.getElementById('receiveCurrency').textContent = 'REFI';
-            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-            swapMode = 'to-refi';
-        } else if (symbol === 'REFI') {
-            document.getElementById('receiveCurrency').textContent = 'USDT';
-            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
-            swapMode = 'to-usdt';
-        } else if (symbol === 'THB') {
-            document.getElementById('receiveCurrency').textContent = 'USDT';
-            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
-            swapMode = 'to-usdt';
-        } else {
-            document.getElementById('receiveCurrency').textContent = 'REFI';
-            document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-            swapMode = 'to-refi';
+        if (!isValidPair(symbol, currentReceive)) {
+            showToast(`Cannot swap ${symbol} to ${currentReceive}`, 'warning');
         }
     } else {
-        if (symbol === 'BNB') {
-            showToast(t('swap.bnbNotAllowed'), 'warning');
+        if (symbol === currentPay) {
+            showToast('Cannot select same currency', 'warning');
+            closeModal('currencySelectorModal');
             return;
         }
         
         document.getElementById('receiveCurrency').textContent = symbol;
         document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(symbol);
         
-        if (symbol === 'REFI') {
-            swapMode = 'to-refi';
-        } else if (symbol === 'USDT') {
-            swapMode = 'to-usdt';
-        } else if (symbol === 'THB') {
-            swapMode = 'to-usdt';
-        } else {
-            swapMode = 'to-other';
+        if (!isValidPair(currentPay, symbol)) {
+            showToast(`Cannot swap ${currentPay} to ${symbol}`, 'warning');
         }
     }
     
@@ -2301,33 +2312,28 @@ function updateSwapNote() {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     const swapNote = document.getElementById('swapNote');
     const swapRate = document.getElementById('swapRate');
+    const networkFeeSpan = document.getElementById('networkFee');
     
-    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
-        swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
-        swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
-    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
-        swapNote.textContent = 'You can swap REFI to USDT at fixed rate';
-        swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
-    } else if (payCurrency === 'USDT' && receiveCurrency === 'THB') {
-        swapNote.textContent = 'You can swap USDT to THB at fixed rate';
-        swapRate.textContent = `1 USDT = ${(1/THB_PRICE).toFixed(2)} THB`;
-    } else if (payCurrency === 'THB' && receiveCurrency === 'USDT') {
-        swapNote.textContent = 'You can swap THB to USDT at fixed rate';
-        swapRate.textContent = `1 THB = $${THB_PRICE.toFixed(4)}`;
+    if (networkFeeSpan) {
+        networkFeeSpan.innerHTML = `${SWAP_FEE_BNB} BNB`;
+    }
+    
+    if (!isValidPair(payCurrency, receiveCurrency)) {
+        swapNote.textContent = 'This pair is not available';
+        swapRate.textContent = '--';
+        return;
+    }
+    
+    const payPrice = getUsdPrice(payCurrency);
+    const receivePrice = getUsdPrice(receiveCurrency);
+    
+    if (payPrice > 0 && receivePrice > 0) {
+        const rate = payPrice / receivePrice;
+        swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(8)} ${receiveCurrency}`;
+        swapNote.textContent = `Swap ${payCurrency} to ${receiveCurrency}`;
     } else {
-        swapNote.textContent = `You can swap ${payCurrency} to ${receiveCurrency} at market rate`;
-        
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
-                        (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
-                            (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
-        
-        if (payPrice > 0 && receivePrice > 0) {
-            const rate = payPrice / receivePrice;
-            swapRate.textContent = `1 ${payCurrency} = ${rate.toFixed(6)} ${receiveCurrency}`;
-        } else {
-            swapRate.textContent = `Rate will be calculated based on current market price`;
-        }
+        swapRate.textContent = 'Price unavailable';
+        swapNote.textContent = 'Unable to fetch price';
     }
 }
 
@@ -2355,14 +2361,8 @@ function flipSwapPair() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
-    // ✅ منع التقليب إذا كانت النتيجة أن USDT تصبح عملة الدفع
-    if (receiveCurrency === 'USDT') {
-        showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
-        return;
-    }
-    
-    if (payCurrency === 'BNB') {
-        showToast(t('swap.bnbNotAllowed'), 'warning');
+    if (!isValidPair(receiveCurrency, payCurrency)) {
+        showToast(`Cannot swap ${receiveCurrency} to ${payCurrency}`, 'warning');
         return;
     }
     
@@ -2370,24 +2370,6 @@ function flipSwapPair() {
     document.getElementById('receiveCurrency').textContent = payCurrency;
     document.getElementById('payCurrencyIcon').src = getCurrencyIcon(receiveCurrency);
     document.getElementById('receiveCurrencyIcon').src = getCurrencyIcon(payCurrency);
-    
-    if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
-        swapMode = 'to-usdt';
-    } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
-        swapMode = 'to-refi';
-    } else if (payCurrency === 'USDT' && receiveCurrency === 'THB') {
-        swapMode = 'to-thb';
-    } else if (payCurrency === 'THB' && receiveCurrency === 'USDT') {
-        swapMode = 'to-usdt';
-    } else if (receiveCurrency === 'REFI') {
-        swapMode = 'to-refi';
-    } else if (receiveCurrency === 'USDT') {
-        swapMode = 'to-usdt';
-    } else if (receiveCurrency === 'THB') {
-        swapMode = 'to-thb';
-    } else {
-        swapMode = 'to-other';
-    }
     
     updateSwapNote();
     calculateSwap();
@@ -2400,64 +2382,25 @@ function calculateSwap() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
-    let receiveAmount = 0;
+    if (payAmount <= 0 || !isValidPair(payCurrency, receiveCurrency)) {
+        document.getElementById('receiveAmount').value = '';
+        return;
+    }
     
-    if (payCurrency === 'THB' && receiveCurrency === 'USDT') {
-        receiveAmount = payAmount * THB_PRICE;
+    const payPrice = getUsdPrice(payCurrency);
+    const receivePrice = getUsdPrice(receiveCurrency);
+    
+    if (payPrice === 0 || receivePrice === 0) {
+        document.getElementById('receiveAmount').value = '0';
+        return;
     }
-    else if (payCurrency === 'USDT' && receiveCurrency === 'THB') {
-        receiveAmount = payAmount / THB_PRICE;
-    }
-    else if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
-        receiveAmount = payAmount * SWAP_RATE;
-    }
-    else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
-        receiveAmount = payAmount / SWAP_RATE;
-    }
-    else if (receiveCurrency === 'REFI') {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
-                        (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
-        if (payPrice > 0) {
-            const usdValue = payAmount * payPrice;
-            receiveAmount = usdValue / REFI_PRICE;
-        }
-    }
-    else if (payCurrency === 'REFI') {
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
-                            (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
-        if (receivePrice > 0) {
-            const usdValue = payAmount * REFI_PRICE;
-            receiveAmount = usdValue / receivePrice;
-        }
-    }
-    else if (receiveCurrency === 'THB') {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
-                        (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
-        if (payPrice > 0) {
-            const usdValue = payAmount * payPrice;
-            receiveAmount = usdValue / THB_PRICE;
-        }
-    }
-    else if (payCurrency === 'THB') {
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
-                            (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
-        if (receivePrice > 0) {
-            const usdValue = payAmount * THB_PRICE;
-            receiveAmount = usdValue / receivePrice;
-        }
-    }
-    else {
-        const payPrice = livePrices[payCurrency]?.price || 0;
-        const receivePrice = livePrices[receiveCurrency]?.price || 0;
-        
-        if (payPrice > 0 && receivePrice > 0) {
-            const usdValue = payAmount * payPrice;
-            receiveAmount = usdValue / receivePrice;
-        }
-    }
+    
+    const usdValue = payAmount * payPrice;
+    let receiveAmount = usdValue / receivePrice;
     
     let formattedAmount;
-    if (receiveCurrency === 'REFI' || receiveCurrency === 'SHIB' || receiveCurrency === 'PEPE' || receiveCurrency === 'TRUMP' || receiveCurrency === 'THB' || receiveCurrency === 'ZDX') {
+    if (receiveCurrency === 'REFI' || receiveCurrency === 'THB' || receiveCurrency === 'ZDX' ||
+        receiveCurrency === 'SHIB' || receiveCurrency === 'PEPE' || receiveCurrency === 'TRUMP') {
         formattedAmount = Math.floor(receiveAmount).toString();
     } else if (receiveCurrency === 'USDT') {
         formattedAmount = receiveAmount.toFixed(2);
@@ -2470,36 +2413,42 @@ function calculateSwap() {
 
 window.setMaxAmount = function() {
     const payCurrency = document.getElementById('payCurrency').textContent;
-    const balance = userData.balances[payCurrency] || 0;
+    let balance = userData.balances[payCurrency] || 0;
     
-    let maxAmount = balance;
+    if (payCurrency === 'BNB') {
+        if (balance > SWAP_FEE_BNB) {
+            balance = balance - SWAP_FEE_BNB;
+        } else {
+            showToast(`Insufficient BNB balance for fee`, 'error');
+            return;
+        }
+    }
     
-    if (payCurrency === 'REFI' || payCurrency === 'SHIB' || payCurrency === 'PEPE' || payCurrency === 'TRUMP' || payCurrency === 'THB' || payCurrency === 'ZDX') {
-        document.getElementById('payAmount').value = Math.floor(maxAmount);
+    if (payCurrency === 'REFI' || payCurrency === 'THB' || payCurrency === 'ZDX' ||
+        payCurrency === 'SHIB' || payCurrency === 'PEPE' || payCurrency === 'TRUMP') {
+        document.getElementById('payAmount').value = Math.floor(balance);
     } else if (payCurrency === 'USDT') {
-        document.getElementById('payAmount').value = maxAmount.toFixed(2);
+        document.getElementById('payAmount').value = balance.toFixed(2);
     } else {
-        document.getElementById('payAmount').value = maxAmount.toFixed(6);
+        document.getElementById('payAmount').value = balance.toFixed(6);
     }
     
     calculateSwap();
     animateElement('.max-btn', 'pop');
-    showToast(`Max amount set: ${formatBalance(maxAmount, payCurrency)}`, 'success');
+    showToast(`Max set: ${formatBalance(balance, payCurrency)}`, 'success');
 }
 
 window.swapDirection = function(direction) {
-    if (direction === 'down') {
+    if (direction === 'down' && isValidPair('USDT', 'REFI')) {
         document.getElementById('payCurrency').textContent = 'USDT';
         document.getElementById('payCurrencyIcon').src = CMC_ICONS.USDT;
         document.getElementById('receiveCurrency').textContent = 'REFI';
         document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.REFI;
-        swapMode = 'to-refi';
-    } else if (direction === 'up') {
+    } else if (direction === 'up' && isValidPair('REFI', 'USDT')) {
         document.getElementById('payCurrency').textContent = 'REFI';
         document.getElementById('payCurrencyIcon').src = CMC_ICONS.REFI;
         document.getElementById('receiveCurrency').textContent = 'USDT';
         document.getElementById('receiveCurrencyIcon').src = CMC_ICONS.USDT;
-        swapMode = 'to-usdt';
     }
     
     updateSwapNote();
@@ -2520,63 +2469,60 @@ function confirmSwap() {
         return;
     }
     
-    // ✅ منع تحويل USDT إلى أي عملة أخرى
-    if (payCurrency === 'USDT') {
-        showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
+    if (!isValidPair(payCurrency, receiveCurrency)) {
+        showToast(`Cannot swap ${payCurrency} to ${receiveCurrency}`, 'error');
         return;
     }
     
-    if (!userData.balances[payCurrency] || userData.balances[payCurrency] < payAmount) {
+    const payBalance = userData.balances[payCurrency] || 0;
+    if (payBalance < payAmount) {
         showToast(t('error.insufficientBalance', { currency: payCurrency }), 'error');
         return;
     }
     
-    if (payCurrency === 'USDT' && payAmount < 0.01) {
-        showToast(t('error.minSwap', { min: '0.01', currency: 'USDT' }), 'error');
-        return;
-    }
-    if (payCurrency === 'REFI' && payAmount < 1000) {
-        showToast(t('error.minSwap', { min: '1,000', currency: 'REFI' }), 'error');
-        return;
-    }
-    if (payCurrency === 'THB' && payAmount < 10) {
-        showToast(t('error.minSwap', { min: '10', currency: 'THB' }), 'error');
+    const bnbBalance = userData.balances.BNB || 0;
+    if (bnbBalance < SWAP_FEE_BNB) {
+        showToast(`Need ${SWAP_FEE_BNB} BNB for fee`, 'error');
         return;
     }
     
+    if (payCurrency === 'BNB' && bnbBalance < payAmount + SWAP_FEE_BNB) {
+        showToast(`Insufficient BNB balance for swap + fee`, 'error');
+        return;
+    }
+    
+    // تنفيذ السواب
+    userData.balances.BNB -= SWAP_FEE_BNB;
     userData.balances[payCurrency] -= payAmount;
-    userData.balances[receiveCurrency] += receiveAmount;
+    userData.balances[receiveCurrency] = (userData.balances[receiveCurrency] || 0) + receiveAmount;
     
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
-        userId: userId,
-        userName: userName,
+        userId, userName,
         type: 'swap',
         amount: payAmount,
         currency: payCurrency,
+        receiveAmount: receiveAmount,
+        receiveCurrency: receiveCurrency,
+        fee: SWAP_FEE_BNB,
+        feeCurrency: 'BNB',
         status: 'completed',
         timestamp: new Date().toISOString(),
-        details: `Swapped to ${receiveAmount} ${receiveCurrency}`
+        details: `Swapped ${formatBalance(payAmount, payCurrency)} to ${formatBalance(receiveAmount, receiveCurrency)}`
     };
     
     addTransaction(transaction);
     
     if (db) {
-        db.collection('users').doc(userId).update({
-            balances: userData.balances
-        }).catch(console.error);
+        db.collection('users').doc(userId).update({ balances: userData.balances }).catch(console.error);
         db.collection('transactions').add(transaction).catch(console.error);
     }
     
-    showToast(t('success.swapCompleted', { 
-        fromAmount: formatBalance(payAmount, payCurrency),
-        fromCurrency: payCurrency,
-        toAmount: formatBalance(receiveAmount, receiveCurrency),
-        toCurrency: receiveCurrency
-    }), 'success');
+    showToast(`✅ Swapped ${formatBalance(payAmount, payCurrency)} to ${formatBalance(receiveAmount, receiveCurrency)}`, 'success');
     
-    document.getElementById('payAmount').value = '1';
+    document.getElementById('payAmount').value = '';
+    document.getElementById('receiveAmount').value = '';
     calculateSwap();
     updateSwapBalances();
     updateUI();
