@@ -3628,3 +3628,117 @@ body.rtl .launch-popup-close:hover {
         font-size: 15px;
     }
 }
+
+/* ====== 41. EARN SECTION STYLES ====== */
+
+/* إحصائيات صفحة Earn (4 بطاقات) */
+.earn-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 20px;
+    margin: 20px 0;
+}
+
+/* تنسيق زر Watch Ad في صفحة Earn */
+#watchAdBtn {
+    width: calc(100% - 40px);
+    margin: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+#watchAdBtn i:first-child {
+    animation: pulseSlow 2s ease-in-out infinite;
+}
+
+#watchAdBtn i:last-child {
+    animation: bounceSequence 2s ease-in-out infinite;
+}
+
+/* تنسيق معلومات إضافية في صفحة Earn */
+.earn-info-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 0 20px 20px 20px;
+    border: 1px solid var(--border-color);
+    backdrop-filter: var(--blur-bg);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.earn-info-card:hover {
+    border-color: var(--pink-1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-pink);
+}
+
+.earn-info-card i {
+    font-size: 24px;
+    color: var(--pink-1);
+    margin-bottom: 10px;
+    display: inline-block;
+    animation: floatSlow 3s ease-in-out infinite;
+}
+
+.earn-info-card p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.earn-info-card strong {
+    color: var(--pink-1);
+}
+
+/* رسالة الحد الأقصى للإعلانات */
+.earn-max-message {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin: 0 20px 20px 20px;
+    text-align: center;
+    color: var(--warning);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.earn-max-message i {
+    font-size: 18px;
+    animation: pulseSlow 2s ease-in-out infinite;
+}
+
+/* تنسيق الوقت المتبقي */
+.earn-time-left {
+    background: rgba(255, 90, 217, 0.15);
+    border-radius: 30px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: var(--pink-1);
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* دعم RTL */
+body.rtl .earn-stats {
+    direction: ltr;
+}
+
+body.rtl .earn-stats .stat-card {
+    direction: rtl;
+}
+
+body.rtl #watchAdBtn {
+    flex-direction: row;
+}
+
+body.rtl .earn-max-message {
+    flex-direction: row-reverse;
+}
