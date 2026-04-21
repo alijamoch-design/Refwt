@@ -41,6 +41,7 @@
                     <div class="welcome-text">
                         <span class="welcome-title" data-i18n="welcome.title">Welcome back,</span>
                         <span class="user-name" id="userId">REFI User</span>
+                        <span class="welcome-sticker" id="welcomeSticker"></span>
                     </div>
                     <div class="header-actions">
                         <button class="icon-btn" id="languageBtn" onclick="toggleLanguage()" title="Change Language">
@@ -177,6 +178,55 @@
                             <span data-i18n="actions.confirmSwap">Confirm Swap</span>
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- ====== قسم Earn الجديد ====== -->
+            <div id="earnSection" class="hidden">
+                <div class="section-header">
+                    <button class="back-btn" onclick="showWallet()">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h3 data-i18n="nav.earn">Earn</h3>
+                    <div style="width: 30px;"></div>
+                </div>
+
+                <div class="staking-header">
+                    <span class="staking-title" data-i18n="earn.title">EARN REFI</span>
+                </div>
+
+                <!-- إحصائيات الأرباح -->
+                <div class="staking-stats">
+                    <div class="stat-card">
+                        <span class="stat-label" data-i18n="earn.totalEarned">TOTAL EARNED</span>
+                        <span class="stat-value" id="earnTotalEarned">0 REFI</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label" data-i18n="earn.adsWatched">ADS WATCHED</span>
+                        <span class="stat-value" id="earnWatchedCount">0 / 30</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label" data-i18n="earn.remaining">REMAINING</span>
+                        <span class="stat-value" id="earnRemaining">30 remaining</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label" data-i18n="earn.resetIn">RESETS IN</span>
+                        <span class="stat-value" id="earnResetTime">6h 0m</span>
+                    </div>
+                </div>
+
+                <!-- زر مشاهدة الإعلان -->
+                <button class="confirm-btn" id="watchAdBtn" onclick="watchAd()" style="margin: 20px; width: calc(100% - 40px);">
+                    <i class="fa-regular fa-tv"></i>
+                    <span data-i18n="earn.watchAd">Watch Ad</span>
+                    <i class="fa-regular fa-coins"></i>
+                </button>
+
+                <!-- معلومات إضافية -->
+                <div class="referral-description" style="margin: 0 20px 20px 20px; text-align: center;">
+                    <i class="fa-regular fa-gift"></i>
+                    <p>✨ <span data-i18n="earn.resetInfo">Limit resets in</span> <strong id="earnResetTimer">6 hours</strong> ✨</p>
+                    <p style="font-size: 12px; margin-top: 5px;">🎁 Each complete sequence = <strong>10,000 REFI</strong> directly to your wallet!</p>
                 </div>
             </div>
 
@@ -326,6 +376,10 @@
             <button class="nav-item" onclick="showSwap()">
                 <i class="fa-solid fa-arrow-right-arrow-left"></i>
                 <span data-i18n="nav.swap">Swap</span>
+            </button>
+            <button class="nav-item" onclick="showEarn()">
+                <i class="fa-solid fa-tv"></i>
+                <span data-i18n="nav.earn">Earn</span>
             </button>
             <button class="nav-item" onclick="showStaking()">
                 <i class="fa-solid fa-lock"></i>
