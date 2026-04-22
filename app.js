@@ -406,9 +406,10 @@ const THB_PRICE = 0.0227;
 
 // إعدادات صفحة Earn
 const EARN_CONFIG = {
-    ADS_PER_CYCLE: 10,
+    ADS_PER_CYCLE: 30,
     REWARD_PER_AD: 10000,
-    RESET_HOURS: 6
+    RESET_HOURS: 6,
+    MIN_TRANSFER: 500000
 };
 
 const CRYPTO_IDS = {
@@ -4772,15 +4773,66 @@ const FLOATING_NOTIFICATIONS = [
 ];
 
 // ============================================================================
-// 32. EARN SYSTEM
+// 31.5 AD PLATFORMS - قائمة المنصات الإعلانية (للدمج)
+// ============================================================================
+
+// قائمة المنصات الإعلانية
+const AD_PLATFORMS = [
+    {
+        name: 'Monetag',
+        show: () => {
+            if (typeof show_10895553 === 'function') {
+                return show_10895553();
+            }
+            return Promise.reject('Monetag not ready');
+        }
+    },
+    {
+        name: 'AdsGram',
+        init: () => {
+            if (!window.AdsgramController && window.Adsgram) {
+                window.AdsgramController = window.Adsgram.init({
+                    blockId: "int-28433"
+                });
+            }
+        },
+        show: () => {
+            if (!window.AdsgramController && window.Adsgram) {
+                window.AdsgramController = window.Adsgram.init({
+                    blockId: "int-28433"
+                });
+            }
+            if (window.AdsgramController && typeof window.AdsgramController.show === 'function') {
+                return window.AdsgramController.show();
+            }
+            return Promise.reject('AdsGram not ready');
+        }
+    },
+    {
+        name: 'OnClickA',
+        init: () => {
+            // التهيئة تمت في index.html عبر window.initCdTma
+        },
+        show: () => {
+            if (window.showOnClickaAd && typeof window.showOnClickaAd === 'function') {
+                return window.showOnClickaAd();
+            }
+            return Promise.reject('OnClickA not ready');
+        }
+    }
+];
+
+// ============================================================================
+// 32. EARN SYSTEM - COMPLETE WITH PENDING BALANCE & CLAIM
 // ============================================================================
 
 const EARN_KEY = `earn_${userId}`;
 
 function loadEarnData() {
     const defaultData = {
+        pendingBalance: 0,
+        totalClaimed: 0,
         watchedCount: 0,
-        totalEarned: 0,
         lastResetTime: Date.now(),
         lastWatchTime: 0
     };
@@ -4795,14 +4847,15 @@ function loadEarnData() {
             if (hoursSinceReset >= EARN_CONFIG.RESET_HOURS && data.watchedCount > 0) {
                 return {
                     ...defaultData,
-                    totalEarned: data.totalEarned,
+                    pendingBalance: data.pendingBalance,
+                    totalClaimed: data.totalClaimed,
                     lastResetTime: Date.now()
                 };
             }
 
             return data;
-        } catch (e) {
-            console.error("Error loading earn data:", e);
+        } catch (error) {
+            console.error("Error loading earn data:", error);
         }
     }
 
@@ -4814,7 +4867,6 @@ function saveEarnData(data) {
 
     if (userData) {
         userData.earnData = data;
-
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     }
 }
@@ -4822,14 +4874,18 @@ function saveEarnData(data) {
 function updateEarnUI() {
     const earnData = loadEarnData();
     const remaining = Math.max(0, EARN_CONFIG.ADS_PER_CYCLE - earnData.watchedCount);
+    const progressPercent = Math.min(100, (earnData.pendingBalance / EARN_CONFIG.MIN_TRANSFER) * 100);
 
-    const totalEarnedEl = document.getElementById('earnTotalEarned');
+    const pendingBalanceEl = document.getElementById('earnPendingBalance');
     const watchedCountEl = document.getElementById('earnWatchedCount');
     const remainingEl = document.getElementById('earnRemaining');
     const resetTimeEl = document.getElementById('earnResetTime');
+    const progressFillEl = document.getElementById('earnProgressFill');
+    const progressTextEl = document.getElementById('earnProgressText');
+    const claimBtn = document.getElementById('claimEarnBtn');
 
-    if (totalEarnedEl) {
-        totalEarnedEl.textContent = `${earnData.totalEarned.toLocaleString()} REFI`;
+    if (pendingBalanceEl) {
+        pendingBalanceEl.textContent = `${earnData.pendingBalance.toLocaleString()} REFI`;
     }
 
     if (watchedCountEl) {
@@ -4838,6 +4894,31 @@ function updateEarnUI() {
 
     if (remainingEl) {
         remainingEl.textContent = `${remaining} remaining`;
+    }
+
+    if (progressFillEl) {
+        progressFillEl.style.width = `${progressPercent}%`;
+    }
+
+    if (progressTextEl) {
+        if (earnData.pendingBalance >= EARN_CONFIG.MIN_TRANSFER) {
+            progressTextEl.textContent = `✅ You've reached the minimum! Click CLAIM to transfer.`;
+            progressTextEl.style.color = '#10b981';
+        } else {
+            const needed = EARN_CONFIG.MIN_TRANSFER - earnData.pendingBalance;
+            progressTextEl.textContent = `🎯 Need ${needed.toLocaleString()} more REFI to claim`;
+            progressTextEl.style.color = 'var(--text-secondary)';
+        }
+    }
+
+    if (claimBtn) {
+        if (earnData.pendingBalance >= EARN_CONFIG.MIN_TRANSFER) {
+            claimBtn.style.display = 'flex';
+            claimBtn.disabled = false;
+            claimBtn.style.opacity = '1';
+        } else {
+            claimBtn.style.display = 'none';
+        }
     }
 
     const timeSinceReset = Date.now() - earnData.lastResetTime;
@@ -4854,11 +4935,13 @@ function updateEarnUI() {
 
     if (watchBtn) {
         if (earnData.watchedCount >= EARN_CONFIG.ADS_PER_CYCLE) {
-            watchBtn.innerHTML = '<i class="fa-regular fa-gift"></i> <span>Claim 100,000 REFI</span> <i class="fa-regular fa-coins"></i>';
-            watchBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+            watchBtn.disabled = true;
+            watchBtn.style.opacity = '0.6';
+            watchBtn.innerHTML = '<i class="fa-regular fa-clock"></i> <span>Limit reached</span> <i class="fa-regular fa-hourglass-half"></i>';
         } else {
+            watchBtn.disabled = false;
+            watchBtn.style.opacity = '1';
             watchBtn.innerHTML = '<i class="fa-regular fa-tv"></i> <span>' + t('earn.watchAd') + '</span> <i class="fa-regular fa-coins"></i>';
-            watchBtn.style.background = "";
         }
     }
 }
@@ -4866,69 +4949,33 @@ function updateEarnUI() {
 function addEarnReward() {
     if (!userData) {
         console.error("User data not loaded");
-
         return false;
     }
 
+    let earnData = loadEarnData();
     const rewardAmount = EARN_CONFIG.REWARD_PER_AD;
 
-    userData.balances.REFI = (userData.balances.REFI || 0) + rewardAmount;
+    earnData.pendingBalance += rewardAmount;
+    earnData.watchedCount++;
 
-    localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+    saveEarnData(earnData);
+    updateEarnUI();
 
-    const transaction = {
-        userId: userId,
-        userName: userName,
-        type: 'earn',
-        amount: rewardAmount,
-        currency: 'REFI',
-        status: 'completed',
-        timestamp: new Date().toISOString(),
-        details: 'Earned from watching ad'
-    };
-
-    addTransaction(transaction);
-
-    updateUI();
-
-    showToast(t('notif.earnReward'), 'success');
+    showToast(`🎬 +${rewardAmount.toLocaleString()} REFI added to pending balance!`, 'success');
 
     return true;
 }
 
-function completeEarnCycle() {
+function checkAndResetEarnCycle() {
     let earnData = loadEarnData();
+    const hoursSinceReset = (Date.now() - earnData.lastResetTime) / (1000 * 60 * 60);
 
-    if (earnData.watchedCount >= EARN_CONFIG.ADS_PER_CYCLE) {
-        const cycleReward = EARN_CONFIG.REWARD_PER_AD * EARN_CONFIG.ADS_PER_CYCLE;
-
-        userData.balances.REFI = (userData.balances.REFI || 0) + cycleReward;
-
-        earnData.totalEarned += cycleReward;
+    if (hoursSinceReset >= EARN_CONFIG.RESET_HOURS && earnData.watchedCount > 0) {
         earnData.watchedCount = 0;
         earnData.lastResetTime = Date.now();
-
         saveEarnData(earnData);
 
-        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-
-        const transaction = {
-            userId: userId,
-            userName: userName,
-            type: 'earn',
-            amount: cycleReward,
-            currency: 'REFI',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-            details: `Completed ${EARN_CONFIG.ADS_PER_CYCLE} ads cycle`
-        };
-
-        addTransaction(transaction);
-
-        updateUI();
-
-        showToast(`🎉 Congratulations! You earned ${cycleReward.toLocaleString()} REFI!`, 'success');
-
+        showToast(`✨ Ads reset! You can watch ${EARN_CONFIG.ADS_PER_CYCLE} more ads!`, 'success');
         updateEarnUI();
 
         return true;
@@ -4937,28 +4984,78 @@ function completeEarnCycle() {
     return false;
 }
 
+async function claimEarnReward() {
+    let earnData = loadEarnData();
+
+    if (earnData.pendingBalance < EARN_CONFIG.MIN_TRANSFER) {
+        const needed = EARN_CONFIG.MIN_TRANSFER - earnData.pendingBalance;
+        showToast(`❌ You need ${needed.toLocaleString()} more REFI to claim!`, 'warning');
+        return;
+    }
+
+    const claimAmount = earnData.pendingBalance;
+
+    const claimBtn = document.getElementById('claimEarnBtn');
+
+    if (claimBtn) {
+        claimBtn.disabled = true;
+        claimBtn.style.opacity = '0.6';
+        claimBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    }
+
+    try {
+        if (db) {
+            await db.collection('users').doc(userId).update({
+                'balances.REFI': firebase.firestore.FieldValue.increment(claimAmount)
+            });
+            console.log(`✅ Firebase updated: +${claimAmount} REFI to wallet`);
+        }
+
+        userData.balances.REFI = (userData.balances.REFI || 0) + claimAmount;
+        earnData.totalClaimed += claimAmount;
+        earnData.pendingBalance = 0;
+
+        saveEarnData(earnData);
+        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+
+        const transaction = {
+            userId: userId,
+            userName: userName,
+            type: 'earn',
+            amount: claimAmount,
+            currency: 'REFI',
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+            details: `Claimed from Earn (${earnData.totalClaimed.toLocaleString()} total claimed)`
+        };
+
+        addTransaction(transaction);
+
+        updateUI();
+        updateEarnUI();
+
+        showToast(`🎉 Success! ${claimAmount.toLocaleString()} REFI transferred to your wallet!`, 'success');
+
+    } catch (error) {
+        console.error("Claim error:", error);
+        showToast("❌ Failed to claim. Please try again.", "error");
+    } finally {
+        if (claimBtn) {
+            claimBtn.disabled = false;
+            claimBtn.style.opacity = '1';
+            claimBtn.innerHTML = '<i class="fa-regular fa-gem"></i> <span>CLAIM ' + EARN_CONFIG.MIN_TRANSFER.toLocaleString() + ' REFI</span> <i class="fa-regular fa-arrow-right-to-bracket"></i>';
+        }
+    }
+}
+
 async function watchAd() {
     let earnData = loadEarnData();
 
-    const hoursSinceReset = (Date.now() - earnData.lastResetTime) / (1000 * 60 * 60);
-
-    if (hoursSinceReset >= EARN_CONFIG.RESET_HOURS && earnData.watchedCount > 0) {
-        earnData.watchedCount = 0;
-        earnData.lastResetTime = Date.now();
-
-        saveEarnData(earnData);
-
-        showToast(`✨ Ads reset! You can watch ${EARN_CONFIG.ADS_PER_CYCLE} more ads!`, 'success');
-
-        updateEarnUI();
-
-        earnData = loadEarnData();
-    }
+    checkAndResetEarnCycle();
+    earnData = loadEarnData();
 
     if (earnData.watchedCount >= EARN_CONFIG.ADS_PER_CYCLE) {
-        completeEarnCycle();
-        updateEarnUI();
-
+        showToast(`You've reached the limit of ${EARN_CONFIG.ADS_PER_CYCLE} ads. Please wait for reset.`, 'warning');
         return;
     }
 
@@ -4966,12 +5063,10 @@ async function watchAd() {
 
     if (now - earnData.lastWatchTime < 5000) {
         showToast("Please wait a few seconds before watching another ad", "warning");
-
         return;
     }
 
     earnData.lastWatchTime = now;
-
     saveEarnData(earnData);
 
     const watchBtn = document.getElementById('watchAdBtn');
@@ -4981,38 +5076,53 @@ async function watchAd() {
         watchBtn.style.opacity = '0.6';
     }
 
-    try {
-        if (typeof show_10895553 === 'function') {
-            showToast("Loading ad... Please wait", "info");
-
-            await show_10895553();
-
-            earnData = loadEarnData();
-
-            earnData.watchedCount++;
-            earnData.totalEarned += EARN_CONFIG.REWARD_PER_AD;
-
-            saveEarnData(earnData);
-
-            addEarnReward();
-
-            updateEarnUI();
-
-            showToast(`✅ Ad watched! +${EARN_CONFIG.REWARD_PER_AD.toLocaleString()} REFI`, 'success');
-        } else {
-            console.error("Monetag ad function not available");
-
-            showToast("Ad service not ready. Please try again later.", "error");
+    for (const platform of AD_PLATFORMS) {
+        if (platform.init) {
+            try {
+                platform.init();
+            } catch (error) {
+                console.log(`${platform.name} init failed:`, error);
+            }
         }
-    } catch (error) {
-        console.error("Error showing ad:", error);
+    }
 
-        showToast("Failed to load ad. Please try again.", "error");
-    } finally {
-        if (watchBtn) {
-            watchBtn.disabled = false;
-            watchBtn.style.opacity = '1';
+    const shuffledPlatforms = [...AD_PLATFORMS].sort(() => Math.random() - 0.5);
+
+    let adShown = false;
+    let lastError = null;
+
+    for (const platform of shuffledPlatforms) {
+        try {
+            console.log(`📢 Trying to show ad from: ${platform.name}`);
+
+            if (platform.init) {
+                platform.init();
+            }
+
+            await platform.show();
+
+            console.log(`✅ Ad shown successfully from: ${platform.name}`);
+            adShown = true;
+            break;
+
+        } catch (error) {
+            console.log(`❌ Failed to show ad from ${platform.name}:`, error);
+            lastError = error;
         }
+    }
+
+    if (adShown) {
+        addEarnReward();
+        updateEarnUI();
+        showToast(`✅ Ad watched! +${EARN_CONFIG.REWARD_PER_AD.toLocaleString()} REFI added to pending balance!`, 'success');
+    } else {
+        console.error("All ad platforms failed:", lastError);
+        showToast("No ads available. Please try again later.", "error");
+    }
+
+    if (watchBtn) {
+        watchBtn.disabled = false;
+        watchBtn.style.opacity = '1';
     }
 }
 
@@ -5150,8 +5260,11 @@ window.adminAddBalance = adminAddBalance;
 window.adminRemoveBalance = adminRemoveBalance;
 window.adminRefreshUserData = adminRefreshUserData;
 window.showUsersCount = showUsersCount;
+
+// ✅ دوال Earn الجديدة
 window.watchAd = watchAd;
+window.claimEarnReward = claimEarnReward;
 
 console.log("✅ REFI Network v31.0 - COMPLETE");
-console.log("✅ Earn: 10 ads / 6 hours / 10,000 REFI per ad");
+console.log("✅ Earn: 30 ads / 6 hours / 10,000 REFI per ad / Min Claim: 500,000 REFI");
 console.log("✅ Ready for deployment");
