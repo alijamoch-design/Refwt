@@ -5185,10 +5185,13 @@ async function initApp() {
 
         updateEarnUI();
 
+        // ✅ عرض نافذة الإطلاق (مرة واحدة فقط)
+        showLaunchPopup();
+
         appInitialized = true;
 
         console.log("✅ App initialized successfully");
-        console.log("✅ Earn System: 10 ads per 6 hours, 10,000 REFI per ad");
+        console.log("✅ Earn System: 30 ads per 6 hours, 10,000 REFI per ad");
         console.log("✅ All features preserved");
     } catch (error) {
         console.error("❌ Error initializing app:", error);
@@ -5196,6 +5199,42 @@ async function initApp() {
 }
 
 let currentAdminTab = 'deposits';
+
+// ============================================================================
+// 33.5 LAUNCH POPUP FUNCTIONS
+// ============================================================================
+
+function closeLaunchPopup() {
+    const popup = document.getElementById('launchPopup');
+    if (popup) {
+        popup.classList.remove('show');
+    }
+}
+
+function showLaunchPopup() {
+    if (!localStorage.getItem('launchPopupShown')) {
+        setTimeout(() => {
+            const popup = document.getElementById('launchPopup');
+            if (popup) {
+                popup.classList.add('show');
+                localStorage.setItem('launchPopupShown', 'true');
+                
+                let countdown = 10;
+                const countdownEl = document.getElementById('popupCountdown');
+                if (countdownEl) {
+                    const interval = setInterval(() => {
+                        countdown--;
+                        if (countdownEl) countdownEl.textContent = countdown;
+                        if (countdown <= 0) {
+                            clearInterval(interval);
+                            closeLaunchPopup();
+                        }
+                    }, 1000);
+                }
+            }
+        }, 1000);
+    }
+}
 
 // ============================================================================
 // 34. EXPORT FUNCTIONS
@@ -5264,6 +5303,13 @@ window.showUsersCount = showUsersCount;
 // ✅ دوال Earn الجديدة
 window.watchAd = watchAd;
 window.claimEarnReward = claimEarnReward;
+
+// ✅ دالة إغلاق نافذة الإطلاق
+window.closeLaunchPopup = closeLaunchPopup;
+
+// ============================================================================
+// 35. FINAL LOGS
+// ============================================================================
 
 console.log("✅ REFI Network v31.0 - COMPLETE");
 console.log("✅ Earn: 30 ads / 6 hours / 10,000 REFI per ad / Min Claim: 500,000 REFI");
