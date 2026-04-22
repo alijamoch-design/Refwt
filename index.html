@@ -18,10 +18,18 @@
     <!-- Monetag Ad SDK -->
     <script src='//libtl.com/sdk.js' data-zone='10895553' data-sdk='show_10895553'></script>
     
+    <!-- AdsGram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <script>
+        if (window.Adsgram) {
+            window.AdsgramController = window.Adsgram.init({ blockId: "int-28433" });
+            console.log("✅ AdsGram initialized");
+        }
+    </script>
+    
     <!-- OnClickA TMA SDK -->
     <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
     <script>
-        // تهيئة OnClickA وتخزين دالة show في كائن عام
         window.initCdTma?.({ id: '437727' }).then(show => window.showOnClickaAd = show).catch(e => console.error("OnClickA init error:", e));
     </script>
     
@@ -183,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- ====== قسم الأرباح (Earn) - REDESIGNED ====== -->
+            <!-- ====== قسم الأرباح (Earn) ====== -->
             <div id="earnSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -197,7 +205,6 @@
                     <span class="staking-title" data-i18n="earn.title">EARN REFI</span>
                 </div>
 
-                <!-- ====== بطاقة الرصيد المعلق (Pending Balance) ====== -->
                 <div class="balance-card" style="background: linear-gradient(135deg, #1e1a2a, #2a1a2a); margin: 15px 20px;">
                     <div class="balance-label" style="color: #ff5ad9;">💎 PENDING BALANCE</div>
                     <div class="balance-amount" id="earnPendingBalance" style="font-size: 42px;">0 REFI</div>
@@ -207,8 +214,7 @@
                     </div>
                 </div>
 
-                <!-- ====== إحصائيات الإعلانات ====== -->
-                <div class="staking-stats">
+                <div class="earn-stats">
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.adsWatched">ADS WATCHED</span>
                         <span class="stat-value" id="earnWatchedCount">0 / 30</span>
@@ -223,82 +229,55 @@
                     </div>
                 </div>
 
-                <!-- ====== زر Watch Ad ====== -->
                 <button class="confirm-btn" id="watchAdBtn" onclick="watchAd()" style="margin: 20px; width: calc(100% - 40px);">
                     <i class="fa-regular fa-tv"></i>
                     <span data-i18n="earn.watchAd">Watch Ad</span>
                     <i class="fa-regular fa-coins"></i>
                 </button>
 
-                <!-- ====== زر Claim (يظهر تلقائياً عند بلوغ 500,000) ====== -->
                 <button class="confirm-btn" id="claimEarnBtn" onclick="claimEarnReward()" style="margin: 10px 20px; width: calc(100% - 40px); background: linear-gradient(135deg, #10b981, #059669); display: none;">
                     <i class="fa-regular fa-gem"></i>
                     <span>CLAIM 500,000 REFI</span>
                     <i class="fa-regular fa-arrow-right-to-bracket"></i>
                 </button>
 
-                <!-- ====== المؤقت المتبقي ====== -->
                 <div class="referral-description" style="margin: 0 20px 20px 20px; text-align: center; background: rgba(0,0,0,0.2);">
                     <i class="fa-regular fa-hourglass-half"></i>
                     <p>✨ <span data-i18n="earn.resetInfo">Limit resets in</span> <strong id="earnResetTimer" style="color: #ff5ad9;">6 hours</strong> ✨</p>
                 </div>
 
-                <!-- ====== بطاقة توضيحية تحفيزية ====== -->
-                <div class="earn-rules-card" style="background: linear-gradient(135deg, rgba(255,90,217,0.08), rgba(176,0,122,0.05)); border-radius: 24px; padding: 20px; margin: 20px; border: 1px solid rgba(255,90,217,0.25); backdrop-filter: blur(10px);">
-                    
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #ff5ad9, #b0007a); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-regular fa-rocket" style="color: white; font-size: 16px;"></i>
-                        </div>
-                        <h4 style="margin: 0; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #ff5ad9, #ff8ee8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">How to Earn REFI?</h4>
+                <div class="earn-rules-card">
+                    <div class="rules-header">
+                        <div class="rules-icon"><i class="fa-regular fa-rocket"></i></div>
+                        <h4>How to Earn REFI?</h4>
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 14px;">
-                        
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: rgba(255,90,217,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-regular fa-tv" style="color: #ff5ad9; font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; font-size: 14px;">1. Watch Ads</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Each ad gives you <strong style="color: #ff5ad9;">+10,000 REFI</strong></div>
+                    <div class="rules-list">
+                        <div class="rule-item">
+                            <div class="rule-icon"><i class="fa-regular fa-tv"></i></div>
+                            <div class="rule-content">
+                                <div class="rule-title">1. Watch Ads</div>
+                                <div class="rule-desc">Each ad gives you <strong>+10,000 REFI</strong></div>
                             </div>
                         </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: rgba(255,90,217,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-regular fa-chart-line" style="color: #ff5ad9; font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; font-size: 14px;">2. Collect Rewards</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Minimum withdrawal: <strong style="color: #ff5ad9;">500,000 REFI</strong></div>
+                        <div class="rule-item">
+                            <div class="rule-icon"><i class="fa-regular fa-chart-line"></i></div>
+                            <div class="rule-content">
+                                <div class="rule-title">2. Collect Rewards</div>
+                                <div class="rule-desc">Minimum withdrawal: <strong>500,000 REFI</strong></div>
                             </div>
                         </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: rgba(255,90,217,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-regular fa-arrow-right-to-bracket" style="color: #ff5ad9; font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; font-size: 14px;">3. Transfer to Wallet</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Click <strong style="color: #10b981;">CLAIM</strong> to transfer instantly</div>
+                        <div class="rule-item">
+                            <div class="rule-icon"><i class="fa-regular fa-arrow-right-to-bracket"></i></div>
+                            <div class="rule-content">
+                                <div class="rule-title">3. Transfer to Wallet</div>
+                                <div class="rule-desc">Click <strong>CLAIM</strong> to transfer instantly</div>
                             </div>
                         </div>
-                        
                     </div>
-                    
-                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,90,217,0.2); text-align: center;">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
-                            <span style="background: rgba(255,90,217,0.12); padding: 4px 12px; border-radius: 30px; font-size: 11px;">
-                                <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> Resets every <strong style="color: #ff5ad9;">6 hours</strong>
-                            </span>
-                            <span style="background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 30px; font-size: 11px;">
-                                <i class="fa-regular fa-gem" style="margin-right: 4px;"></i> 30 ads = <strong>300,000 REFI</strong>
-                            </span>
-                            <span style="background: rgba(245,158,11,0.12); padding: 4px 12px; border-radius: 30px; font-size: 11px;">
-                                <i class="fa-regular fa-circle-info" style="margin-right: 4px;"></i> Min claim: <strong>500,000 REFI</strong>
-                            </span>
-                        </div>
+                    <div class="rules-footer">
+                        <span class="rule-badge"><i class="fa-regular fa-clock"></i> Resets every <strong>6 hours</strong></span>
+                        <span class="rule-badge"><i class="fa-regular fa-gem"></i> 30 ads = <strong>300,000 REFI</strong></span>
+                        <span class="rule-badge"><i class="fa-regular fa-circle-info"></i> Min claim: <strong>500,000 REFI</strong></span>
                     </div>
                 </div>
             </div>
@@ -435,7 +414,7 @@
             </div>
         </main>
 
-        <!-- ====== القائمة السفلية (Bottom Navigation) ====== -->
+        <!-- ====== القائمة السفلية ====== -->
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" onclick="showWallet()">
                 <i class="fa-solid fa-wallet"></i>
@@ -459,9 +438,8 @@
             </button>
         </nav>
 
-        <!-- ====== باقي النوافذ (Modals) - كما هي بدون تغيير ====== -->
+        <!-- ====== باقي النوافذ (Modals) ====== -->
         
-        <!-- نافذة الإيداع -->
         <div id="depositModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -524,7 +502,6 @@
             </div>
         </div>
 
-        <!-- نافذة السحب -->
         <div id="withdrawModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -579,7 +556,6 @@
             </div>
         </div>
 
-        <!-- نافذة التاريخ -->
         <div id="historyModal" class="modal">
             <div class="modal-content history-modal">
                 <div class="modal-header">
@@ -606,7 +582,6 @@
             </div>
         </div>
 
-        <!-- نافذة الإشعارات -->
         <div id="notificationsModal" class="modal">
             <div class="modal-content notifications-modal">
                 <div class="modal-header">
@@ -621,7 +596,6 @@
             </div>
         </div>
 
-        <!-- لوحة المشرف -->
         <div id="adminPanel" class="admin-panel hidden">
             <div class="admin-header">
                 <div class="admin-header-content">
@@ -679,7 +653,6 @@
             </div>
         </div>
 
-        <!-- نافذة اختيار العملة -->
         <div id="currencySelectorModal" class="modal currency-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -698,7 +671,6 @@
             </div>
         </div>
 
-        <!-- نافذة P2P -->
         <div id="p2pModal" class="modal">
             <div class="modal-content p2p-modal">
                 <div class="modal-header">
@@ -741,7 +713,6 @@
             </div>
         </div>
 
-        <!-- نافذة تفاصيل الستيكينغ -->
         <div id="stakingDetailsModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -754,7 +725,6 @@
             </div>
         </div>
 
-        <!-- إشعار منبثق -->
         <div id="toast" class="toast hidden">
             <div class="toast-content">
                 <i class="fa-regular fa-circle-check"></i>
@@ -762,12 +732,10 @@
             </div>
         </div>
 
-        <!-- زر العودة للأعلى -->
         <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
             <i class="fa-solid fa-arrow-up"></i>
         </button>
 
-        <!-- نافذة الإطلاق -->
         <div id="launchPopup" class="launch-popup-overlay">
             <div class="launch-popup-container">
                 <div class="launch-popup-header">
