@@ -3955,3 +3955,121 @@ body.rtl .earn-max-message {
         font-size: 34px;
     }
 }
+
+/* ====== تنسيق بطاقة القواعد التحفيزية في صفحة Earn ====== */
+
+.earn-rules-card {
+    background: linear-gradient(135deg, rgba(255, 90, 217, 0.08), rgba(176, 0, 122, 0.05));
+    border-radius: 24px;
+    padding: 20px;
+    margin: 20px;
+    border: 1px solid rgba(255, 90, 217, 0.25);
+    backdrop-filter: blur(10px);
+}
+
+.earn-rules-card .rules-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.earn-rules-card .rules-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #ff5ad9, #b0007a);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.earn-rules-card .rules-icon i {
+    color: white;
+    font-size: 16px;
+}
+
+.earn-rules-card .rules-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff5ad9, #ff8ee8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.earn-rules-card .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.earn-rules-card .rule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.earn-rules-card .rule-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 90, 217, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.earn-rules-card .rule-icon i {
+    color: #ff5ad9;
+    font-size: 16px;
+}
+
+.earn-rules-card .rule-content {
+    flex: 1;
+}
+
+.earn-rules-card .rule-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.earn-rules-card .rule-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.earn-rules-card .rule-desc strong {
+    color: #ff5ad9;
+}
+
+.earn-rules-card .rules-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 90, 217, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.earn-rules-card .rule-badge {
+    background: rgba(255, 90, 217, 0.12);
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.earn-rules-card .rule-badge i {
+    margin-right: 4px;
+    color: #ff5ad9;
+}
+
+.earn-rules-card .rule-badge strong {
+    color: #ff5ad9;
+}
