@@ -4073,3 +4073,31 @@ body.rtl .earn-max-message {
 .earn-rules-card .rule-badge strong {
     color: #ff5ad9;
 }
+
+/* ====== إصلاح الستيكر ليكون في نفس السطر ====== */
+.welcome-text {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.welcome-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.user-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--pink-1);
+    text-shadow: 0 0 15px var(--pink-glow);
+}
+
+#welcomeSticker {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 24px;
+    line-height: 1;
+    vertical-align: middle;
+}
