@@ -1,8 +1,6 @@
-// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 30.0 (WITH AD SEQUENCE) ======
+// ====== REFI NETWORK - ULTIMATE PROFESSIONAL VERSION 28.0 (ZERO WASTE) ======
 // ====== 1. TELEGRAM WEBAPP INITIALIZATION ======
-
 const tg = window.Telegram?.WebApp;
-
 if (tg) {
     tg.ready();
     tg.expand();
@@ -11,7 +9,6 @@ if (tg) {
 }
 
 // ====== 2. FIREBASE CONFIGURATION ======
-
 const firebaseConfig = {
     apiKey: "AIzaSyCnnmuZNJxkWTw-GjaP0fz6UpS3NZLF0n8",
     authDomain: "realfinanc-22bfd.firebaseapp.com",
@@ -22,8 +19,8 @@ const firebaseConfig = {
     appId: "1:631107346327:web:2a5405b81783aee7596ed2"
 };
 
+// Initialize Firebase
 let firebaseApp, db;
-
 try {
     if (typeof firebase !== 'undefined') {
         firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -35,14 +32,12 @@ try {
 }
 
 // ====== 3. TRANSLATION SYSTEM (i18n) ======
-
 const translations = {
     en: {
         'app.name': 'REFI Network',
         'welcome.title': 'Welcome back,',
         'nav.wallet': 'Wallet',
         'nav.swap': 'Swap',
-        'nav.earn': 'Earn',
         'nav.staking': 'Staking',
         'nav.referral': 'Referral',
         'actions.deposit': 'Deposit',
@@ -54,7 +49,6 @@ const translations = {
         'actions.stake': 'Stake USDT',
         'actions.copy': 'Copy',
         'actions.gotIt': 'Got it!',
-        'actions.watchAd': 'Watch Ad',
         'wallet.totalBalance': 'Total Balance',
         'wallet.myAssets': 'My Assets',
         'wallet.topCryptos': 'Top Cryptocurrencies',
@@ -83,19 +77,6 @@ const translations = {
         'referral.description': 'Share your link and get',
         'referral.description2': 'for every friend who joins. Complete milestones to earn massive USDT rewards!',
         'referral.milestones': 'Referral Milestones',
-        'earn.title': 'EARN REFI',
-        'earn.totalEarned': 'TOTAL EARNED',
-        'earn.adsWatched': 'ADS WATCHED',
-        'earn.remaining': 'REMAINING',
-        'earn.resetIn': 'RESETS IN',
-        'earn.watchAd': 'Watch Ad',
-        'earn.watchFirstAd': 'Watching ad 1 of 2...',
-        'earn.watchSecondAd': 'Watching ad 2 of 2...',
-        'earn.adCompleted': 'Ad completed!',
-        'earn.sequenceComplete': '🎉 You earned 10,000 REFI!',
-        'earn.maxReached': "You've reached the daily limit",
-        'earn.resetInfo': 'Limit resets in',
-        'earn.adFailed': 'Ad failed to load. Please try again.',
         'deposit.title': 'Deposit Funds',
         'deposit.selectCurrency': 'Select Currency',
         'deposit.amount': 'Amount',
@@ -118,14 +99,6 @@ const translations = {
         'history.referrals': 'Referrals',
         'history.staking': 'Staking',
         'notifications.title': 'Notifications',
-        'notifications.clear_read': 'Clear Read',
-        'notifications.clear_all': 'Clear All',
-        'notifications.confirm_clear_read': 'Clear {count} read notification(s)? {unread} unread will remain.',
-        'notifications.confirm_clear_all': 'Delete all notifications?',
-        'notifications.confirm_clear_all_unread': 'Warning: You have {count} unread notifications. Delete all?',
-        'notifications.cleared': 'Cleared {count} read notifications',
-        'notifications.no_read': 'No read notifications to clear',
-        'notifications.no_notifications': 'No notifications',
         'currency.select': 'Select Currency',
         'p2p.comingSoon': 'Coming Soon!',
         'p2p.description': 'We\'re working hard to bring you the best P2P trading experience. Stay tuned for exciting updates!',
@@ -145,7 +118,6 @@ const translations = {
         'notif.withdrawRejected': '❌ Your withdrawal was rejected. Reason: {reason}',
         'notif.referralBonus': '🎉 Someone joined with your link! You got {amount} REFI!',
         'notif.welcomeBonus': '🎉 Welcome! You got 10,000 REFI bonus!',
-        'notif.earnReward': '🎉 You earned 10,000 REFI from watching ads!',
         'error.minDeposit': 'Minimum deposit is {min} {currency}',
         'error.invalidHash': 'Invalid transaction hash. Must start with 0x and be 66 characters',
         'error.hashUsed': 'This transaction hash has already been used',
@@ -157,14 +129,21 @@ const translations = {
         'success.swapCompleted': '✅ Swapped {fromAmount} {fromCurrency} to {toAmount} {toCurrency}',
         'success.stakeCompleted': '✅ Successfully staked {amount} USDT!',
         'success.referralCopied': '✅ Referral link copied!',
-        'success.addressCopied': '✅ Address copied to clipboard!'
+        'success.addressCopied': '✅ Address copied to clipboard!',
+        'notifications.clear_read': 'Clear Read',
+        'notifications.clear_all': 'Clear All',
+        'notifications.confirm_clear_read': 'Clear {count} read notification(s)? {unread} unread will remain.',
+        'notifications.confirm_clear_all': 'Delete all notifications?',
+        'notifications.confirm_clear_all_unread': 'Warning: You have {count} unread notifications. Delete all?',
+        'notifications.cleared': 'Cleared {count} read notifications',
+        'notifications.no_read': 'No read notifications to clear',
+        'notifications.no_notifications': 'No notifications'
     },
     ar: {
         'app.name': 'REFI Network',
         'welcome.title': 'أهلاً بعودتك،',
         'nav.wallet': 'المحفظة',
         'nav.swap': 'تحويل',
-        'nav.earn': 'اربح',
         'nav.staking': 'تجميد',
         'nav.referral': 'إحالة',
         'actions.deposit': 'إيداع',
@@ -176,7 +155,6 @@ const translations = {
         'actions.stake': 'تجميد USDT',
         'actions.copy': 'نسخ',
         'actions.gotIt': 'حسناً!',
-        'actions.watchAd': 'شاهد إعلان',
         'wallet.totalBalance': 'الرصيد الإجمالي',
         'wallet.myAssets': 'أصولي',
         'wallet.topCryptos': 'أفضل العملات',
@@ -205,19 +183,6 @@ const translations = {
         'referral.description': 'شارك رابطك واحصل على',
         'referral.description2': 'لكل صديق ينضم. أكمل المراحل لتربح مكافآت USDT ضخمة!',
         'referral.milestones': 'مراحل الإحالة',
-        'earn.title': 'اربح REFI',
-        'earn.totalEarned': 'إجمالي الأرباح',
-        'earn.adsWatched': 'الإعلانات المشاهدة',
-        'earn.remaining': 'المتبقية',
-        'earn.resetIn': 'يتجدد خلال',
-        'earn.watchAd': 'شاهد إعلان',
-        'earn.watchFirstAd': 'مشاهدة الإعلان 1 من 2...',
-        'earn.watchSecondAd': 'مشاهدة الإعلان 2 من 2...',
-        'earn.adCompleted': 'تم مشاهدة الإعلان!',
-        'earn.sequenceComplete': '🎉 ربحت 10,000 REFI!',
-        'earn.maxReached': 'لقد وصلت للحد الأقصى اليومي',
-        'earn.resetInfo': 'الحد يتجدد خلال',
-        'earn.adFailed': 'فشل تحميل الإعلان. حاول لاحقاً.',
         'deposit.title': 'إيداع الأموال',
         'deposit.selectCurrency': 'اختر العملة',
         'deposit.amount': 'المبلغ',
@@ -240,14 +205,6 @@ const translations = {
         'history.referrals': 'إحالات',
         'history.staking': 'تجميد',
         'notifications.title': 'الإشعارات',
-        'notifications.clear_read': 'حذف المقروء',
-        'notifications.clear_all': 'حذف الكل',
-        'notifications.confirm_clear_read': 'حذف {count} إشعار مقروء؟ سيبقى {unread} إشعار غير مقروء.',
-        'notifications.confirm_clear_all': 'حذف جميع الإشعارات؟',
-        'notifications.confirm_clear_all_unread': 'تحذير: لديك {count} إشعار غير مقروء. حذف الكل؟',
-        'notifications.cleared': 'تم حذف {count} إشعار مقروء',
-        'notifications.no_read': 'لا توجد إشعارات مقروءة للحذف',
-        'notifications.no_notifications': 'لا توجد إشعارات',
         'currency.select': 'اختر العملة',
         'p2p.comingSoon': 'قريباً!',
         'p2p.description': 'نحن نعمل بجد لنقدم لك أفضل تجربة تداول P2P. ترقبوا التحديثات المثيرة!',
@@ -267,7 +224,6 @@ const translations = {
         'notif.withdrawRejected': '❌ تم رفض سحبك. السبب: {reason}',
         'notif.referralBonus': '🎉 شخص ما انضم عبر رابطك! حصلت على {amount} REFI!',
         'notif.welcomeBonus': '🎉 مرحباً! حصلت على 10,000 REFI كمكافأة!',
-        'notif.earnReward': '🎉 ربحت 10,000 REFI من مشاهدة الإعلانات!',
         'error.minDeposit': 'الحد الأدنى للإيداع هو {min} {currency}',
         'error.invalidHash': 'هاش معاملة غير صالح. يجب أن يبدأ بـ 0x وأن يكون 66 حرفاً',
         'error.hashUsed': 'هذا الهاش مستخدم بالفعل',
@@ -279,12 +235,22 @@ const translations = {
         'success.swapCompleted': '✅ تم تحويل {fromAmount} {fromCurrency} إلى {toAmount} {toCurrency}',
         'success.stakeCompleted': '✅ تم تجميد {amount} USDT بنجاح!',
         'success.referralCopied': '✅ تم نسخ رابط الإحالة!',
-        'success.addressCopied': '✅ تم نسخ العنوان إلى الحافظة!'
+        'success.addressCopied': '✅ تم نسخ العنوان إلى الحافظة!',
+        'notifications.clear_read': 'حذف المقروء',
+        'notifications.clear_all': 'حذف الكل',
+        'notifications.confirm_clear_read': 'حذف {count} إشعار مقروء؟ سيبقى {unread} إشعار غير مقروء.',
+        'notifications.confirm_clear_all': 'حذف جميع الإشعارات؟',
+        'notifications.confirm_clear_all_unread': 'تحذير: لديك {count} إشعار غير مقروء. حذف الكل؟',
+        'notifications.cleared': 'تم حذف {count} إشعار مقروء',
+        'notifications.no_read': 'لا توجد إشعارات مقروءة للحذف',
+        'notifications.no_notifications': 'لا توجد إشعارات'
     }
 };
 
+// اللغة الحالية
 let currentLanguage = localStorage.getItem('preferred_language') || 'en';
 
+// دالة الترجمة
 function t(key, params = {}) {
     let text = translations[currentLanguage]?.[key] || translations.en[key] || key;
     Object.keys(params).forEach(param => {
@@ -293,13 +259,12 @@ function t(key, params = {}) {
     return text;
 }
 
+// دالة تبديل اللغة
 function toggleLanguage() {
     currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
     localStorage.setItem('preferred_language', currentLanguage);
-    
     const flagEl = document.getElementById('currentLanguageFlag');
     if (flagEl) flagEl.textContent = currentLanguage === 'en' ? '🇬🇧' : '🇸🇦';
-    
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
         document.documentElement.dir = 'rtl';
@@ -307,11 +272,11 @@ function toggleLanguage() {
         document.body.classList.remove('rtl');
         document.documentElement.dir = 'ltr';
     }
-    
     updateAllTexts();
     showToast(t('messages.success'), 'success');
 }
 
+// تحديث جميع النصوص
 function updateAllTexts() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -319,8 +284,7 @@ function updateAllTexts() {
     });
 }
 
-// ====== 4. CURRENCY ICONS ======
-
+// ====== 4. أيقونات العملات الرسمية ======
 const CMC_ICONS = {
     REFI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png',
     USDT: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
@@ -339,8 +303,7 @@ const CMC_ICONS = {
     ZDX: 'https://s2.coinmarketcap.com/static/img/coins/64x64/30507.png'
 };
 
-// ====== 5. DEPOSIT ADDRESSES & MINIMUMS ======
-
+// ====== 5. عناوين الإيداع والحدود الدنيا ======
 const DEPOSIT_ADDRESSES = {
     REFI: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
     USDT: '0xbf70420f57342c6Bd4267430D4D3b7E946f09450',
@@ -383,18 +346,15 @@ const DEPOSIT_NOTES = {
     ZDX: '✓ Blockchain confirmation 1-15 minutes'
 };
 
-// ====== 6. BASE CONSTANTS ======
-
+// ====== 6. الثوابت الأساسية ======
 const BOT_LINK = "https://t.me/RealnetworkPaybot/Refi";
 const ADMIN_ID = "1653918641";
 const SWAP_RATE = 500000;
-const REFERRAL_BONUS = 250000;
+const REFERRAL_BONUS = 250000; // REFI per 
 const REFI_PRICE = 0.000002;
 const THB_PRICE = 0.0227;
-const EARN_REWARD = 10000;
-const MAX_ADS_PER_CYCLE = 30;
-const CYCLE_HOURS = 6;
 
+// معرفات العملات في CoinGecko
 const CRYPTO_IDS = {
     BTC: 'bitcoin',
     ETH: 'ethereum',
@@ -411,6 +371,7 @@ const CRYPTO_IDS = {
     ZDX: 'zeddex'
 };
 
+// خطط الستيكينغ
 const STAKING_PLANS = [
     { id: '3days', days: 3, return: 40, name: '3 Days', reward: 5, minAmount: 10 },
     { id: '7days', days: 7, return: 50, name: '7 Days', reward: 20, minAmount: 20 },
@@ -418,6 +379,7 @@ const STAKING_PLANS = [
     { id: '30days', days: 30, return: 100, name: '30 Days', reward: 50, minAmount: 100 }
 ];
 
+// مهام الستيكينغ
 const STAKING_MISSIONS = [
     { id: '3days', plan: '3 Days', reward: 5, icon: 'fa-clock', claimed: false },
     { id: '7days', plan: '7 Days', reward: 20, icon: 'fa-calendar-week', claimed: false },
@@ -425,6 +387,7 @@ const STAKING_MISSIONS = [
     { id: '30days', plan: '30 Days', reward: 50, icon: 'fa-calendar-check', claimed: false }
 ];
 
+// مهام الإحالة
 const REFERRAL_MILESTONES = [
     { referrals: 10, reward: 3, unit: 'USDT', icon: 'fa-medal' },
     { referrals: 25, reward: 50, unit: 'USDT', icon: 'fa-medal' },
@@ -433,6 +396,7 @@ const REFERRAL_MILESTONES = [
     { referrals: 250, reward: 500, unit: 'USDT', icon: 'fa-gem' }
 ];
 
+// قائمة العملات للعرض
 const TOP_CRYPTOS = [
     { symbol: 'BTC', name: 'Bitcoin' },
     { symbol: 'ETH', name: 'Ethereum' },
@@ -449,6 +413,7 @@ const TOP_CRYPTOS = [
     { symbol: 'ZDX', name: 'ZedDex' }
 ];
 
+// جميع العملات المتاحة للاختيار في السواب
 const SWAP_CURRENCIES = [
     { symbol: 'USDT', name: 'Tether', icon: CMC_ICONS.USDT },
     { symbol: 'REFI', name: 'REFI Network', icon: CMC_ICONS.REFI },
@@ -463,6 +428,7 @@ const SWAP_CURRENCIES = [
     { symbol: 'ZDX', name: 'ZedDex', icon: CMC_ICONS.ZDX }
 ];
 
+// جميع الأصول
 const ALL_ASSETS = [
     { symbol: 'REFI', name: 'REFI Network' },
     { symbol: 'THB', name: 'Thunder Brawl' },
@@ -477,33 +443,10 @@ const ALL_ASSETS = [
     { symbol: 'TRUMP', name: 'Trump Coin' }
 ];
 
-const WELCOME_STICKERS = [
-    '🐸', '🫅', '🥰', '🥳', '💲', '💰', '💸', '💵', '🤪', '😱',
-    '😤', '😎', '🤑', '💯', '💖', '👑', '❤️‍🔥', '🫂', '🔥', '🧡',
-    '🤑', '🧟', '🎁', '💌', '🎉', '❤️‍🔥', '👑', '🚀', '💟', '🤍'
-];
-
-const FLOATING_NOTIFICATIONS = [
-    "💸 Withdrawal • 0x3f...a2d1 • 12 USDT",
-    "💸 Withdrawal • 0x8b...c4e9 • 18 USDT",
-    "💸 Withdrawal • 0x7d...f1b3 • 24 USDT",
-    "💸 Withdrawal • 0x2a...e7f8 • 31 USDT",
-    "💸 Withdrawal • 0x9c...b5d2 • 38 USDT",
-    "💸 Withdrawal • 0x5f...a3c7 • 45 USDT",
-    "💸 Withdrawal • 0x1e...d9b4 • 52 USDT",
-    "💸 Withdrawal • 0x4b...f2e6 • 59 USDT",
-    "💸 Withdrawal • 0x6d...c8a1 • 66 USDT",
-    "💸 Withdrawal • 0x3a...e5b9 • 73 USDT",
-    "💰 Deposit • 0x3f...a2d1 • 150 USDT",
-    "💰 Deposit • 0x8b...c4e9 • 275 USDT",
-    "💰 Deposit • 0x7d...f1b3 • 420 USDT",
-    "💰 Deposit • 0x2a...e7f8 • 580 USDT",
-    "💰 Deposit • 0x9c...b5d2 • 750 USDT"
-];
-
-// ====== 7. GLOBAL STATE VARIABLES ======
-
+// متغير لتتبع الصفحة الحالية
 let currentPage = 'wallet';
+
+// ====== 7. STATE MANAGEMENT ======
 let userData = null;
 let selectedStakingPlan = STAKING_PLANS[0];
 let swapMode = 'to-refi';
@@ -513,59 +456,111 @@ let currentCurrencySelector = 'pay';
 let currentHistoryFilter = 'all';
 let appInitialized = false;
 
+// متغيرات لتتبع وقت آخر تحميل
 let lastUserLoadTime = 0;
 let lastPricesLoadTime = 0;
+const USER_CACHE_TIME = 300000; // 5 دقائق
+const PRICES_CACHE_TIME = 10800000; // 3 ساعات
+
+// ====== التعديلات الاقتصادية الجديدة ======
 let lastHistoryCheckTime = 0;
+const HISTORY_CACHE_TIME = 600000; // 10 دقائق
 
-const USER_CACHE_TIME = 300000;
-const PRICES_CACHE_TIME = 10800000;
-const HISTORY_CACHE_TIME = 600000;
+// ====== ✅ NEW: STICKER SYSTEM ======
+// مصفوفة الستيكرات المميزة
+const WELCOME_STICKERS = [
+    '🐸', '🫅', '🥰', '🥳', '💲', '💰', '💸', '💵', '🤪', '😱', 
+    '😤', '😎', '🤑', '💯', '💖', '👑', '❤️‍🔥', '🫂', '🔥', '🧡',
+    '🤑', '🧟', '🎁', '💌', '🎉', '❤️‍🔥', '👑', '🚀', '💟', '🤍'
+];
 
-let isWatchingAd = false;
-let adPlatformsLoaded = false;
-let currentAdSequence = [];
-let currentAdIndex = 0;
-
+// متغيرات توقيت الستيكر
 let lastStickerTime = 0;
-const STICKER_COOLDOWN = 12 * 60 * 1000;
+const STICKER_COOLDOWN = 12 * 60 * 1000; // 12 دقيقة بالملي ثانية
 
-let isAdmin = false;
-let activeListeners = new Map();
-let listenerTimeouts = new Map();
-let notificationTimeouts = [];
-let currentManageUserId = null;
-let currentAdminTab = 'deposits';
+// دالة عرض الستيكر العشوائي
+function showRandomSticker() {
+    const now = Date.now();
+    
+    // التحقق: إذا مر أقل من 12 دقيقة على آخر ظهور، لا تفعل شيء
+    if (now - lastStickerTime < STICKER_COOLDOWN) {
+        return;
+    }
+    
+    const stickerElement = document.getElementById('welcomeSticker');
+    if (!stickerElement) return;
+    
+    // اختيار ستيكر عشوائي
+    const randomIndex = Math.floor(Math.random() * WELCOME_STICKERS.length);
+    const randomSticker = WELCOME_STICKERS[randomIndex];
+    
+    // وضع الستيكر في المكان المخصص
+    stickerElement.textContent = randomSticker;
+    
+    // إزالة أي كلاسات حركة سابقة
+    stickerElement.classList.remove('sticker-pop', 'sticker-shake');
+    
+    // فرض إعادة تدفق لإعادة تشغيل الحركة (هند الـ reflow)
+    void stickerElement.offsetWidth;
+    
+    // إضافة كلاسات الحركة
+    stickerElement.classList.add('sticker-pop');
+    
+    // بعد انتهاء حركة pop، نضيف حركة الاهتزاز
+    setTimeout(() => {
+        stickerElement.classList.add('sticker-shake');
+    }, 200);
+    
+    // بعد 3 ثواني، نخفي الستيكر
+    setTimeout(() => {
+        stickerElement.classList.remove('sticker-pop', 'sticker-shake');
+        // نمسح النص بعد انتهاء الحركة
+        setTimeout(() => {
+            stickerElement.textContent = '';
+        }, 300);
+    }, 3000);
+    
+    // تحديث وقت آخر ظهور
+    lastStickerTime = now;
+    
+    console.log('🎨 Welcome sticker displayed:', randomSticker);
+}
+// ====== END OF NEW STICKER SYSTEM ======
 
 // ====== 8. USER IDENTIFICATION ======
-
-const userId = tg?.initDataUnsafe?.user?.id?.toString() ||
-    localStorage.getItem('refi_user_id') ||
-    'guest_' + Math.random().toString(36).substr(2, 9);
+const userId = tg?.initDataUnsafe?.user?.id?.toString() || 
+               localStorage.getItem('refi_user_id') || 
+               'guest_' + Math.random().toString(36).substr(2, 9);
 
 const userName = tg?.initDataUnsafe?.user?.first_name || 'REFI User';
 
+// حفظ معرف المستخدم
 localStorage.setItem('refi_user_id', userId);
 
+// عرض اسم المستخدم
 const userIdEl = document.getElementById('userId');
 if (userIdEl) userIdEl.textContent = userName;
 
+// التحقق من وجود كود إحالة في الرابط
 function hasReferralCode() {
     const urlParams = new URLSearchParams(window.location.search);
     return !!(urlParams.get('startapp') || urlParams.get('ref') || tg?.initDataUnsafe?.start_param);
 }
 
+// توليد كود الإحالة (ثابت لكل مستخدم)
 function generateReferralCode() {
     return userId;
 }
 
+// الحصول على رابط الإحالة
 function getReferralLink() {
     return `${BOT_LINK}?startapp=${userData.referralCode}`;
 }
 
 // ====== 9. ADMIN SYSTEM ======
+let isAdmin = userId === ADMIN_ID;
 
-isAdmin = userId === ADMIN_ID;
-
+// إضافة تاج المشرف
 function checkAdminAndAddCrown() {
     if (!isAdmin) return;
     
@@ -593,43 +588,12 @@ function checkAdminAndAddCrown() {
         return true;
     };
     
-    if (!addCrown()) setTimeout(addCrown, 500);
+    if (!addCrown()) {
+        setTimeout(addCrown, 500);
+    }
 }
 
-// ====== 10. STICKER SYSTEM ======
-
-function showRandomSticker() {
-    const now = Date.now();
-    if (now - lastStickerTime < STICKER_COOLDOWN) return;
-    
-    const stickerElement = document.getElementById('welcomeSticker');
-    if (!stickerElement) return;
-    
-    const randomIndex = Math.floor(Math.random() * WELCOME_STICKERS.length);
-    const randomSticker = WELCOME_STICKERS[randomIndex];
-    
-    stickerElement.textContent = randomSticker;
-    stickerElement.classList.remove('sticker-pop', 'sticker-shake');
-    void stickerElement.offsetWidth;
-    stickerElement.classList.add('sticker-pop');
-    
-    setTimeout(() => {
-        stickerElement.classList.add('sticker-shake');
-    }, 200);
-    
-    setTimeout(() => {
-        stickerElement.classList.remove('sticker-pop', 'sticker-shake');
-        setTimeout(() => {
-            stickerElement.textContent = '';
-        }, 300);
-    }, 3000);
-    
-    lastStickerTime = now;
-    console.log('🎨 Welcome sticker displayed:', randomSticker);
-}
-
-// ====== 11. TRANSACTIONS STORAGE ======
-
+// ====== 10. TRANSACTIONS STORAGE ======
 const TRANSACTIONS_KEY = `transactions_${userId}`;
 
 function loadLocalTransactions() {
@@ -676,12 +640,17 @@ function cleanupDuplicateTransactions() {
     }
 }
 
-// ====== 12. ON-DEMAND LISTENERS SYSTEM ======
+// ====== 11. ON-DEMAND LISTENERS SYSTEM - مستمعون عند الطلب فقط ======
+let activeListeners = new Map(); // لتخزين المستمعين النشطين
+let listenerTimeouts = new Map();
 
-function startOnDemandListener(collection, docId, callback, timeoutMs = 30000) {
+// 🔥 التعديل: تقليل مدة المستمع من 30 دقيقة إلى 30 ثانية فقط
+function startOnDemandListener(collection, docId, callback, timeoutMs = 30000) { // 30 ثانية
     const listenerId = `${collection}_${docId}`;
     
+    // إذا كان هناك مستمع نشط لهذا المستند، أوقفه أولاً
     if (activeListeners.has(listenerId)) {
+        console.log(`🛑 Stopping previous listener for ${listenerId}`);
         activeListeners.get(listenerId)();
         activeListeners.delete(listenerId);
     }
@@ -691,34 +660,38 @@ function startOnDemandListener(collection, docId, callback, timeoutMs = 30000) {
         listenerTimeouts.delete(listenerId);
     }
     
-    console.log(`👂 Starting on-demand listener for ${collection}/${docId}`);
+    console.log(`👂 Starting on-demand listener for ${collection}/${docId} (${timeoutMs/60000} minutes)`);
     
+    // تشغيل المستمع الجديد
     const unsubscribe = db.collection(collection).doc(docId).onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
             console.log(`📡 Listener update for ${collection}/${docId}:`, data.status);
             callback(data);
             
+            // إذا كانت الحالة نهائية، نوقف المستمع فوراً
             if (data.status === 'approved' || data.status === 'rejected') {
-                console.log(`✅ Final status reached, stopping listener`);
+                console.log(`✅ Final status reached, stopping listener for ${collection}/${docId}`);
                 stopOnDemandListener(listenerId);
             }
         }
     }, (error) => {
-        console.error(`❌ Listener error:`, error);
+        console.error(`❌ Listener error for ${collection}/${docId}:`, error);
         stopOnDemandListener(listenerId);
     });
     
     activeListeners.set(listenerId, unsubscribe);
     
+    // مؤقت أمان لإيقاف المستمع بعد timeoutMs
     const timeout = setTimeout(() => {
-        console.log(`⏰ Listener timeout for ${collection}/${docId}`);
+        console.log(`⏰ Listener timeout (${timeoutMs/60000} minutes) for ${collection}/${docId}`);
         stopOnDemandListener(listenerId);
     }, timeoutMs);
     
     listenerTimeouts.set(listenerId, timeout);
 }
 
+// إيقاف مستمع معين
 function stopOnDemandListener(listenerId) {
     if (activeListeners.has(listenerId)) {
         activeListeners.get(listenerId)();
@@ -733,22 +706,30 @@ function stopOnDemandListener(listenerId) {
     console.log(`🛑 On-demand listener stopped: ${listenerId}`);
 }
 
+// إيقاف جميع المستمعين (عند إغلاق التطبيق مثلاً)
 function stopAllListeners() {
     console.log(`🛑 Stopping all active listeners (${activeListeners.size} listeners)`);
-    activeListeners.forEach((unsubscribe) => unsubscribe());
-    listenerTimeouts.forEach((timeout) => clearTimeout(timeout));
+    
+    activeListeners.forEach((unsubscribe, listenerId) => {
+        unsubscribe();
+    });
+    
+    listenerTimeouts.forEach((timeout) => {
+        clearTimeout(timeout);
+    });
+    
     activeListeners.clear();
     listenerTimeouts.clear();
 }
 
-// ====== 13. PENDING TRANSACTIONS CHECKER ======
-
+// ====== 12. PENDING TRANSACTIONS CHECKER - التحقق عند فتح التاريخ ======
 async function checkPendingTransactions() {
     if (!db || !userData) return;
     
+    // 🔥 التعديل: التحقق من الكاش (مرة كل 10 دقائق)
     const now = Date.now();
     if (now - lastHistoryCheckTime < HISTORY_CACHE_TIME) {
-        console.log("📦 Using cached history");
+        console.log("📦 Using cached history (less than 10 minutes old)");
         return;
     }
     lastHistoryCheckTime = now;
@@ -756,8 +737,8 @@ async function checkPendingTransactions() {
     console.log("🔍 Checking for updated pending transactions...");
     
     const localTransactions = loadLocalTransactions();
-    const pendingTxs = localTransactions.filter(tx =>
-        (tx.type === 'deposit' || tx.type === 'withdraw') &&
+    const pendingTxs = localTransactions.filter(tx => 
+        (tx.type === 'deposit' || tx.type === 'withdraw') && 
         tx.status === 'pending' &&
         tx.firebaseId && !tx.firebaseId.startsWith('temp_')
     );
@@ -832,8 +813,7 @@ async function checkPendingTransactions() {
     }
 }
 
-// ====== 14. LOAD USER DATA ======
-
+// ====== 13. LOAD USER DATA - مع التخزين المؤقت ======
 async function loadUserData(force = false) {
     try {
         console.log("📂 Loading user data for:", userId);
@@ -841,16 +821,19 @@ async function loadUserData(force = false) {
         const now = Date.now();
         const localData = localStorage.getItem(`user_${userId}`);
         
+        // إذا كان لدينا بيانات محلية حديثة (أقل من 5 دقائق) ولسنا مجبرين على التحديث
         if (!force && localData && (now - lastUserLoadTime) < USER_CACHE_TIME) {
             userData = JSON.parse(localData);
             console.log("✅ Using cached user data (less than 5 min old)");
+            
+            // تحديث الواجهة
             updateUI();
             updateNotificationBadge();
             checkAdminAndAddCrown();
-            updateEarnStats();
             return;
         }
         
+        // إذا كان لدينا بيانات محلية قديمة، استخدمها مؤقتاً
         if (localData) {
             userData = JSON.parse(localData);
             console.log("📦 Using localStorage data while fetching fresh data");
@@ -858,10 +841,13 @@ async function loadUserData(force = false) {
         
         if (db) {
             console.log("🔥 Loading from Firebase...");
+            
             const userDoc = await db.collection('users').doc(userId).get();
             
             if (userDoc.exists) {
                 const fbData = userDoc.data();
+                
+                // دمج البيانات مع الاحتفاظ بالتغييرات المحلية
                 userData = {
                     ...userData,
                     ...fbData,
@@ -869,14 +855,27 @@ async function loadUserData(force = false) {
                     notifications: mergeNotifications(userData?.notifications || [], fbData.notifications || [])
                 };
             } else if (!userData) {
+                // مستخدم جديد
                 console.log("📝 Creating new user");
                 userData = {
                     userId: userId,
                     userName: userName,
                     balances: {
-                        REFI: 0, USDT: 0, BNB: 0, BTC: 0, ETH: 0, SOL: 0,
-                        ADA: 0, DOGE: 0, SHIB: 0, PEPE: 0, TON: 0, TRX: 0,
-                        TRUMP: 0, THB: 0, ZDX: 0
+                        REFI: 0,
+                        USDT: 0,
+                        BNB: 0,
+                        BTC: 0,
+                        ETH: 0,
+                        SOL: 0,
+                        ADA: 0,
+                        DOGE: 0,
+                        SHIB: 0,
+                        PEPE: 0,
+                        TON: 0,
+                        TRX: 0,
+                        TRUMP: 0,
+                        THB: 0,
+                        ZDX: 0
                     },
                     referralCode: generateReferralCode(),
                     referredBy: null,
@@ -890,41 +889,44 @@ async function loadUserData(force = false) {
                     totalRefiEarned: 0,
                     totalUsdtEarned: 0,
                     lastLogin: new Date().toISOString(),
-                    createdAt: new Date().toISOString(),
-                    earnTotalRefi: 0,
-                    earnWatchedCount: 0,
-                    earnLastResetTime: Date.now()
+                    createdAt: new Date().toISOString()
                 };
+                
                 await db.collection('users').doc(userId).set(userData);
             }
             
+            // تحديث وقت التحميل
             lastUserLoadTime = now;
             localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         }
         
+        // تحميل المعاملات المحلية فقط (بدون Firebase)
         userData.transactions = loadLocalTransactions();
-        
-        if (!userData.earnWatchedCount) userData.earnWatchedCount = 0;
-        if (!userData.earnTotalRefi) userData.earnTotalRefi = 0;
-        if (!userData.earnLastResetTime) userData.earnLastResetTime = Date.now();
-        
         cleanupDuplicateTransactions();
+        
         updateUI();
         
-        if (hasReferralCode()) await processReferral();
+        // معالجة الإحالة فقط إذا كان هناك كود في الرابط
+        if (hasReferralCode()) {
+            await processReferral();
+        }
         
         updateNotificationBadge();
         checkAdminAndAddCrown();
-        updateEarnStats();
         
     } catch (error) {
         console.error("❌ Error loading user data:", error);
     }
 }
 
+// دالة مساعدة لدمج الإشعارات مع الحفاظ على حالة القراءة
 function mergeNotifications(local, firebase) {
     const notificationMap = new Map();
+    
+    // أضف الإشعارات المحلية أولاً
     local.forEach(n => notificationMap.set(n.id, n));
+    
+    // أضف إشعارات Firebase مع الحفاظ على حالة القراءة من المحلية
     firebase.forEach(fbNotif => {
         const localNotif = notificationMap.get(fbNotif.id);
         if (localNotif) {
@@ -933,13 +935,13 @@ function mergeNotifications(local, firebase) {
             notificationMap.set(fbNotif.id, fbNotif);
         }
     });
-    return Array.from(notificationMap.values()).sort((a, b) =>
+    
+    return Array.from(notificationMap.values()).sort((a, b) => 
         new Date(b.timestamp) - new Date(a.timestamp)
     );
 }
 
-// ====== 15. REFERRAL SYSTEM ======
-
+// ====== ✅ 14. REFERRAL SYSTEM - يتحقق فقط عند وجود كود ======
 async function processReferral() {
     try {
         console.log("🔍 Checking for referral...");
@@ -951,31 +953,61 @@ async function processReferral() {
             referralCode = tg.initDataUnsafe.start_param;
         }
         
-        if (!referralCode) return;
+        if (!referralCode) {
+            console.log("ℹ️ No referral code detected");
+            return;
+        }
+        
         if (!userData) {
+            console.log("⏳ User data not loaded yet, waiting...");
             setTimeout(processReferral, 1000);
             return;
         }
-        if (referralCode === userData.referralCode) return;
-        if (userData.referredBy) return;
+        
+        if (referralCode === userData.referralCode) {
+            console.log("⚠️ Cannot refer yourself");
+            return;
+        }
+        
+        if (userData.referredBy) {
+            console.log("✅ User already referred by:", userData.referredBy);
+            return;
+        }
         
         const pendingReferralKey = `processed_referral_${userId}`;
-        if (localStorage.getItem(pendingReferralKey) === referralCode) return;
+        if (localStorage.getItem(pendingReferralKey) === referralCode) {
+            console.log("⚠️ This referral already processed");
+            return;
+        }
         
         console.log("🎯 Processing referral code:", referralCode);
+        
         const referrerId = referralCode;
         
-        if (!referrerId || referrerId === userId) return;
+        if (!referrerId || referrerId === userId) {
+            console.log("⚠️ Invalid referrer ID");
+            return;
+        }
+        
         if (!db) {
+            console.log("📦 Firebase not available, saving pending referral");
             localStorage.setItem('pending_referral', referralCode);
             return;
         }
         
         const referrerDoc = await db.collection('users').doc(referrerId).get();
-        if (!referrerDoc.exists) return;
+        
+        if (!referrerDoc.exists) {
+            console.log("❌ No referrer found with code:", referralCode);
+            return;
+        }
         
         const referrerData = referrerDoc.data();
-        if (referrerData.referrals && referrerData.referrals.includes(userId)) return;
+        
+        if (referrerData.referrals && referrerData.referrals.includes(userId)) {
+            console.log("✅ User already in referrer's list");
+            return;
+        }
         
         console.log("✅ Valid referrer found:", referrerId);
         
@@ -1015,7 +1047,12 @@ async function processReferral() {
         };
         
         addTransaction(welcomeTransaction);
-        try { await db.collection('transactions').add(welcomeTransaction); } catch(e) {}
+        
+        try {
+            await db.collection('transactions').add(welcomeTransaction);
+        } catch (error) {
+            console.error("❌ Error saving welcome transaction to Firebase:", error);
+        }
         
         const referrerTransaction = {
             userId: referrerId,
@@ -1027,7 +1064,11 @@ async function processReferral() {
             details: `Referral bonus from ${userId} (${userName})`
         };
         
-        try { await db.collection('transactions').add(referrerTransaction); } catch(e) {}
+        try {
+            await db.collection('transactions').add(referrerTransaction);
+        } catch (error) {
+            console.error("❌ Error saving referrer transaction to Firebase:", error);
+        }
         
         await addNotification(referrerId, t('notif.referralBonus', { amount: REFERRAL_BONUS.toLocaleString() }), 'success');
         await addNotification(userId, t('notif.welcomeBonus'), 'success');
@@ -1057,6 +1098,7 @@ function copyReferralLink() {
 function shareReferral() {
     const link = getReferralLink();
     const text = `🚀 Join REFI Network and get 10,000 REFI bonus! Use my link: ${link}`;
+    
     if (tg?.shareToStory) {
         tg.shareToStory(text);
     } else {
@@ -1065,8 +1107,7 @@ function shareReferral() {
     }
 }
 
-// ====== 16. ADD NOTIFICATION ======
-
+// ====== ✅ 15. ADD NOTIFICATION ======
 async function addNotification(targetUserId, message, type = 'info') {
     if (!db) return;
     
@@ -1098,8 +1139,7 @@ async function addNotification(targetUserId, message, type = 'info') {
     }
 }
 
-// ====== 17. PRICES ======
-
+// ====== 16. PRICES - مع تخزين مؤقت 3 ساعات ======
 async function loadPricesOnce() {
     console.log("💰 Loading crypto prices...");
     await fetchLivePrices();
@@ -1109,6 +1149,7 @@ async function fetchLivePrices(force = false) {
     const now = Date.now();
     const cachedPrices = localStorage.getItem('live_prices');
     
+    // استخدم الأسعار المخزنة إذا كانت حديثة (أقل من 3 ساعات)
     if (!force && cachedPrices && (now - lastPricesLoadTime) < PRICES_CACHE_TIME) {
         const { prices, timestamp } = JSON.parse(cachedPrices);
         livePrices = prices;
@@ -1120,7 +1161,9 @@ async function fetchLivePrices(force = false) {
     
     try {
         const ids = Object.values(CRYPTO_IDS).join(',');
-        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+        const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+        );
         const data = await response.json();
         
         for (const [symbol, id] of Object.entries(CRYPTO_IDS)) {
@@ -1136,6 +1179,7 @@ async function fetchLivePrices(force = false) {
             livePrices.TRUMP = { price: 5.00, change: 0 };
         }
         
+        // حفظ في localStorage
         lastPricesLoadTime = now;
         localStorage.setItem('live_prices', JSON.stringify({
             prices: livePrices,
@@ -1161,8 +1205,7 @@ function refreshPrices() {
     showToast(t('messages.success'), 'success');
 }
 
-// ====== 18. RENDER FUNCTIONS ======
-
+// ====== 17. RENDER FUNCTIONS ======
 function renderAssets() {
     const assetsList = document.getElementById('assetsList');
     if (!assetsList || !userData) return;
@@ -1182,8 +1225,8 @@ function renderAssets() {
     
     assetsList.innerHTML = sortedAssets.map(asset => {
         const balance = userData.balances[asset.symbol] || 0;
-        let price = 0;
         
+        let price = 0;
         if (asset.symbol === 'REFI') {
             price = REFI_PRICE;
         } else if (asset.symbol === 'THB') {
@@ -1203,7 +1246,10 @@ function renderAssets() {
                     <img src="${getCurrencyIcon(asset.symbol)}" class="asset-icon-img" alt="${asset.symbol}">
                     <div class="asset-info">
                         <h4>${asset.name}</h4>
-                        <p>${asset.symbol}<span class="asset-change ${changeClass}">${changeSymbol}${change.toFixed(2)}%</span></p>
+                        <p>
+                            ${asset.symbol}  
+                            <span class="asset-change ${changeClass}">${changeSymbol}${change.toFixed(2)}%</span>
+                        </p>
                     </div>
                 </div>
                 <div class="asset-right">
@@ -1327,20 +1373,19 @@ function renderReferralMilestones() {
                     `<button class="claim-btn" onclick="claimReferralMilestone(${milestone.referrals})" style="margin-top: 10px; width: 100%;">Claim Reward</button>` : 
                     isClaimed ? 
                     '<p style="color: var(--success); text-align: center; margin-top: 10px;">✓ Claimed</p>' : 
-                    ''
-                }
+                    ''}
             </div>
         `;
     }).join('');
 }
 
-// ====== 19. HISTORY FUNCTIONS ======
-
+// ====== 18. HISTORY FUNCTIONS - مع زر التحديث ======
 function renderHistory(filter = 'all') {
     const historyList = document.getElementById('historyList');
     if (!historyList) return;
     
     currentHistoryFilter = filter;
+    
     let transactions = loadLocalTransactions();
     
     if (filter !== 'all') {
@@ -1424,9 +1469,12 @@ function filterHistory(filter) {
     renderHistory(filter);
 }
 
+// ====== 19. HISTORY MODAL - مع تحقق عند الفتح ======
 function showHistory() {
     currentPage = 'history';
     const modal = document.getElementById('historyModal');
+    
+    // إضافة زر التحديث إذا لم يكن موجوداً
     const header = modal.querySelector('.modal-header');
     let refreshBtn = header.querySelector('.refresh-history-btn');
     
@@ -1438,6 +1486,7 @@ function showHistory() {
             e.preventDefault();
             e.stopPropagation();
             this.querySelector('i').classList.add('fa-spin');
+            // 🔥 إعادة تعيين وقت آخر فحص للسماح بالفحص الفوري عند الضغط على زر التحديث
             lastHistoryCheckTime = 0;
             checkPendingTransactions().finally(() => {
                 setTimeout(() => {
@@ -1453,22 +1502,28 @@ function showHistory() {
         refreshBtn.style.cursor = 'pointer';
         refreshBtn.title = 'Check for updates';
         header.appendChild(refreshBtn);
+        console.log("✅ History refresh button added");
     }
     
     modal.classList.add('show');
-    setTimeout(() => checkPendingTransactions(), 500);
+    
+    // التحقق من الطلبات المعلقة عند فتح التاريخ
+    setTimeout(() => {
+        checkPendingTransactions();
+    }, 500);
+    
     renderHistory('all');
     animateElement('.modal-content', 'slideUpModal');
 }
 
-// ====== 20. NOTIFICATIONS FUNCTIONS ======
-
+// ====== 20. NOTIFICATIONS FUNCTIONS - مع أزرار التنظيف ======
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     if (!notificationsList || !userData) return;
     
     const notifications = userData.notifications || [];
     
+    // أزرار التحكم
     let controlsHTML = `
         <div style="display: flex; gap: 10px; margin-bottom: 15px; padding: 0 5px;">
             <button onclick="clearReadNotifications()" 
@@ -1500,10 +1555,8 @@ function renderNotifications() {
     });
     
     let notificationsHTML = '';
-    
     notifications.forEach(notif => {
         let date = new Date();
-        
         if (notif.timestamp?.toDate) {
             date = notif.timestamp.toDate();
         } else if (notif.timestamp) {
@@ -1513,8 +1566,8 @@ function renderNotifications() {
         const formattedDate = date.toLocaleDateString() + ' ' + 
                              date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
-        let icon = 'fa-bell';
         
+        let icon = 'fa-bell';
         if (notif.type === 'success') icon = 'fa-circle-check';
         if (notif.type === 'error') icon = 'fa-circle-xmark';
         
@@ -1541,13 +1594,15 @@ async function markNotificationRead(notificationId) {
     if (!userData.notifications) return;
     
     const notification = userData.notifications.find(n => n.id === notificationId);
-    
     if (notification && !notification.read) {
         notification.read = true;
         unreadNotifications--;
         updateNotificationBadge();
+        
+        // حفظ في localStorage فوراً
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
+        // تحديث في Firebase (اختياري - يمكن تركه للحفظ الدوري)
         if (db) {
             try {
                 await db.collection('users').doc(userId).update({
@@ -1562,6 +1617,7 @@ async function markNotificationRead(notificationId) {
     }
 }
 
+// دالة حذف الإشعارات المقروءة
 function clearReadNotifications() {
     if (!userData.notifications || userData.notifications.length === 0) {
         showToast(t('notifications.no_notifications'), 'info');
@@ -1580,6 +1636,7 @@ function clearReadNotifications() {
         userData.notifications = userData.notifications.filter(n => !n.read);
         unreadNotifications = userData.notifications.length;
         updateNotificationBadge();
+        
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
         if (db) {
@@ -1593,6 +1650,7 @@ function clearReadNotifications() {
     }
 }
 
+// دالة حذف جميع الإشعارات
 function clearAllNotifications() {
     if (!userData.notifications || userData.notifications.length === 0) {
         showToast(t('notifications.no_notifications'), 'info');
@@ -1614,6 +1672,7 @@ function clearAllNotifications() {
     userData.notifications = [];
     unreadNotifications = 0;
     updateNotificationBadge();
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     if (db) {
@@ -1627,8 +1686,9 @@ function clearAllNotifications() {
 }
 
 function showNotifications() {
-    const modal = document.getElementById('notificationsModal');
+    console.log("🔔 Opening notifications modal");
     
+    const modal = document.getElementById('notificationsModal');
     if (!modal) {
         console.error("❌ Notifications modal not found");
         showToast("Notifications modal not found", "error");
@@ -1640,16 +1700,21 @@ function showNotifications() {
     animateElement('.modal-content', 'slideUpModal');
 }
 
+// إصلاح زر الإشعارات
 function fixNotificationButton() {
-    const notifBtn = document.getElementById('notificationBtn');
+    console.log("🔧 Ensuring notification button works...");
     
+    const notifBtn = document.getElementById('notificationBtn');
     if (notifBtn) {
         const newBtn = notifBtn.cloneNode(true);
-        notifBtn.parentNode.replaceChild(newBtn, notifBtn);
+        if (notifBtn.parentNode) {
+            notifBtn.parentNode.replaceChild(newBtn, notifBtn);
+        }
         
         newBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            console.log("🔔 Notification button clicked");
             showNotifications();
         });
         
@@ -1661,7 +1726,6 @@ function fixNotificationButton() {
 }
 
 // ====== 21. UTILITY FUNCTIONS ======
-
 function getCurrencyIcon(symbol) {
     return CMC_ICONS[symbol] || CMC_ICONS.REFI;
 }
@@ -1730,12 +1794,10 @@ function updateUI() {
     updateStakingStats();
     updateReferralStats();
     updateSwapBalances();
-    updateEarnStats();
 }
 
 function updateNotificationBadge() {
     const badge = document.querySelector('.badge');
-    
     if (badge && userData) {
         unreadNotifications = userData.notifications?.filter(n => !n.read).length || 0;
         badge.textContent = unreadNotifications;
@@ -1745,7 +1807,6 @@ function updateNotificationBadge() {
 
 function animateElement(selector, animationClass) {
     const element = document.querySelector(selector);
-    
     if (element) {
         element.classList.add(animationClass);
         setTimeout(() => {
@@ -1762,7 +1823,6 @@ function showToast(message, type = 'info') {
     toast.classList.remove('hidden');
     
     const icon = toast.querySelector('i');
-    
     if (type === 'success') {
         icon.className = 'fa-regular fa-circle-check';
     } else if (type === 'error') {
@@ -1801,12 +1861,10 @@ function setupScrollListener() {
 }
 
 // ====== 22. NAVIGATION FUNCTIONS ======
-
 function showWallet() {
     currentPage = 'wallet';
     document.getElementById('walletSection').classList.remove('hidden');
     document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('earnSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
     document.getElementById('referralSection').classList.add('hidden');
     
@@ -1816,6 +1874,8 @@ function showWallet() {
     renderAssets();
     updateTotalBalance();
     animateElement('.balance-card', 'pop');
+    
+    // ✅ إضافة الستيكر عند العودة للمحفظة
     showRandomSticker();
 }
 
@@ -1823,7 +1883,6 @@ function showSwap() {
     currentPage = 'swap';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.remove('hidden');
-    document.getElementById('earnSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
     document.getElementById('referralSection').classList.add('hidden');
     
@@ -1833,22 +1892,8 @@ function showSwap() {
     updateSwapBalances();
     calculateSwap();
     animateElement('.swap-card', 'scaleIn');
-    showRandomSticker();
-}
-
-function showEarn() {
-    currentPage = 'earn';
-    document.getElementById('walletSection').classList.add('hidden');
-    document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('earnSection').classList.remove('hidden');
-    document.getElementById('stakingSection').classList.add('hidden');
-    document.getElementById('referralSection').classList.add('hidden');
     
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
-    
-    updateEarnStats();
-    animateElement('.earn-stats', 'slideUp');
+    // ✅ إضافة الستيكر عند فتح السواب
     showRandomSticker();
 }
 
@@ -1856,16 +1901,17 @@ function showStaking() {
     currentPage = 'staking';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('earnSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.remove('hidden');
     document.getElementById('referralSection').classList.add('hidden');
     
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
+    document.querySelector('.nav-item:nth-child(3)').classList.add('active');
     
     updateStakingStats();
     renderStakingMissions();
     animateElement('.staking-stats', 'slideUp');
+    
+    // ✅ إضافة الستيكر عند فتح الستيكينغ
     showRandomSticker();
 }
 
@@ -1873,21 +1919,21 @@ function showReferral() {
     currentPage = 'referral';
     document.getElementById('walletSection').classList.add('hidden');
     document.getElementById('swapSection').classList.add('hidden');
-    document.getElementById('earnSection').classList.add('hidden');
     document.getElementById('stakingSection').classList.add('hidden');
     document.getElementById('referralSection').classList.remove('hidden');
     
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.querySelector('.nav-item:nth-child(5)').classList.add('active');
+    document.querySelector('.nav-item:nth-child(4)').classList.add('active');
     
     updateReferralStats();
     renderReferralMilestones();
     animateElement('.referral-link-card', 'pop');
+    
+    // ✅ إضافة الستيكر عند فتح الإحالة
     showRandomSticker();
 }
 
 // ====== 23. STAKING FUNCTIONS ======
-
 function selectStakingPlan(planId) {
     selectedStakingPlan = STAKING_PLANS.find(p => p.id === planId);
     renderStakingPlans();
@@ -1995,6 +2041,7 @@ function stakeUSDT() {
     
     userData.balances.USDT -= amount;
     userData.staking.push(stake);
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
@@ -2033,6 +2080,7 @@ function claimStakingReward(startDate) {
     const reward = stake.amount * stake.plan.return / 100;
     userData.balances.USDT += reward;
     stake.claimed = true;
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
@@ -2074,6 +2122,7 @@ function claimStakingMission(missionId) {
     const reward = STAKING_PLANS.find(p => p.id === missionId).reward;
     userData.balances.USDT += reward;
     userData.stakingMissions[missionIndex].claimed = true;
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
@@ -2116,6 +2165,7 @@ function claimReferralMilestone(referrals) {
     userData.balances.USDT += reward;
     userData.totalUsdtEarned += reward;
     userData.referralMilestones[milestoneIndex].claimed = true;
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
@@ -2160,8 +2210,7 @@ function updateReferralStats() {
     }
 }
 
-// ====== 24. SWAP FUNCTIONS ======
-
+// ==// ====== 24. SWAP FUNCTIONS ======
 function updateSwapBalances() {
     if (!userData) return;
     
@@ -2195,6 +2244,7 @@ function selectCurrency(symbol) {
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
     if (currentCurrencySelector === 'pay') {
+        // ✅ منع تحويل USDT إلى أي عملة أخرى
         if (symbol === 'USDT') {
             showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
             return;
@@ -2249,20 +2299,27 @@ function selectCurrency(symbol) {
 function updateSwapNote() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    const swapNote = document.getElementById('swapNote');
     const swapRate = document.getElementById('swapRate');
     
     if (payCurrency === 'USDT' && receiveCurrency === 'REFI') {
+        swapNote.textContent = 'You can swap USDT to REFI at fixed rate';
         swapRate.textContent = `1 USDT = ${SWAP_RATE.toLocaleString()} REFI`;
     } else if (payCurrency === 'REFI' && receiveCurrency === 'USDT') {
+        swapNote.textContent = 'You can swap REFI to USDT at fixed rate';
         swapRate.textContent = `${SWAP_RATE.toLocaleString()} REFI = 1 USDT`;
     } else if (payCurrency === 'USDT' && receiveCurrency === 'THB') {
-        swapRate.textContent = `1 USDT = ${(1 / THB_PRICE).toFixed(2)} THB`;
+        swapNote.textContent = 'You can swap USDT to THB at fixed rate';
+        swapRate.textContent = `1 USDT = ${(1/THB_PRICE).toFixed(2)} THB`;
     } else if (payCurrency === 'THB' && receiveCurrency === 'USDT') {
+        swapNote.textContent = 'You can swap THB to USDT at fixed rate';
         swapRate.textContent = `1 THB = $${THB_PRICE.toFixed(4)}`;
     } else {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE :
+        swapNote.textContent = `You can swap ${payCurrency} to ${receiveCurrency} at market rate`;
+        
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
                         (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE :
+        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
                             (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
         
         if (payPrice > 0 && receivePrice > 0) {
@@ -2278,8 +2335,8 @@ function filterCurrencies() {
     const searchTerm = document.getElementById('currencySearch').value.toLowerCase();
     const currencyList = document.getElementById('currencyList');
     
-    const filtered = SWAP_CURRENCIES.filter(curr =>
-        curr.name.toLowerCase().includes(searchTerm) ||
+    const filtered = SWAP_CURRENCIES.filter(curr => 
+        curr.name.toLowerCase().includes(searchTerm) || 
         curr.symbol.toLowerCase().includes(searchTerm)
     );
     
@@ -2298,6 +2355,7 @@ function flipSwapPair() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
     
+    // ✅ منع التقليب إذا كانت النتيجة أن USDT تصبح عملة الدفع
     if (receiveCurrency === 'USDT') {
         showToast('❌ Swapping FROM USDT to other tokens Temporarily unavailable', 'warning');
         return;
@@ -2341,6 +2399,7 @@ function calculateSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
     const payCurrency = document.getElementById('payCurrency').textContent;
     const receiveCurrency = document.getElementById('receiveCurrency').textContent;
+    
     let receiveAmount = 0;
     
     if (payCurrency === 'THB' && receiveCurrency === 'USDT') {
@@ -2356,7 +2415,7 @@ function calculateSwap() {
         receiveAmount = payAmount / SWAP_RATE;
     }
     else if (receiveCurrency === 'REFI') {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE :
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
                         (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
         if (payPrice > 0) {
             const usdValue = payAmount * payPrice;
@@ -2364,7 +2423,7 @@ function calculateSwap() {
         }
     }
     else if (payCurrency === 'REFI') {
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE :
+        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
                             (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
         if (receivePrice > 0) {
             const usdValue = payAmount * REFI_PRICE;
@@ -2372,7 +2431,7 @@ function calculateSwap() {
         }
     }
     else if (receiveCurrency === 'THB') {
-        const payPrice = payCurrency === 'REFI' ? REFI_PRICE :
+        const payPrice = payCurrency === 'REFI' ? REFI_PRICE : 
                         (payCurrency === 'THB' ? THB_PRICE : (livePrices[payCurrency]?.price || 0));
         if (payPrice > 0) {
             const usdValue = payAmount * payPrice;
@@ -2380,7 +2439,7 @@ function calculateSwap() {
         }
     }
     else if (payCurrency === 'THB') {
-        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE :
+        const receivePrice = receiveCurrency === 'REFI' ? REFI_PRICE : 
                             (receiveCurrency === 'THB' ? THB_PRICE : (livePrices[receiveCurrency]?.price || 0));
         if (receivePrice > 0) {
             const usdValue = payAmount * THB_PRICE;
@@ -2398,7 +2457,6 @@ function calculateSwap() {
     }
     
     let formattedAmount;
-    
     if (receiveCurrency === 'REFI' || receiveCurrency === 'SHIB' || receiveCurrency === 'PEPE' || receiveCurrency === 'TRUMP' || receiveCurrency === 'THB' || receiveCurrency === 'ZDX') {
         formattedAmount = Math.floor(receiveAmount).toString();
     } else if (receiveCurrency === 'USDT') {
@@ -2413,6 +2471,7 @@ function calculateSwap() {
 window.setMaxAmount = function() {
     const payCurrency = document.getElementById('payCurrency').textContent;
     const balance = userData.balances[payCurrency] || 0;
+    
     let maxAmount = balance;
     
     if (payCurrency === 'REFI' || payCurrency === 'SHIB' || payCurrency === 'PEPE' || payCurrency === 'TRUMP' || payCurrency === 'THB' || payCurrency === 'ZDX') {
@@ -2426,7 +2485,7 @@ window.setMaxAmount = function() {
     calculateSwap();
     animateElement('.max-btn', 'pop');
     showToast(`Max amount set: ${formatBalance(maxAmount, payCurrency)}`, 'success');
-};
+}
 
 window.swapDirection = function(direction) {
     if (direction === 'down') {
@@ -2447,7 +2506,7 @@ window.swapDirection = function(direction) {
     calculateSwap();
     updateSwapBalances();
     animateElement('.swap-action-btn', 'pop');
-};
+}
 
 function confirmSwap() {
     const payAmount = parseFloat(document.getElementById('payAmount').value);
@@ -2461,6 +2520,7 @@ function confirmSwap() {
         return;
     }
     
+    // ✅ منع تحويل USDT إلى أي عملة أخرى
     if (payCurrency === 'USDT') {
         showToast('❌ Swapping FROM USDT to other tokens temporarily unavailable', 'warning');
         return;
@@ -2486,6 +2546,7 @@ function confirmSwap() {
     
     userData.balances[payCurrency] -= payAmount;
     userData.balances[receiveCurrency] += receiveAmount;
+    
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
     
     const transaction = {
@@ -2508,7 +2569,7 @@ function confirmSwap() {
         db.collection('transactions').add(transaction).catch(console.error);
     }
     
-    showToast(t('success.swapCompleted', {
+    showToast(t('success.swapCompleted', { 
         fromAmount: formatBalance(payAmount, payCurrency),
         fromCurrency: payCurrency,
         toAmount: formatBalance(receiveAmount, receiveCurrency),
@@ -2521,15 +2582,14 @@ function confirmSwap() {
     updateUI();
     animateElement('#swapBtn', 'pop');
 }
-
 // ====== 25. ADD TRANSACTION ======
-
 function addTransaction(transaction) {
     try {
         const allTransactions = loadLocalTransactions();
-        const exists = allTransactions.some(t =>
+        
+        const exists = allTransactions.some(t => 
             (t.firebaseId && t.firebaseId === transaction.firebaseId) ||
-            (t.timestamp === transaction.timestamp &&
+            (t.timestamp === transaction.timestamp && 
              t.type === transaction.type &&
              t.amount === transaction.amount)
         );
@@ -2544,6 +2604,7 @@ function addTransaction(transaction) {
         
         allTransactions.unshift(transaction);
         saveLocalTransactions(allTransactions);
+        
         localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
         
         if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
@@ -2552,17 +2613,17 @@ function addTransaction(transaction) {
         
         console.log("✅ Transaction added successfully");
         return true;
-        
     } catch (error) {
         console.error("❌ Error in addTransaction:", error);
         return false;
     }
 }
 
+// ====== 26. UPDATE TRANSACTION ======
 function updateTransaction(updatedTx) {
     try {
         if (userData.transactions) {
-            const index = userData.transactions.findIndex(t =>
+            const index = userData.transactions.findIndex(t => 
                 t.firebaseId === updatedTx.firebaseId ||
                 (t.timestamp === updatedTx.timestamp && t.type === updatedTx.type)
             );
@@ -2572,7 +2633,7 @@ function updateTransaction(updatedTx) {
         }
         
         const allTransactions = loadLocalTransactions();
-        const index = allTransactions.findIndex(t =>
+        const index = allTransactions.findIndex(t => 
             t.firebaseId === updatedTx.firebaseId ||
             (t.timestamp === updatedTx.timestamp && t.type === updatedTx.type)
         );
@@ -2586,14 +2647,12 @@ function updateTransaction(updatedTx) {
         if (currentPage === 'history' || document.getElementById('historyModal')?.classList.contains('show')) {
             renderHistory(currentHistoryFilter);
         }
-        
     } catch (error) {
         console.error("❌ Error in updateTransaction:", error);
     }
 }
 
-// ====== 26. DEPOSIT FUNCTIONS ======
-
+// ====== 27. DEPOSIT FUNCTIONS ======
 function updateDepositInfo() {
     const currency = document.getElementById('depositCurrency').value;
     const depositAddress = document.getElementById('depositAddress');
@@ -2666,8 +2725,8 @@ function validateTransactionHashInput() {
     
     if (strictNetworks.includes(currency)) {
         isValid = hash.startsWith('0x') && hash.length === 66;
-        message = isValid ?
-            '✓ Valid BSC/ETH transaction hash' :
+        message = isValid ? 
+            '✓ Valid BSC/ETH transaction hash' : 
             'Invalid format. Must start with 0x and be 66 characters';
     }
     
@@ -2698,6 +2757,7 @@ function validateTransactionHashInput() {
     }
 }
 
+// ====== 28. SUBMIT DEPOSIT - مع تشغيل مستمع عند الطلب ======
 async function submitDeposit() {
     const currency = document.getElementById('depositCurrency').value;
     const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -2728,7 +2788,6 @@ async function submitDeposit() {
     }
     
     const minAmount = DEPOSIT_MINIMUMS[currency] || 0;
-    
     if (amount < minAmount) {
         showToast(t('error.minDeposit', { min: minAmount.toLocaleString(), currency }), 'error');
         return;
@@ -2748,7 +2807,6 @@ async function submitDeposit() {
     };
     
     const submitBtn = document.getElementById('submitDepositBtn');
-    
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
@@ -2771,6 +2829,7 @@ async function submitDeposit() {
             
             await addNotification(ADMIN_ID, `💰 New deposit request: ${amount} ${currency} from ${userId}`, 'info');
             
+            // 🔥 التعديل: المستمع يعيش 30 ثانية فقط
             startOnDemandListener('deposit_requests', docRef.id, (data) => {
                 console.log("📥 Deposit update received:", data);
                 
@@ -2797,12 +2856,12 @@ async function submitDeposit() {
                     
                     showToast(t('notif.depositRejected', { reason: data.reason || 'Unknown reason' }), 'error');
                 }
-            }, 30000);
+            }, 30000); // 🔥 30 ثانية
         }
         
-        const transactionToAdd = {
-            ...depositRequest,
-            firebaseId: firebaseId || 'temp_' + Date.now()
+        const transactionToAdd = { 
+            ...depositRequest, 
+            firebaseId: firebaseId || 'temp_' + Date.now() 
         };
         
         setTimeout(() => {
@@ -2833,8 +2892,7 @@ async function submitDeposit() {
     }
 }
 
-// ====== 27. WITHDRAW FUNCTIONS ======
-
+// ====== 29. WITHDRAW FUNCTIONS ======
 function checkWithdrawFee() {
     const currency = document.getElementById('withdrawCurrency').value;
     const feeWarning = document.getElementById('feeWarning');
@@ -2898,7 +2956,9 @@ function validateWithdrawAddressInput() {
     }
 }
 
+// ====== SUBMIT WITHDRAW - مع تشغيل مستمع عند الطلب ======
 async function submitWithdraw() {
+    // ====== PERMANENT BLOCK CHECK - USER CANNOT WITHDRAW IF BLOCKED ======
     if (userData && userData.withdrawBlocked === true) {
         showToast('⛔ Your account is permanently blocked from withdrawals. Contact support.', 'error');
         return;
@@ -2918,9 +2978,14 @@ async function submitWithdraw() {
         return;
     }
     
-    const minAmounts = { USDT: 10, REFI: 2500000, BNB: 0.02 };
-    const minForCurrency = minAmounts[currency];
+    // ✅ التحقق من الحد الأدنى للسحب
+    const minAmounts = {
+        USDT: 10,
+        REFI: 2500000,
+        BNB: 0.02
+    };
     
+    const minForCurrency = minAmounts[currency];
     if (minForCurrency && amount < minForCurrency) {
         showToast(`Minimum withdrawal is ${minForCurrency} ${currency}`, 'error');
         return;
@@ -2949,14 +3014,12 @@ async function submitWithdraw() {
     }
     
     const submitBtn = document.getElementById('submitWithdrawBtn');
-    
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     }
     
     userData.balances[currency] -= amount;
-    
     if (fee > 0) {
         userData.balances[feeCurrency] -= fee;
     }
@@ -2991,6 +3054,7 @@ async function submitWithdraw() {
             
             await addNotification(ADMIN_ID, `💸 New withdrawal request: ${amount} ${currency} from ${userId}`, 'info');
             
+            // مستمع عند الطلب لمدة 30 ثانية
             startOnDemandListener('withdrawals', docRef.id, (data) => {
                 console.log("📤 Withdrawal update received:", data);
                 
@@ -3004,6 +3068,7 @@ async function submitWithdraw() {
                     showToast(`✅ Your withdrawal of ${amount} ${currency} has been approved!`, 'success');
                     
                 } else if (data.status === 'rejected') {
+                    // إعادة المبلغ في حالة الرفض
                     userData.balances[currency] += amount;
                     if (fee > 0) {
                         userData.balances[feeCurrency] += fee;
@@ -3023,9 +3088,9 @@ async function submitWithdraw() {
             }, 30000);
         }
         
-        const transactionToAdd = {
-            ...withdrawRequest,
-            firebaseId: firebaseId || 'temp_' + Date.now()
+        const transactionToAdd = { 
+            ...withdrawRequest, 
+            firebaseId: firebaseId || 'temp_' + Date.now() 
         };
         
         setTimeout(() => {
@@ -3062,9 +3127,7 @@ async function submitWithdraw() {
         }
     }
 }
-
-// ====== 28. ADMIN FUNCTIONS ======
-
+// ====== 31. ADMIN FUNCTIONS - محسنة (بدون تحميل كل المستخدمين) ======
 function showAdminPanel() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -3077,6 +3140,7 @@ function showAdminPanel() {
 
 function closeAdminPanel() {
     document.getElementById('adminPanel').classList.add('hidden');
+    // إيقاف جميع المستمعين النشطين عند إغلاق لوحة المشرف
     stopAllListeners();
 }
 
@@ -3084,6 +3148,7 @@ async function loadAdminData() {
     if (!db) return;
     
     try {
+        // ✅ نحمل فقط إحصائيات سريعة (بدون تحميل كل المستخدمين)
         const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
             db.collection('deposit_requests').where('status', '==', 'pending').get(),
             db.collection('withdrawals').where('status', '==', 'pending').get()
@@ -3091,11 +3156,13 @@ async function loadAdminData() {
         
         const pendingCount = depositsSnapshot.size + withdrawalsSnapshot.size;
         
+        // ✅ نعرض العدد فقط، ليس كل المستخدمين
         document.getElementById('totalUsers').textContent = '...';
         document.getElementById('pendingCount').textContent = pendingCount;
         document.getElementById('approvedCount').textContent = '...';
         document.getElementById('totalReferralsCount').textContent = '...';
         
+        // عرض رسالة بدلاً من التحميل التلقائي
         const adminContent = document.getElementById('adminContent');
         adminContent.innerHTML = `
             <div style="text-align: center; padding: 30px;">
@@ -3114,10 +3181,15 @@ async function loadAdminData() {
 }
 
 async function showAdminTab(tab) {
+    // هذه الدالة لن تستخدم للتحميل التلقائي بعد الآن
+    // سيتم استدعاؤها فقط من أزرار التبويب
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
+    
+    // تخزين التبويب النشط
     currentAdminTab = tab;
     
+    // عرض رسالة للمستخدم
     const adminContent = document.getElementById('adminContent');
     adminContent.innerHTML = `
         <div style="text-align: center; padding: 30px;">
@@ -3130,11 +3202,13 @@ async function showAdminTab(tab) {
     `;
 }
 
+// 🔥 دالة جديدة لتحديث لوحة المشرف يدوياً (مع جلب referralCount)
 window.refreshAdminPanel = async function() {
     if (!isAdmin) return;
     
     console.log("🔄 Manually refreshing admin panel...");
     
+    // إظهار مؤشر التحميل
     const refreshBtn = document.getElementById('adminRefreshBtn');
     if (refreshBtn) {
         refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -3144,6 +3218,7 @@ window.refreshAdminPanel = async function() {
     adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
     
     try {
+        // تحديد التبويب النشط
         const activeTab = document.querySelector('.admin-tab.active')?.textContent.toLowerCase().includes('deposit') ? 'deposits' : 'withdrawals';
         
         let query;
@@ -3164,6 +3239,7 @@ window.refreshAdminPanel = async function() {
             return;
         }
         
+        // ✅ جمع الـ userIds الفريدة من الطلبات
         const userIds = [];
         const transactions = [];
         
@@ -3175,9 +3251,10 @@ window.refreshAdminPanel = async function() {
             }
         });
         
+        // ✅ جلب referralCount لكل المستخدمين دفعة واحدة
         const referralCounts = {};
-        
         if (userIds.length > 0) {
+            // تقسيم userIds إلى مجموعات من 30 (قيود Firebase)
             const chunks = [];
             for (let i = 0; i < userIds.length; i += 30) {
                 chunks.push(userIds.slice(i, i + 30));
@@ -3192,6 +3269,7 @@ window.refreshAdminPanel = async function() {
             }
         }
         
+        // ✅ عرض البطاقات مع referralCount
         let html = '';
         transactions.forEach(tx => {
             const referralCount = referralCounts[tx.userId] || 0;
@@ -3213,9 +3291,12 @@ window.refreshAdminPanel = async function() {
     }
 };
 
+// ✅ دالة عرض بطاقة المعاملة للمشرف (مع Total Referrals)
 function renderAdminTransactionCard(tx, tab, referralCount = 0) {
     const date = new Date(tx.timestamp);
     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    // الحصول على Telegram ID (userId) وعرضه كاملاً
     const telegramId = tx.userId || 'N/A';
     const displayUserId = tx.userName ? `${tx.userName}` : telegramId.substring(0, 8);
     
@@ -3233,6 +3314,7 @@ function renderAdminTransactionCard(tx, tab, referralCount = 0) {
                     <span class="admin-tx-label">User:</span>
                     <span class="admin-tx-value">${displayUserId}</span>
                 </div>
+                <!-- ✅ Telegram ID with Total Referrals -->
                 <div class="admin-tx-row">
                     <span class="admin-tx-label">Telegram ID:</span>
                     <div class="admin-address-container" style="flex-direction: column; align-items: flex-start; gap: 5px;">
@@ -3295,6 +3377,7 @@ function renderAdminTransactionCard(tx, tab, referralCount = 0) {
     `;
 }
 
+// ✅ دالة الموافقة على المعاملة
 async function approveTransaction(firebaseId, targetUserId, type, currency, amount, fee, feeCurrency) {
     if (!isAdmin || !db) {
         showToast('❌ Admin access required', 'error');
@@ -3380,8 +3463,8 @@ async function rejectDepositRequest(firebaseId) {
             rejectedBy: 'admin'
         });
         
-        await addNotification(depositData.userId,
-            `❌ Your deposit of ${depositData.amount} ${depositData.currency} was rejected. Reason: ${reason}`,
+        await addNotification(depositData.userId, 
+            `❌ Your deposit of ${depositData.amount} ${depositData.currency} was rejected. Reason: ${reason}`, 
             'error');
         
         showToast('✅ Deposit rejected', 'success');
@@ -3428,8 +3511,8 @@ async function rejectWithdrawalRequest(firebaseId) {
         
         await db.collection('users').doc(withdrawalData.userId).update(updates);
         
-        await addNotification(withdrawalData.userId,
-            `❌ Your withdrawal of ${withdrawalData.amount} ${withdrawalData.currency} was rejected. Reason: ${reason}`,
+        await addNotification(withdrawalData.userId, 
+            `❌ Your withdrawal of ${withdrawalData.amount} ${withdrawalData.currency} was rejected. Reason: ${reason}`, 
             'error');
         
         showToast('✅ Withdrawal rejected', 'success');
@@ -3450,17 +3533,21 @@ function rejectTransaction(firebaseId, targetUserId, type) {
     }
 }
 
+// ====== PERMANENT BLOCK USER FROM WITHDRAWALS (NO UNDO) ======
 async function blockUserWithdrawals(targetUserId) {
+    // Check admin permission
     if (!isAdmin) {
         showToast('❌ Access denied. Admin only.', 'error');
         return;
     }
     
+    // Confirm with admin - permanent action warning
     if (!confirm(`⚠️⚠️⚠️ PERMANENT ACTION WARNING ⚠️⚠️⚠️\n\nAre you ABSOLUTELY sure you want to permanently block this user from withdrawals?\n\nTHIS ACTION CANNOT BE UNDONE!`)) {
         return;
     }
     
     try {
+        // Update in Firebase
         if (db) {
             await db.collection('users').doc(targetUserId).update({
                 withdrawBlocked: true,
@@ -3471,6 +3558,7 @@ async function blockUserWithdrawals(targetUserId) {
             });
         }
         
+        // Update localStorage if current user is the same
         if (targetUserId === userId) {
             userData.withdrawBlocked = true;
             userData.withdrawBlockedPermanent = true;
@@ -3478,6 +3566,8 @@ async function blockUserWithdrawals(targetUserId) {
         }
         
         showToast('✅ User has been PERMANENTLY blocked from withdrawals', 'success');
+        
+        // Reload user data to update UI
         await adminLoadUser();
         
     } catch (error) {
@@ -3486,8 +3576,10 @@ async function blockUserWithdrawals(targetUserId) {
     }
 }
 
+// ====== ADMIN USER MANAGEMENT ======
 let currentManageUserId = null;
 
+// تعديل دالة showAdminPanel لإضافة زر إدارة المستخدمين
 const originalShowAdminPanel = showAdminPanel;
 showAdminPanel = function() {
     originalShowAdminPanel();
@@ -3506,9 +3598,14 @@ showAdminPanel = function() {
     }, 100);
 };
 
+// واجهة إدارة المستخدمين (مع حقل إدخال وزر بحث)
 function showUserManagementInterface() {
     const adminContent = document.getElementById('adminContent');
     
+    // تنظيف الشاشة بالكامل
+    adminContent.innerHTML = '';
+    
+    // عرض واجهة البحث
     adminContent.innerHTML = `
         <div style="padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -3516,6 +3613,7 @@ function showUserManagementInterface() {
                 <h3 style="margin-top: 10px;">User Management</h3>
                 <p style="color: var(--text-secondary);">Enter Telegram User ID to manage balance and view stats</p>
             </div>
+            
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <input type="text" id="adminUserIdInput" placeholder="Enter User ID (e.g., 1653918641)" 
                        style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; color: white; font-size: 16px;">
@@ -3523,15 +3621,18 @@ function showUserManagementInterface() {
                     <i class="fa-solid fa-magnifying-glass"></i> Search
                 </button>
             </div>
+            
             <div id="adminUserStats" style="display: none;"></div>
         </div>
     `;
     
+    // ربط زر البحث بالدالة
     const searchBtn = document.getElementById('adminSearchBtn');
     if (searchBtn) {
         searchBtn.onclick = adminLoadUser;
     }
     
+    // أيضاً عند الضغط على Enter في حقل الإدخال
     const inputField = document.getElementById('adminUserIdInput');
     if (inputField) {
         inputField.onkeypress = function(e) {
@@ -3542,6 +3643,7 @@ function showUserManagementInterface() {
     }
 }
 
+// دالة البحث عن المستخدم وتحميل بياناته
 async function adminLoadUser() {
     const userId = document.getElementById('adminUserIdInput').value.trim();
     const statsDiv = document.getElementById('adminUserStats');
@@ -3573,6 +3675,7 @@ async function adminLoadUser() {
         
         const now = new Date();
         const activeStakes = (user.staking || []).filter(s => new Date(s.endDate) > now);
+        const pendingRewards = (user.staking || []).filter(s => new Date(s.endDate) <= now && !s.claimed);
         
         statsDiv.innerHTML = `
             <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-top: 10px;">
@@ -3585,6 +3688,7 @@ async function adminLoadUser() {
                         </button>
                     </div>
                 </div>
+                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                     <div style="background: rgba(0,212,255,0.1); border-radius: 12px; padding: 10px; text-align: center;">
                         <div style="font-size: 20px;">👥</div>
@@ -3597,6 +3701,7 @@ async function adminLoadUser() {
                         <div style="font-size: 11px; color: var(--text-secondary);">Active Stakes</div>
                     </div>
                 </div>
+                
                 ${activeStakes.length > 0 ? `
                 <details style="margin-bottom: 15px;">
                     <summary style="cursor: pointer; color: var(--quantum-blue); padding: 5px 0;">📋 Staking Plans (${activeStakes.length})</summary>
@@ -3605,7 +3710,9 @@ async function adminLoadUser() {
                     </div>
                 </details>
                 ` : ''}
+                
                 <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
+                
                 <h4 style="margin-bottom: 10px;">💰 Balances</h4>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
                     ${Object.entries(user.balances || {}).filter(([_, v]) => v > 0).map(([c, v]) => `
@@ -3614,7 +3721,9 @@ async function adminLoadUser() {
                         </span>
                     `).join('') || '<span style="color: var(--text-secondary);">No balances</span>'}
                 </div>
+                
                 <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
+                
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button onclick="adminAddBalance()" style="flex:1; background: #10b981; border: none; padding: 10px; border-radius: 8px; color: white; cursor: pointer;">
                         ➕ Add Balance
@@ -3623,6 +3732,8 @@ async function adminLoadUser() {
                         ➖ Remove Balance
                     </button>
                 </div>
+                
+                <!-- ====== PERMANENT BLOCK WITHDRAWALS BUTTON ====== -->
                 <div style="margin-top: 15px;">
                     ${user.withdrawBlocked ? `
                         <div style="background: rgba(239,68,68,0.2); border-radius: 12px; padding: 10px; text-align: center; margin-bottom: 10px;">
@@ -3638,6 +3749,7 @@ async function adminLoadUser() {
                         <i class="fa-regular fa-circle-info"></i> ⚠️ WARNING: This action is PERMANENT and cannot be undone
                     </div>
                 </div>
+                
                 <div style="margin-top: 10px;">
                     <button onclick="adminRefreshUserData()" style="width:100%; background: rgba(0,212,255,0.2); border: 1px solid var(--quantum-blue); padding: 10px; border-radius: 8px; cursor: pointer;">
                         <i class="fa-solid fa-rotate-right"></i> Refresh
@@ -3733,6 +3845,7 @@ async function adminRefreshUserData() {
     await adminLoadUser();
 }
 
+// ====== عرض عدد المستخدمين الكلي ======
 async function showUsersCount() {
     if (!isAdmin) {
         showToast('Access denied', 'error');
@@ -3743,6 +3856,7 @@ async function showUsersCount() {
     adminContent.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading users count...</div>';
     
     try {
+        // ✅ استخدام get() بدلاً من count()
         const usersSnapshot = await db.collection('users').get();
         const totalUsers = usersSnapshot.size;
         
@@ -3772,9 +3886,7 @@ async function showUsersCount() {
         `;
     }
 }
-
-// ====== 29. MODAL FUNCTIONS ======
-
+// ====== 32. MODAL FUNCTIONS ======
 function showDepositModal() {
     document.getElementById('depositModal').classList.add('show');
     updateDepositInfo();
@@ -3804,7 +3916,7 @@ function showAllAssets() {
 
 function showAssetDetails(symbol) {
     const balance = userData.balances[symbol] || 0;
-    const price = symbol === 'REFI' ? REFI_PRICE :
+    const price = symbol === 'REFI' ? REFI_PRICE : 
                  (symbol === 'THB' ? THB_PRICE : (livePrices[symbol]?.price || 0));
     const value = symbol === 'USDT' ? balance : balance * price;
     
@@ -3871,8 +3983,7 @@ function copyToClipboard(text) {
     showToast('Copied to clipboard!', 'success');
 }
 
-// ====== 30. FLOATING NOTIFICATIONS ======
-
+// ====== 33. FLOATING NOTIFICATIONS ======
 let notificationTimeouts = [];
 
 function initFloatingNotifications() {
@@ -3933,287 +4044,318 @@ function stopFloatingNotifications() {
     }
 }
 
-// ====== 31. EARN SECTION - AD SEQUENCE (TWO ADS IN A ROW) ======
+const FLOATING_NOTIFICATIONS = [
+    "💸 Withdrawal • 0x3f...a2d1 • 12 USDT",
+    "💸 Withdrawal • 0x8b...c4e9 • 18 USDT",
+    "💸 Withdrawal • 0x7d...f1b3 • 24 USDT",
+    "💸 Withdrawal • 0x2a...e7f8 • 31 USDT",
+    "💸 Withdrawal • 0x9c...b5d2 • 38 USDT",
+    "💸 Withdrawal • 0x5f...a3c7 • 45 USDT",
+    "💸 Withdrawal • 0x1e...d9b4 • 52 USDT",
+    "💸 Withdrawal • 0x4b...f2e6 • 59 USDT",
+    "💸 Withdrawal • 0x6d...c8a1 • 66 USDT",
+    "💸 Withdrawal • 0x3a...e5b9 • 73 USDT",
+    "💸 Withdrawal • 0x8f...d2c4 • 81 USDT",
+    "💸 Withdrawal • 0x2c...b7f3 • 89 USDT",
+    "💸 Withdrawal • 0x7e...a1d8 • 97 USDT",
+    "💸 Withdrawal • 0x9b...f4c2 • 105 USDT",
+    "💸 Withdrawal • 0x5a...e3b7 • 114 USDT",
+    "💸 Withdrawal • 0x1f...d8c5 • 123 USDT",
+    "💸 Withdrawal • 0x3d...b2a9 • 132 USDT",
+    "💸 Withdrawal • 0x6c...f7e4 • 141 USDT",
+    "💸 Withdrawal • 0x2e...a5b8 • 151 USDT",
+    "💸 Withdrawal • 0x8a...d3c6 • 161 USDT",
+    "💸 Withdrawal • 0x4f...b2d7 • 172 USDT",
+    "💸 Withdrawal • 0x7b...e9c3 • 183 USDT",
+    "💸 Withdrawal • 0x1a...f5d8 • 194 USDT",
+    "💸 Withdrawal • 0x9e...c2b4 • 206 USDT",
+    "💸 Withdrawal • 0x5c...d7a1 • 218 USDT",
+    "💸 Withdrawal • 0x2b...f8e3 • 231 USDT",
+    "💸 Withdrawal • 0x6a...d4c9 • 244 USDT",
+    "💸 Withdrawal • 0x3f...b7a2 • 257 USDT",
+    "💸 Withdrawal • 0x8d...e1f5 • 271 USDT",
+    "💸 Withdrawal • 0x4c...a9b3 • 285 USDT",
+    "💸 Withdrawal • 0x1b...f3d7 • 299 USDT",
+    "💸 Withdrawal • 0x7e...c2a5 • 314 USDT",
+    "💸 Withdrawal • 0x9a...d6b8 • 329 USDT",
+    "💸 Withdrawal • 0x5d...e4c1 • 345 USDT",
+    "💸 Withdrawal • 0x2f...b9a4 • 361 USDT",
+    "💸 Withdrawal • 0x8c...f1e7 • 378 USDT",
+    "💸 Withdrawal • 0x3e...a7d2 • 395 USDT",
+    "💸 Withdrawal • 0x6b...c5f9 • 413 USDT",
+    "💸 Withdrawal • 0x4a...d3e8 • 431 USDT",
+    "💸 Withdrawal • 0x9f...b2c6 • 449 USDT",
+    "💸 Withdrawal • 0x1c...f4a7 • 468 USDT",
+    "💸 Withdrawal • 0x7a...d2e5 • 487 USDT",
+    "💸 Withdrawal • 0x5b...c8f1 • 507 USDT",
+    "💸 Withdrawal • 0x2d...b5a8 • 527 USDT",
+    "💸 Withdrawal • 0x8e...f3c7 • 548 USDT",
+    "💸 Withdrawal • 0x4f...a1d9 • 569 USDT",
+    "💸 Withdrawal • 0x6c...e2b4 • 591 USDT",
+    "💸 Withdrawal • 0x3b...d7f2 • 613 USDT",
+    "💸 Withdrawal • 0x9a...c4e6 • 636 USDT",
+    "💸 Withdrawal • 0x1e...f8b3 • 659 USDT",
+    "💸 Withdrawal • 0x7d...a5c9 • 683 USDT",
+    "💸 Withdrawal • 0x5f...b2d1 • 707 USDT",
+    "💸 Withdrawal • 0x2a...c7e4 • 732 USDT",
+    "💸 Withdrawal • 0x8b...f1d6 • 757 USDT",
+    "💸 Withdrawal • 0x3c...a9b5 • 783 USDT",
+    "💸 Withdrawal • 0x6d...e2f8 • 809 USDT",
+    "💸 Withdrawal • 0x9e...b3c1 • 836 USDT",
+    "💸 Withdrawal • 0x1f...a4d7 • 863 USDT",
+    "💸 Withdrawal • 0x4b...c8e2 • 891 USDT",
+    "💸 Withdrawal • 0x7c...d9f4 • 919 USDT",
+    "💸 Withdrawal • 0x2f...e6a3 • 948 USDT",
+    "💸 Withdrawal • 0x8a...b7c5 • 977 USDT",
+    "💸 Withdrawal • 0x5e...d1f9 • 1,007 USDT",
+    "💸 Withdrawal • 0x3d...c2a7 • 1,037 USDT",
+    "💸 Withdrawal • 0x6a...f4b8 • 1,068 USDT",
+    "💸 Withdrawal • 0x9c...e5d2 • 1,099 USDT",
+    "💸 Withdrawal • 0x2b...a8f6 • 1,131 USDT",
+    "💸 Withdrawal • 0x7f...c3e9 • 1,163 USDT",
+    "💰 Deposit • 0x3f...a2d1 • 150 USDT",
+    "💰 Deposit • 0x8b...c4e9 • 275 USDT",
+    "💰 Deposit • 0x7d...f1b3 • 420 USDT",
+    "💰 Deposit • 0x2a...e7f8 • 580 USDT",
+    "💰 Deposit • 0x9c...b5d2 • 750 USDT",
+    "💰 Deposit • 0x5f...a3c7 • 930 USDT",
+    "💰 Deposit • 0x1e...d9b4 • 1,120 USDT",
+    "💰 Deposit • 0x4b...f2e6 • 1,320 USDT",
+    "💰 Deposit • 0x6d...c8a1 • 1,530 USDT",
+    "💰 Deposit • 0x3a...e5b9 • 1,750 USDT",
+    "💰 Deposit • 0x8f...d2c4 • 1,980 USDT",
+    "💰 Deposit • 0x2c...b7f3 • 2,220 USDT",
+    "💰 Deposit • 0x7e...a1d8 • 2,470 USDT",
+    "💰 Deposit • 0x9b...f4c2 • 2,730 USDT",
+    "💰 Deposit • 0x5a...e3b7 • 1,000 USDT",
+    "💰 Deposit • 0x1f...d8c5 • 3,280 USDT",
+    "💰 Deposit • 0x3d...b2a9 • 1,570 USDT",
+    "💰 Deposit • 0x6c...f7e4 • 1,870 USDT",
+    "💰 Deposit • 0x2e...a5b8 • 2,180 USDT",
+    "💰 Deposit • 0x8a...d3c6 • 2,500 USDT",
+    "💰 Deposit • 0x4f...b2d7 • 1,830 USDT",
+    "💰 Deposit • 0x7b...e9c3 • 5,170 USDT",
+    "💰 Deposit • 0x1a...f5d8 • 1,520 USDT",
+    "💰 Deposit • 0x9e...c2b4 • 5,880 USDT",
+    "💰 Deposit • 0x5c...d7a1 • 1,250 USDT",
+    "💰 Deposit • 0x2b...f8e3 • 1,630 USDT",
+    "💰 Deposit • 0x6a...d4c9 • 2,020 USDT",
+    "💰 Deposit • 0x3f...b7a2 • 4,420 USDT",
+    "💰 Deposit • 0x8d...e1f5 • 2,830 USDT",
+    "💰 Deposit • 0x4c...a9b3 • 1,250 USDT",
+    "💸 Withdrawal • 0x8f...d2c4 • 860 USDT",
+    "💸 Withdrawal • 0x2c...b7f3 • 620 USDT",
+    "💸 Withdrawal • 0x7e...a1d8 • 210 USDT",
+    "💸 Withdrawal • 0x9b...f4c2 • 80 USDT",
+    "💸 Withdrawal • 0x5a...e3b7 • 0.16 BNB",
+    "💸 Withdrawal • 0x1f...d8c5 • 0.21 BNB",
+    "💸 Withdrawal • 0x3d...b2a9 • 0.27 BNB",
+    "💸 Withdrawal • 0x6c...f7e4 • 0.34 BNB",
+    "💸 Withdrawal • 0x2e...a5b8 • 0.42 BNB",
+    "💸 Withdrawal • 0x8a...d3c6 • 0.51 BNB",
+    "💸 Withdrawal • 0x4f...b2d7 • 0.61 BNB",
+    "💸 Withdrawal • 0x7b...e9c3 • 0.72 BNB",
+    "💸 Withdrawal • 0x1a...f5d8 • 0.84 BNB",
+    "💸 Withdrawal • 0x9e...c2b4 • 0.97 BNB",
+    "💸 Withdrawal • 0x5c...d7a1 • 1,744 USDT",
+    "💸 Withdrawal • 0x2b...f8e3 • 800 USDT",
+    "💸 Withdrawal • 0x6a...d4c9 • 1,050 USDT",
+    "💸 Withdrawal • 0x3f...b7a2 • 425 USDT",
+    "💸 Withdrawal • 0x8d...e1f5 • 47.28 USDT",
+    "💸 Withdrawal • 0x4c...a9b3 • 99.80 USDT",
+    "💸 Withdrawal • 0x1b...f3d7 • 311.90 USDT",
+    "💸 Withdrawal • 0x7e...c2a5 • 877 USDT",
+    "💸 Withdrawal • 0x9a...d6b8 • 11,000 USDT",
+    "💸 Withdrawal • 0x5d...e4c1 • 609 USDT",
+    "💸 Withdrawal • 0x2f...b9a4 • 42 USDT",
+    "💸 Withdrawal • 0x8c...f1e7 • 10 USDT",
+    "💸 Withdrawal • 0x3e...a7d2 • 39 USDT",
+    "💸 Withdrawal • 0x6b...c5f9 • 28.66 USDT",
+    "💸 Withdrawal • 0x4a...d3e8 • 2,100 USDT",
+    "💸 Withdrawal • 0x9f...b2c6 • 88.11 USDT",
+    "💸 Withdrawal • 0x1c...f4a7 • 20 USDT",
+    "💸 Withdrawal • 0x7a...d2e5 • 7,200 USDT",
+    "💸 Withdrawal • 0x5b...c8f1 • 67 USDT",
+    "💸 Withdrawal • 0x2d...b5a8 • 206 USDT",
+    "💸 Withdrawal • 0x8e...f3c7 • 900 USDT",
+    "💸 Withdrawal • 0x4f...a1d9 • 6 USDT",
+    "💸 Withdrawal • 0x6c...e2b4 • 440.33 USDT",
+    "💸 Withdrawal • 0x3b...d7f2 • 7.09 USDT",
+    "💸 Withdrawal • 0x9a...c4e6 • 22 USDT",
+    "💸 Withdrawal • 0x1e...f8b3 • 30.18 USDT",
+    "💸 Withdrawal • 0x7d...a5c9 • 18.26 USDT",
+    "💸 Withdrawal • 0x5f...b2d1 • 28.67 USDT",
+    "💸 Withdrawal • 0x2a...c7e4 • 19.09 USDT",
+    "💸 Withdrawal • 0x8b...f1d6 • 94.52 USDT",
+    "💸 Withdrawal • 0x3c...a9b5 • 94.96 USDT",
+    "💸 Withdrawal • 0x6d...e2f8 • 102.41 USDT",
+    "💸 Withdrawal • 0x9e...b3c1 • 10.87 USDT",
+    "💸 Withdrawal • 0x1f...a4d7 • 211.34 USDT",
+    "💸 Withdrawal • 0x4b...c8e2 • 611.82 USDT",
+    "💸 Withdrawal • 0x7c...d9f4 • 120.40 USDT",
+    "💰 Deposit • 0x8f...d2c4 • 0.15 BNB",
+    "💰 Deposit • 0x2c...b7f3 • 0.28 BNB",
+    "💰 Deposit • 0x7e...a1d8 • 0.42 BNB",
+    "💰 Deposit • 0x9b...f4c2 • 0.58 BNB",
+    "💰 Deposit • 0x5a...e3b7 • 0.75 BNB",
+    "💰 Deposit • 0x1f...d8c5 • 0.02 BNB",
+    "💰 Deposit • 0x3d...b2a9 • 0.02109 BNB",
+    "💰 Deposit • 0x6c...f7e4 • 0.08 BNB",
+    "💰 Deposit • 0x2e...a5b8 • 0.02 BNB",
+    "💰 Deposit • 0x8a...d3c6 • 0.054 BNB",
+    "💰 Deposit • 0x4f...b2d7 • 0.07 BNB",
+    "💰 Deposit • 0x7b...e9c3 • 1 BNB",
+    "💰 Deposit • 0x1a...f5d8 • 0.0101 BNB",
+    "💰 Deposit • 0x9e...c2b4 • 0.03 BNB",
+    "💰 Deposit • 0x5c...d7a1 • 0.1506 BNB",
+    "💰 Deposit • 0x2b...f8e3 • 0.02207 BNB",
+    "💰 Deposit • 0x6a...d4c9 • 1 BNB",
+    "💰 Deposit • 0x3f...b7a2 • 0.0922 BNB",
+    "💰 Deposit • 0x8d...e1f5 • 0.02075 BNB",
+    "💰 Deposit • 0x4c...a9b3 • 0.0265 BNB",
+    "💰 Deposit • 0x1b...f3d7 • 1 BNB",
+    "💰 Deposit • 0x7e...c2a5 • 0.75 BNB",
+    "💰 Deposit • 0x9a...d6b8 • 0.025 BNB",
+    "💰 Deposit • 0x5d...e4c1 • 1 BNB",
+    "💰 Deposit • 0x2f...b9a4 • 0.44 BNB",
+    "💰 Deposit • 0x8c...f1e7 • 0.02 BNB",
+    "💰 Deposit • 0x3e...a7d2 • 0.11 BNB",
+    "💰 Deposit • 0x6b...c5f9 • 0.02 BNB",
+    "💰 Deposit • 0x4a...d3e8 • 0.34 BNB",
+    "💰 Deposit • 0x9f...b2c6 • 0.88 BNB",
+    "💰 Deposit • 0x3f...a2d1 • 10,250,000 REFI",
+    "💰 Deposit • 0x8b...c4e9 • 18,850,000 REFI",
+    "💰 Deposit • 0x7d...f1b3 • 201,400,000 REFI",
+    "💰 Deposit • 0x2a...e7f8 • 29,950,000 REFI",
+    "💰 Deposit • 0x9c...b5d2 • 30,500,000 REFI",
+    "💰 Deposit • 0x5f...a3c7 • 48,100,000 REFI",
+    "💰 Deposit • 0x1e...d9b4 • 48,750,000 REFI",
+    "💰 Deposit • 0x4b...f2e6 • 50,400,000 REFI",
+    "💰 Deposit • 0x6d...c8a1 • 61,100,000 REFI",
+    "💰 Deposit • 0x3a...e5b9 • 86,800,000 REFI",
+    "💰 Deposit • 0x8f...d2c4 • 67,500,000 REFI",
+    "💰 Deposit • 0x2c...b7f3 • 81,300,000 REFI",
+    "💰 Deposit • 0x7e...a1d8 • 91,100,000 REFI",
+    "💰 Deposit • 0x9b...f4c2 • 29,900,000 REFI",
+    "💰 Deposit • 0x5a...e3b7 • 10,800,000 REFI",
+    "💰 Deposit • 0x1f...d8c5 • 11,700,000 REFI",
+    "💰 Deposit • 0x3d...b2a9 • 12,600,000 REFI",
+    "💰 Deposit • 0x6c...f7e4 • 13,500,000 REFI",
+    "💰 Deposit • 0x2e...a5b8 • 14,500,000 REFI",
+    "💰 Deposit • 0x8a...d3c6 • 15,500,000 REFI",
+    "💰 Deposit • 0x4f...b2d7 • 16,500,000 REFI",
+    "💰 Deposit • 0x7b...e9c3 • 17,600,000 REFI",
+    "💰 Deposit • 0x1a...f5d8 • 187,700,000 REFI",
+    "💰 Deposit • 0x9e...c2b4 • 19,800,000 REFI",
+    "💰 Deposit • 0x5c...d7a1 • 21,000,000 REFI",
+    "💰 Deposit • 0x2b...f8e3 • 22,200,000 REFI",
+    "💰 Deposit • 0x6a...d4c9 • 23,400,000 REFI",
+    "💰 Deposit • 0x3f...b7a2 • 242,700,000 REFI",
+    "💰 Deposit • 0x8d...e1f5 • 26,000,000 REFI",
+    "💰 Deposit • 0x4c...a9b3 • 27,300,000 REFI",
+    "💰 Deposit • 0x1b...f3d7 • 28,700,000 REFI",
+    "💰 Deposit • 0x7e...c2a5 • 30,100,000 REFI",
+    "💰 Deposit • 0x9a...d6b8 • 31,500,000 REFI",
+    "💰 Deposit • 0x5d...e4c1 • 33,000,000 REFI",
+    "💰 Deposit • 0x2f...b9a4 • 340,500,000 REFI",
+    "💰 Deposit • 0x8c...f1e7 • 36,000,000 REFI",
+    "💰 Deposit • 0x3e...a7d2 • 370,600,000 REFI",
+    "💰 Deposit • 0x6b...c5f9 • 39,200,000 REFI",
+    "💰 Deposit • 0x4a...d3e8 • 40,800,000 REFI",
+    "💰 Deposit • 0x9f...b2c6 • 42,500,000 REFI",
+    "💰 Deposit • 0x1c...f4a7 • 44,200,000 REFI",
+    "💰 Deposit • 0x7a...d2e5 • 45,900,000 REFI",
+    "💰 Deposit • 0x5b...c8f1 • 47,700,000 REFI",
+    "💰 Deposit • 0x2d...b5a8 • 49,500,000 REFI",
+    "💰 Deposit • 0x8e...f3c7 • 51,300,000 REFI",
+    "💰 Deposit • 0x4f...a1d9 • 53,200,000 REFI",
+    "💰 Deposit • 0x6c...e2b4 • 55,100,000 REFI",
+    "💰 Deposit • 0x3b...d7f2 • 57,000,000 REFI",
+    "💰 Deposit • 0x9a...c4e6 • 59,000,000 REFI",
+    "💰 Deposit • 0x1e...f8b3 • 61,000,000 REFI",
+    "💰 Deposit • 0x3f...a2d1 • 1,200 THB",
+    "💰 Deposit • 0x8b...c4e9 • 6,800 THB",
+    "💰 Deposit • 0x7d...f1b3 • 2,500 THB",
+    "💰 Deposit • 0x2a...e7f8 • 10,300 THB",
+    "💰 Deposit • 0x9c...b5d2 • 12,600 THB",
+    "💰 Deposit • 0x5f...a3c7 • 14,900 THB",
+    "💰 Deposit • 0x1e...d9b4 • 7,200 THB",
+    "💰 Deposit • 0x4b...f2e6 • 19,500 THB",
+    "💰 Deposit • 0x6d...c8a1 • 21,800 THB",
+    "💰 Deposit • 0x3a...e5b9 • 24,100 THB",
+    "💰 Deposit • 0x8f...d2c4 • 26,400 THB",
+    "💰 Deposit • 0x2c...b7f3 • 28,700 THB",
+    "💰 Deposit • 0x7e...a1d8 • 31,000 THB",
+    "💰 Deposit • 0x9b...f4c2 • 33,300 THB",
+    "💰 Deposit • 0x5a...e3b7 • 35,600 THB",
+    "💰 Deposit • 0x1f...d8c5 • 37,900 THB",
+    "💰 Deposit • 0x3d...b2a9 • 40,200 THB",
+    "💰 Deposit • 0x6c...f7e4 • 2,500 THB",
+    "💰 Deposit • 0x2e...a5b8 • 44,800 THB",
+    "💰 Deposit • 0x8a...d3c6 • 47,100 THB",
+    "💰 Deposit • 0x4f...b2d7 • 9,400 THB",
+    "💰 Deposit • 0x7b...e9c3 • 51,700 THB",
+    "💰 Deposit • 0x1a...f5d8 • 4,000 THB",
+    "💰 Deposit • 0x9e...c2b4 • 56,300 THB",
+    "💰 Deposit • 0x5c...d7a1 • 58,600 THB",
+    "💰 Deposit • 0x2b...f8e3 • 60,900 THB",
+    "💰 Deposit • 0x6a...d4c9 • 63,200 THB",
+    "💰 Deposit • 0x3f...b7a2 • 65,500 THB",
+    "💰 Deposit • 0x8d...e1f5 • 67,800 THB",
+    "💰 Deposit • 0x4c...a9b3 • 70,100 THB",
+    "💰 Deposit • 0x1b...f3d7 • 72,400 THB",
+    "💰 Deposit • 0x7e...c2a5 • 74,700 THB",
+    "💰 Deposit • 0x9a...d6b8 • 77,000 THB",
+    "💰 Deposit • 0x5d...e4c1 • 79,300 THB",
+    "💰 Deposit • 0x2f...b9a4 • 8,600 THB",
+    "💰 Deposit • 0x8c...f1e7 • 83,900 THB",
+    "💰 Deposit • 0x3e...a7d2 • 6,200 THB",
+    "💰 Deposit • 0x6b...c5f9 • 88,500 THB",
+    "💰 Deposit • 0x4a...d3e8 • 90,800 THB",
+    "💰 Deposit • 0x9f...b2c6 • 9,100 THB",
+    "💰 Deposit • 0x1c...f4a7 • 95,400 THB",
+    "💰 Deposit • 0x7a...d2e5 • 7,700 THB",
+    "💰 Deposit • 0x5b...c8f1 • 100,000 THB",
+    "💰 Deposit • 0x2d...b5a8 • 102,300 THB",
+    "💰 Deposit • 0x8e...f3c7 • 104,600 THB",
+    "💰 Deposit • 0x4f...a1d9 • 106,900 THB",
+    "💰 Deposit • 0x6c...e2b4 • 109,200 THB",
+    "💰 Deposit • 0x3b...d7f2 • 111,500 THB",
+    "💰 Deposit • 0x9a...c4e6 • 113,800 THB",
+    "💰 Deposit • 0x1e...f8b3 • 116,100 THB",
+    "💰 Deposit • 0x3f...a2d1 • 12 ZDX",
+    "💰 Deposit • 0x8b...c4e9 • 18 ZDX",
+    "💰 Deposit • 0x7d...f1b3 • 24 ZDX",
+    "💰 Deposit • 0x2a...e7f8 • 31 ZDX",
+    "💰 Deposit • 0x9c...b5d2 • 38 ZDX",
+    "💰 Deposit • 0x5f...a3c7 • 45 ZDX",
+    "💰 Deposit • 0x1e...d9b4 • 52 ZDX",
+    "💰 Deposit • 0x4b...f2e6 • 59 ZDX",
+    "💰 Deposit • 0x6d...c8a1 • 66 ZDX",
+    "💰 Deposit • 0x3a...e5b9 • 73 ZDX",
+    "💰 Deposit • 0x8f...d2c4 • 81 ZDX",
+    "💰 Deposit • 0x2c...b7f3 • 89 ZDX",
+    "💰 Deposit • 0x7e...a1d8 • 97 ZDX",
+    "💰 Deposit • 0x9b...f4c2 • 105 ZDX",
+    "💰 Deposit • 0x5a...e3b7 • 114 ZDX",
+    "💰 Deposit • 0x1f...d8c5 • 123 ZDX",
+    "💰 Deposit • 0x3d...b2a9 • 132 ZDX",
+    "💰 Deposit • 0x6c...f7e4 • 141 ZDX",
+    "💰 Deposit • 0x2e...a5b8 • 151 ZDX",
+    "💰 Deposit • 0x8a...d3c6 • 161 ZDX",
+    "💰 Deposit • 0x4f...b2d7 • 172 ZDX",
+    "💰 Deposit • 0x7b...e9c3 • 183 ZDX",
+    "💰 Deposit • 0x1a...f5d8 • 194 ZDX",
+    "💰 Deposit • 0x9e...c2b4 • 206 ZDX",
+    "💰 Deposit • 0x5c...d7a1 • 218 ZDX",
+    "💰 Deposit • 0x2b...f8e3 • 231 ZDX",
+    "💰 Deposit • 0x6a...d4c9 • 244 ZDX",
+    "💰 Deposit • 0x3f...b7a2 • 257 ZDX",
+    "💰 Deposit • 0x8d...e1f5 • 271 ZDX",
+    "💰 Deposit • 0x4c...a9b3 • 285 ZDX"
+];
 
-function loadAdPlatforms() {
-    if (adPlatformsLoaded) return;
-    
-    console.log("📢 Loading ad platforms...");
-    
-    // Monetag / OnClickA SDK
-    const script1 = document.createElement('script');
-    script1.src = "https://js.onclckmn.com/static/onclicka.js";
-    script1.dataset.admpid = '437139';
-    script1.async = true;
-    document.head.appendChild(script1);
-    
-    // RichInfo SDK
-    const script2 = document.createElement('script');
-    script2.src = "https://richinfo.co/richpartners/telegram/js/tg-ob.js";
-    script2.onload = () => {
-        if (window.TelegramAdsController) {
-            window.TelegramAdsController.initialize({
-                pubId: "1008922",
-                appId: "7091"
-            });
-        }
-    };
-    script2.async = true;
-    document.head.appendChild(script2);
-    
-    adPlatformsLoaded = true;
-}
-
-function showMonetagAd() {
-    return new Promise((resolve, reject) => {
-        if (typeof show_10895553 !== 'undefined') {
-            show_10895553().then(() => {
-                console.log("✅ Monetag ad completed");
-                resolve(true);
-            }).catch((error) => {
-                console.error("❌ Monetag ad failed:", error);
-                reject(error);
-            });
-        } else {
-            reject(new Error('Monetag SDK not loaded'));
-        }
-    });
-}
-
-function showRichInfoAd() {
-    return new Promise((resolve, reject) => {
-        if (window.TelegramAdsController && typeof window.TelegramAdsController.showAd === 'function') {
-            window.TelegramAdsController.showAd().then(() => {
-                console.log("✅ RichInfo ad completed");
-                resolve(true);
-            }).catch((error) => {
-                console.error("❌ RichInfo ad failed:", error);
-                reject(error);
-            });
-        } else {
-            reject(new Error('RichInfo SDK not loaded'));
-        }
-    });
-}
-
-async function showAdSequence() {
-    const adSequence = [
-        { name: 'Monetag', show: showMonetagAd },
-        { name: 'RichInfo', show: showRichInfoAd }
-    ];
-    
-    for (let i = 0; i < adSequence.length; i++) {
-        const ad = adSequence[i];
-        
-        try {
-            console.log(`🎬 Showing ad ${i + 1} of ${adSequence.length}: ${ad.name}`);
-            
-            showToast(t('earn.watchFirstAd'), 'info');
-            
-            await ad.show();
-            
-            showToast(t('earn.adCompleted'), 'success');
-            
-        } catch (error) {
-            console.error(`❌ Ad ${ad.name} failed:`, error);
-            showToast(t('earn.adFailed'), 'error');
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-function checkEarnReset() {
-    if (!userData) return;
-    
-    const now = Date.now();
-    const hoursSinceReset = (now - (userData.earnLastResetTime || now)) / (1000 * 60 * 60);
-    
-    if (hoursSinceReset >= CYCLE_HOURS) {
-        userData.earnWatchedCount = 0;
-        userData.earnLastResetTime = now;
-        localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-        console.log("🔄 Earn cycle reset");
-        updateEarnStats();
-    }
-}
-
-function updateEarnStats() {
-    if (!userData) return;
-    
-    checkEarnReset();
-    
-    const remaining = MAX_ADS_PER_CYCLE - (userData.earnWatchedCount || 0);
-    
-    const totalEarnedEl = document.getElementById('earnTotalEarned');
-    const watchedCountEl = document.getElementById('earnWatchedCount');
-    const remainingEl = document.getElementById('earnRemaining');
-    const resetTimeEl = document.getElementById('earnResetTime');
-    const watchAdBtn = document.getElementById('watchAdBtn');
-    
-    if (totalEarnedEl) {
-        totalEarnedEl.textContent = (userData.earnTotalRefi || 0).toLocaleString() + ' REFI';
-    }
-    
-    if (watchedCountEl) {
-        watchedCountEl.textContent = (userData.earnWatchedCount || 0) + ' / ' + MAX_ADS_PER_CYCLE;
-    }
-    
-    if (remainingEl) {
-        remainingEl.textContent = Math.max(0, remaining) + ' ' + t('earn.remaining');
-    }
-    
-    if (resetTimeEl) {
-        const lastReset = userData.earnLastResetTime || Date.now();
-        const nextReset = lastReset + (CYCLE_HOURS * 60 * 60 * 1000);
-        const timeLeft = nextReset - Date.now();
-        
-        if (timeLeft > 0) {
-            const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
-            const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            resetTimeEl.textContent = `${hoursLeft}h ${minutesLeft}m`;
-        } else {
-            resetTimeEl.textContent = '0h 0m';
-        }
-    }
-    
-    if (watchAdBtn) {
-        if (remaining <= 0) {
-            watchAdBtn.disabled = true;
-            watchAdBtn.style.opacity = '0.5';
-            watchAdBtn.style.cursor = 'not-allowed';
-        } else {
-            watchAdBtn.disabled = false;
-            watchAdBtn.style.opacity = '1';
-            watchAdBtn.style.cursor = 'pointer';
-        }
-    }
-}
-
-async function watchAd() {
-    if (isWatchingAd) {
-        showToast('Please wait, ad is already playing', 'warning');
-        return;
-    }
-    
-    if (!userData) {
-        showToast('Please wait, loading user data...', 'warning');
-        return;
-    }
-    
-    checkEarnReset();
-    
-    const remaining = MAX_ADS_PER_CYCLE - (userData.earnWatchedCount || 0);
-    
-    if (remaining <= 0) {
-        showToast(t('earn.maxReached'), 'warning');
-        return;
-    }
-    
-    isWatchingAd = true;
-    
-    const watchBtn = document.getElementById('watchAdBtn');
-    if (watchBtn) {
-        watchBtn.disabled = true;
-        watchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading ads...';
-    }
-    
-    try {
-        const success = await showAdSequence();
-        
-        if (success) {
-            userData.earnWatchedCount = (userData.earnWatchedCount || 0) + 1;
-            userData.earnTotalRefi = (userData.earnTotalRefi || 0) + EARN_REWARD;
-            userData.balances.REFI = (userData.balances.REFI || 0) + EARN_REWARD;
-            
-            localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
-            
-            const transaction = {
-                userId: userId,
-                userName: userName,
-                type: 'earn',
-                amount: EARN_REWARD,
-                currency: 'REFI',
-                status: 'completed',
-                timestamp: new Date().toISOString(),
-                details: 'Reward from watching 2 ads'
-            };
-            
-            addTransaction(transaction);
-            
-            if (db) {
-                db.collection('users').doc(userId).update({
-                    earnWatchedCount: userData.earnWatchedCount,
-                    earnTotalRefi: userData.earnTotalRefi,
-                    'balances.REFI': userData.balances.REFI
-                }).catch(console.error);
-                
-                db.collection('transactions').add(transaction).catch(console.error);
-            }
-            
-            showToast(t('earn.sequenceComplete'), 'success');
-            updateUI();
-            updateEarnStats();
-            
-        } else {
-            showToast(t('earn.adFailed'), 'error');
-        }
-        
-    } catch (error) {
-        console.error('Error watching ad sequence:', error);
-        showToast(t('earn.adFailed'), 'error');
-        
-    } finally {
-        isWatchingAd = false;
-        
-        if (watchBtn) {
-            watchBtn.disabled = false;
-            watchBtn.innerHTML = '<i class="fa-regular fa-tv"></i> ' + t('earn.watchAd');
-        }
-    }
-}
-
-// ====== 32. LAUNCH POPUP FUNCTIONS ======
-
-function closeLaunchPopup() {
-    const popup = document.getElementById('launchPopup');
-    if (popup) {
-        popup.classList.remove('show');
-    }
-}
-
-function startPopupCountdown() {
-    const countdownEl = document.getElementById('popupCountdown');
-    if (!countdownEl) return;
-    
-    let seconds = 10;
-    
-    const interval = setInterval(() => {
-        seconds--;
-        if (countdownEl) countdownEl.textContent = seconds;
-        
-        if (seconds <= 0) {
-            clearInterval(interval);
-            closeLaunchPopup();
-        }
-    }, 1000);
-}
-
-function showLaunchPopupOnce() {
-    const hasSeen = localStorage.getItem('launch_popup_seen');
-    if (hasSeen) return;
-    
-    const popup = document.getElementById('launchPopup');
-    if (popup) {
-        popup.classList.add('show');
-        startPopupCountdown();
-        localStorage.setItem('launch_popup_seen', 'true');
-    }
-}
-
-// ====== 33. INITIALIZATION ======
-
+// ====== 34. INITIALIZATION ======
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
@@ -4232,9 +4374,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (splash) splash.classList.add('hidden');
         document.getElementById('mainContent').style.display = 'block';
         initFloatingNotifications();
-        loadAdPlatforms();
-        showLaunchPopupOnce();
         
+        // ✅ عرض الستيكر عند فتح التطبيق لأول مرة
         setTimeout(() => {
             showRandomSticker();
         }, 500);
@@ -4261,15 +4402,12 @@ async function initApp() {
         setupScrollListener();
         
         appInitialized = true;
-        
         console.log("✅ App initialized successfully with ZERO WASTE architecture");
         console.log("✅ On-demand listeners: only when needed (30 seconds)");
         console.log("✅ History: checks only when opened (cached 10 min)");
-        console.log("✅ Admin: manual refresh only - zero auto reads");
-        console.log("✅ Prices: cached for 3 hours - manual refresh available");
-        console.log("✅ Notifications: cleanup buttons - delete read or all");
-        console.log("✅ Earn section: 30 ads per 6 hours, 10,000 REFI per sequence");
-        console.log("✅ Ad sequence: Monetag then RichInfo (2 ads in a row)");
+        console.log("✅ Admin: manual refresh only");
+        console.log("✅ Prices: cached for 3 hours");
+        console.log("✅ Notifications: cleanup buttons added");
         console.log("✅ ZERO unnecessary reads - maximum economy");
         
     } catch (error) {
@@ -4277,11 +4415,12 @@ async function initApp() {
     }
 }
 
-// ====== 34. EXPORT FUNCTIONS ======
+// متغير للتبويب النشط في لوحة المشرف
+let currentAdminTab = 'deposits';
 
+// ====== 35. EXPORT FUNCTIONS ======
 window.showWallet = showWallet;
 window.showSwap = showSwap;
-window.showEarn = showEarn;
 window.showStaking = showStaking;
 window.showReferral = showReferral;
 window.showDepositModal = showDepositModal;
@@ -4325,6 +4464,7 @@ window.scrollToTop = scrollToTop;
 window.checkPendingTransactions = checkPendingTransactions;
 window.clearReadNotifications = clearReadNotifications;
 window.clearAllNotifications = clearAllNotifications;
+
 window.showAdminTab = showAdminTab;
 window.approveTransaction = approveTransaction;
 window.rejectTransaction = rejectTransaction;
@@ -4338,10 +4478,7 @@ window.adminAddBalance = adminAddBalance;
 window.adminRemoveBalance = adminRemoveBalance;
 window.adminRefreshUserData = adminRefreshUserData;
 window.showUsersCount = showUsersCount;
-window.watchAd = watchAd;
-window.closeLaunchPopup = closeLaunchPopup;
-
-console.log("✅ REFI Network v30.0 - WITH AD SEQUENCE");
+console.log("✅ REFI Network v28.0 - ULTIMATE ZERO WASTE ARCHITECTURE");
 console.log("✅ Languages: English / العربية");
 console.log("✅ Referral system: checks only when code present");
 console.log("✅ Listeners: ON-DEMAND only - 30 seconds max");
@@ -4349,8 +4486,5 @@ console.log("✅ History: checks pending transactions only when opened (cached 1
 console.log("✅ Admin: manual refresh only - zero auto reads");
 console.log("✅ Prices: cached for 3 hours - manual refresh available");
 console.log("✅ Notifications: cleanup buttons - delete read or all");
-console.log("✅ Earn: 30 ad sequences per 6 hours (2 ads each = 60 total impressions)");
-console.log("✅ Ad sequence: Monetag → RichInfo (sequential, reward after both)");
-console.log("✅ Reward: 10,000 REFI per complete sequence");
 console.log("✅ ZERO unnecessary reads - maximum economy");
 console.log("✅ Ready for 50,000+ users with minimal cost");
