@@ -1988,8 +1988,7 @@ function updateUI() {
 }
 
 function updateNotificationBadge() {
-    const badge = document.querySelector('.badge');
-
+    const badge = document.getElementById('notificationBadge');
     if (badge && userData) {
         unreadNotifications = userData.notifications?.filter(n => !n.read).length || 0;
 
