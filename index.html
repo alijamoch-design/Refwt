@@ -2,25 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>REFI Network • Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>REFI Network • Earn & Swap</title>
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Telegram Web App SDK -->
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
+    <!-- Monetag Ad SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='10895553' data-sdk='show_10895553'></script>
+    
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- شاشة التحميل -->
+        <!-- ====== شاشة التحميل ====== -->
         <div class="splash-screen" id="splashScreen">
             <div class="splash-content">
                 <div class="splash-logo">
@@ -32,11 +35,11 @@
             </div>
         </div>
 
-        <!-- المحتوى الرئيسي -->
+        <!-- ====== المحتوى الرئيسي ====== -->
         <main id="mainContent" style="display: none;">
-            <!-- قسم المحفظة -->
+            
+            <!-- ====== قسم المحفظة (Wallet) ====== -->
             <div id="walletSection">
-                <!-- الهيدر -->
                 <div class="header">
                     <div class="welcome-text">
                         <span class="welcome-title" data-i18n="welcome.title">Welcome back,</span>
@@ -54,7 +57,6 @@
                     </div>
                 </div>
 
-                <!-- بطاقة الرصيد -->
                 <div class="balance-card">
                     <div class="balance-label" data-i18n="wallet.totalBalance">Total Balance</div>
                     <div class="balance-amount" id="totalBalance">$0.00</div>
@@ -78,7 +80,6 @@
                     </div>
                 </div>
 
-                <!-- عنوان الأصول -->
                 <div class="section-header">
                     <h3 data-i18n="wallet.myAssets">My Assets <i class="fa-regular fa-star" style="color: #ff5ad9;"></i></h3>
                     <button class="see-all-btn" onclick="showAllAssets()">
@@ -86,16 +87,15 @@
                     </button>
                 </div>
 
-                <!-- قائمة الأصول -->
                 <div class="assets-list" id="assetsList"></div>
 
-                <!-- العملات العشر -->
                 <div class="section-header" style="margin-top: 20px;">
                     <h3 data-i18n="wallet.topCryptos">Top Cryptocurrencies <span class="live-badge"><i class="fa-regular fa-circle-dot"></i> LIVE</span></h3>
                     <button class="refresh-btn" onclick="refreshPrices()">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
+
                 <div class="top-crypto-list" id="topCryptoList">
                     <div class="loading-spinner">
                         <i class="fa-solid fa-spinner"></i> <span data-i18n="messages.loading">Loading prices...</span>
@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <!-- قسم السواب -->
+            <!-- ====== قسم التحويل (Swap) ====== -->
             <div id="swapSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -115,7 +115,6 @@
 
                 <div class="swap-container">
                     <div class="swap-card">
-                        <!-- From -->
                         <div class="swap-label" data-i18n="swap.from">From</div>
                         <div class="swap-input-card">
                             <div class="swap-header">
@@ -131,7 +130,6 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons [⬇️] [⬆️] [MAX] -->
                         <div class="swap-actions">
                             <button class="swap-action-btn" onclick="swapDirection('down')" id="swapDownBtn" title="Swap USDT to REFI">
                                 <i class="fa-solid fa-arrow-down"></i>
@@ -144,7 +142,6 @@
                             </button>
                         </div>
 
-                        <!-- To -->
                         <div class="swap-label" data-i18n="swap.to">To</div>
                         <div class="swap-input-card">
                             <div class="swap-header">
@@ -160,7 +157,6 @@
                             </div>
                         </div>
 
-                        <!-- معلومات السواب -->
                         <div class="swap-info">
                             <div class="info-row">
                                 <span data-i18n="swap.exchangeRate">Exchange Rate</span>
@@ -172,7 +168,6 @@
                             </div>
                         </div>
 
-                        <!-- زر التأكيد -->
                         <button class="confirm-btn" onclick="confirmSwap()" id="swapBtn">
                             <i class="fa-regular fa-circle-check"></i>
                             <span data-i18n="actions.confirmSwap">Confirm Swap</span>
@@ -181,7 +176,7 @@
                 </div>
             </div>
 
-            <!-- ====== قسم Earn الجديد ====== -->
+            <!-- ====== قسم الأرباح (Earn) ====== -->
             <div id="earnSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -195,7 +190,6 @@
                     <span class="staking-title" data-i18n="earn.title">EARN REFI</span>
                 </div>
 
-                <!-- إحصائيات الأرباح -->
                 <div class="staking-stats">
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.totalEarned">TOTAL EARNED</span>
@@ -203,11 +197,11 @@
                     </div>
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.adsWatched">ADS WATCHED</span>
-                        <span class="stat-value" id="earnWatchedCount">0 / 30</span>
+                        <span class="stat-value" id="earnWatchedCount">0 / 10</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.remaining">REMAINING</span>
-                        <span class="stat-value" id="earnRemaining">30 remaining</span>
+                        <span class="stat-value" id="earnRemaining">10 remaining</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.resetIn">RESETS IN</span>
@@ -215,22 +209,20 @@
                     </div>
                 </div>
 
-                <!-- زر مشاهدة الإعلان -->
                 <button class="confirm-btn" id="watchAdBtn" onclick="watchAd()" style="margin: 20px; width: calc(100% - 40px);">
                     <i class="fa-regular fa-tv"></i>
                     <span data-i18n="earn.watchAd">Watch Ad</span>
                     <i class="fa-regular fa-coins"></i>
                 </button>
 
-                <!-- معلومات إضافية -->
                 <div class="referral-description" style="margin: 0 20px 20px 20px; text-align: center;">
                     <i class="fa-regular fa-gift"></i>
                     <p>✨ <span data-i18n="earn.resetInfo">Limit resets in</span> <strong id="earnResetTimer">6 hours</strong> ✨</p>
-                    <p style="font-size: 12px; margin-top: 5px;">🎁 Each complete sequence = <strong>10,000 REFI</strong> directly to your wallet!</p>
+                    <p style="font-size: 12px; margin-top: 5px;">🎬 +10,000 REFI per ad | 🎁 10 ads = 100,000 REFI per cycle</p>
                 </div>
             </div>
 
-            <!-- قسم الستيكينغ -->
+            <!-- ====== قسم التجميد (Staking) ====== -->
             <div id="stakingSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -244,7 +236,6 @@
                     <span class="staking-title" data-i18n="staking.title">USDT REWARDS</span>
                 </div>
 
-                <!-- إحصائيات الستيكينغ -->
                 <div class="staking-stats">
                     <div class="stat-card" onclick="showStakingDetails('total')">
                         <span class="stat-label" data-i18n="staking.totalStaked">TOTAL STAKED</span>
@@ -260,10 +251,8 @@
                     </div>
                 </div>
 
-                <!-- خطط الستيكينغ -->
                 <div class="plans-grid" id="plansGrid"></div>
 
-                <!-- إدخال مبلغ الستيكينغ -->
                 <div class="stake-input-section">
                     <div class="input-label">
                         <span data-i18n="staking.amountToStake">AMOUNT TO STAKE</span>
@@ -295,14 +284,12 @@
                     </button>
                 </div>
 
-                <!-- الستيكات النشطة -->
                 <div class="active-stakes-header">
                     <h4 data-i18n="staking.activeStakes">Active Stakes</h4>
                     <span class="count-badge" id="activeStakesCount">0</span>
                 </div>
                 <div class="active-stakes" id="activeStakes"></div>
 
-                <!-- مهام الستيكينغ -->
                 <div class="staking-missions">
                     <div class="section-header">
                         <h3 data-i18n="staking.missions">STAKING MISSIONS</h3>
@@ -312,7 +299,7 @@
                 </div>
             </div>
 
-            <!-- قسم الإحالة -->
+            <!-- ====== قسم الإحالة (Referral) ====== -->
             <div id="referralSection" class="hidden">
                 <div class="section-header">
                     <button class="back-btn" onclick="showWallet()">
@@ -367,7 +354,7 @@
             </div>
         </main>
 
-        <!-- القائمة السفلية -->
+        <!-- ====== القائمة السفلية (Bottom Navigation) ====== -->
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" onclick="showWallet()">
                 <i class="fa-solid fa-wallet"></i>
@@ -390,438 +377,432 @@
                 <span data-i18n="nav.referral">Referral</span>
             </button>
         </nav>
-    </div>
 
-    <!-- ====== MODALS ====== -->
-
-    <!-- نافذة الإيداع (محدثة مع THB و ZDX) -->
-    <div id="depositModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="deposit.title">Deposit Funds</h3>
-                <button class="close-btn" onclick="closeModal('depositModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label data-i18n="deposit.selectCurrency">Select Currency</label>
-                    <div class="currency-select-wrapper">
-                        <select id="depositCurrency" class="form-select" onchange="updateDepositInfo()">
-                            <option value="REFI">REFI (Bep20 Network)</option>
-                            <option value="USDT">USDT (Bep20/erc20)</option>
-                            <option value="BNB">BNB (Bep20 Network)</option>
-                            <option value="ETH">Ethereum (Erc20 Network)</option>
-                            <option value="SHIB">SHIB (Bep20/erc20)</option>
-                            <option value="PEPE">PEPE (BEP20/ERC20)</option>
-                            <option value="SOL">Solana (Solana Network)</option>
-                            <option value="TRX">TRX (Tron Network)</option>
-                            <option value="TRUMP">TRUMP (Solana Network)</option>
-                            <!-- العملات الجديدة المضافة -->
-                            <option value="THB">THB (Bep20 Network)</option>
-                            <option value="ZDX">ZDX (Bep20 Network)</option>
-                        </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="depositIcon">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="deposit.amount">Amount</label>
-                    <input type="number" id="depositAmount" class="form-input" placeholder="Enter amount">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="deposit.transactionId">Transaction ID</label>
-                    <input type="text" id="txnId" class="form-input" placeholder="0x... (66 characters)" maxlength="66" oninput="validateTransactionHashInput()">
-                    <div class="hash-validation-hint" id="hashValidationHint"></div>
-                </div>
-                
-                <!-- عنوان الإيداع -->
-                <div class="deposit-address-card">
-                    <div class="address-header">
-                        <p data-i18n="deposit.sendTo">Send to this address:</p>
-                        <button class="copy-address-btn" onclick="copyDepositAddress()">
-                            <i class="fa-regular fa-copy"></i> <span data-i18n="actions.copy">Copy</span>
-                        </button>
-                    </div>
-                    <div class="address-container" id="depositAddressContainer">
-                        <code id="depositAddress">0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
-                    </div>
-                    <div class="address-note" id="depositAddressNote">
-                        <i class="fa-regular fa-circle-check"></i>
-                        <span data-i18n="deposit.confirmation">✓ Blockchain confirmation 1-5 minutes</span>
-                    </div>
-                </div>
-                
-                <button class="modal-btn" onclick="submitDeposit()" id="submitDepositBtn">
-                    <i class="fa-regular fa-circle-down"></i>
-                    <span data-i18n="deposit.submit">Submit Deposit</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة السحب -->
-    <div id="withdrawModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="withdraw.title">Withdraw Funds</h3>
-                <button class="close-btn" onclick="closeModal('withdrawModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label data-i18n="withdraw.selectCurrency">Select Currency</label>
-                    <div class="currency-select-wrapper">
-                        <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
-                            <option value="REFI">REFI BEP20 (Min: 2,500,000)</option>
-                            <option value="USDT">Tether BEP20 (Min: 1 USDT)</option>
-                            <option value="BNB">Binance coin (Min: 0.01 BNB)</option>
-                        </select>
-                        <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="withdraw.amount">Amount</label>
-                    <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" oninput="checkWithdrawFee()">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="withdraw.address">Wallet Address</label>
-                    <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address (0x...)" maxlength="42" oninput="validateWithdrawAddressInput()">
-                    <div class="address-validation-hint" id="withdrawAddressHint"></div>
-                </div>
-                
-                <!-- تحذير الرسوم -->
-                <div id="feeWarning" class="fee-warning hidden">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span id="feeWarningText">This withdrawal requires a fee</span>
-                </div>
-                
-                <!-- ملخص السحب -->
-                <div class="withdraw-summary">
-                    <div class="summary-row">
-                        <span data-i18n="withdraw.youReceive">You will receive:</span>
-                        <span id="receiveAmount_">0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span data-i18n="withdraw.networkFee">Network fee:</span>
-                        <span id="networkFee">0 BNB</span>
-                    </div>
-                </div>
-                
-                <button class="modal-btn" onclick="submitWithdraw()" id="submitWithdrawBtn">
-                    <i class="fa-regular fa-circle-up"></i>
-                    <span data-i18n="withdraw.submit">Submit Withdrawal</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة التاريخ -->
-    <div id="historyModal" class="modal">
-        <div class="modal-content history-modal">
-            <div class="modal-header">
-                <h3 data-i18n="history.title">Transaction History</h3>
-                <button class="close-btn" onclick="closeModal('historyModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="history-tabs">
-                    <button class="history-tab active" onclick="filterHistory('all')" data-i18n="history.all">All</button>
-                    <button class="history-tab" onclick="filterHistory('deposit')" data-i18n="history.deposits">Deposits</button>
-                    <button class="history-tab" onclick="filterHistory('withdraw')" data-i18n="history.withdrawals">Withdrawals</button>
-                    <button class="history-tab" onclick="filterHistory('swap')" data-i18n="history.swaps">Swaps</button>
-                    <button class="history-tab" onclick="filterHistory('referral')" data-i18n="history.referrals">Referrals</button>
-                    <button class="history-tab" onclick="filterHistory('staking')" data-i18n="history.staking">Staking</button>
-                </div>
-                <div class="history-list" id="historyList">
-                    <div class="loading-spinner">
-                        <i class="fa-solid fa-spinner"></i> <span data-i18n="messages.loadingHistory">Loading history...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة الإشعارات -->
-    <div id="notificationsModal" class="modal">
-        <div class="modal-content notifications-modal">
-            <div class="modal-header">
-                <h3 data-i18n="notifications.title">Notifications</h3>
-                <button class="close-btn" onclick="closeModal('notificationsModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="notifications-list" id="notificationsList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div id="adminPanel" class="admin-panel hidden">
-        <div class="admin-header">
-            <div class="admin-header-content">
-                <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button class="icon-btn" id="adminRefreshBtn" onclick="refreshAdminPanel()" title="Refresh" style="background: rgba(255,90,217,0.1); border: 1px solid rgba(255,90,217,0.3);">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                    <button class="admin-close-btn" onclick="closeAdminPanel()">
+        <!-- ====== نافذة الإيداع ====== -->
+        <div id="depositModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="deposit.title">Deposit Funds</h3>
+                    <button class="close-btn" onclick="closeModal('depositModal')">
                         <i class="fa-solid fa-times"></i>
                     </button>
                 </div>
-            </div>
-            <div class="admin-stats" id="adminStats">
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Total Users</span>
-                    <span class="admin-stat-value" id="totalUsers">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Pending</span>
-                    <span class="admin-stat-value" id="pendingCount">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Approved</span>
-                    <span class="admin-stat-value" id="approvedCount">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-label">Total Referrals</span>
-                    <span class="admin-stat-value" id="totalReferralsCount">0</span>
-                </div>
-            </div>
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="showAdminTab('deposits')">
-                    <i class="fa-regular fa-circle-down"></i> Deposits
-                </button>
-                <button class="admin-tab" onclick="showAdminTab('withdrawals')">
-                    <i class="fa-regular fa-circle-up"></i> Withdrawals
-                </button>
-                <button class="admin-tab" onclick="showAdminTab('completed')">
-                    <i class="fa-regular fa-circle-check"></i> Completed
-                </button>
-                <button class="admin-tab" onclick="showAdminTab('rejected')">
-                    <i class="fa-regular fa-circle-xmark"></i> Rejected
-                </button>
-                <button class="admin-tab" onclick="showUsersCount()">
-                    <i class="fa-solid fa-users"></i> Users Count
-                </button>
-            </div>
-        </div>
-        
-        <div class="admin-content" id="adminContent">
-            <div class="loading-spinner">
-                <i class="fa-solid fa-spinner"></i> Loading admin panel...
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة اختيار العملة -->
-    <div id="currencySelectorModal" class="modal currency-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="currency.select">Select Currency</h3>
-                <button class="close-btn" onclick="closeModal('currencySelectorModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="currency-search">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
-                </div>
-                <div class="currency-list" id="currencyList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة P2P Coming Soon -->
-    <div id="p2pModal" class="modal">
-        <div class="modal-content p2p-modal">
-            <div class="modal-header">
-                <h3>P2P Trading</h3>
-                <button class="close-btn" onclick="closeModal('p2pModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body p2p-body">
-                <div class="p2p-icon">
-                    <i class="fa-solid fa-handshake"></i>
-                </div>
-                <h2 class="p2p-title" data-i18n="p2p.comingSoon">Coming Soon!</h2>
-                <p class="p2p-text" data-i18n="p2p.description">
-                    We're working hard to bring you the best P2P trading experience. 
-                    Stay tuned for exciting updates!
-                </p>
-                <div class="p2p-features">
-                    <div class="feature-item">
-                        <i class="fa-regular fa-circle-check"></i>
-                        <span data-i18n="p2p.feature1">Trade directly with others</span>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label data-i18n="deposit.selectCurrency">Select Currency</label>
+                        <div class="currency-select-wrapper">
+                            <select id="depositCurrency" class="form-select" onchange="updateDepositInfo()">
+                                <option value="REFI">REFI (Bep20 Network)</option>
+                                <option value="USDT">USDT (Bep20/erc20)</option>
+                                <option value="BNB">BNB (Bep20 Network)</option>
+                                <option value="ETH">Ethereum (Erc20 Network)</option>
+                                <option value="SHIB">SHIB (Bep20/erc20)</option>
+                                <option value="PEPE">PEPE (BEP20/ERC20)</option>
+                                <option value="SOL">Solana (Solana Network)</option>
+                                <option value="TRX">TRX (Tron Network)</option>
+                                <option value="TRUMP">TRUMP (Solana Network)</option>
+                                <option value="THB">THB (Bep20 Network)</option>
+                                <option value="ZDX">ZDX (Bep20 Network)</option>
+                            </select>
+                            <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="depositIcon">
+                        </div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fa-regular fa-circle-check"></i>
-                        <span data-i18n="p2p.feature2">Best exchange rates</span>
+                    <div class="form-group">
+                        <label data-i18n="deposit.amount">Amount</label>
+                        <input type="number" id="depositAmount" class="form-input" placeholder="Enter amount">
                     </div>
-                    <div class="feature-item">
-                        <i class="fa-regular fa-circle-check"></i>
-                        <span data-i18n="p2p.feature3">Secure escrow system</span>
+                    <div class="form-group">
+                        <label data-i18n="deposit.transactionId">Transaction ID</label>
+                        <input type="text" id="txnId" class="form-input" placeholder="0x... (66 characters)" maxlength="66" oninput="validateTransactionHashInput()">
+                        <div class="hash-validation-hint" id="hashValidationHint"></div>
                     </div>
+                    
+                    <div class="deposit-address-card">
+                        <div class="address-header">
+                            <p data-i18n="deposit.sendTo">Send to this address:</p>
+                            <button class="copy-address-btn" onclick="copyDepositAddress()">
+                                <i class="fa-regular fa-copy"></i> <span data-i18n="actions.copy">Copy</span>
+                            </button>
+                        </div>
+                        <div class="address-container" id="depositAddressContainer">
+                            <code id="depositAddress">0xbf70420f57342c6Bd4267430D4D3b7E946f09450</code>
+                        </div>
+                        <div class="address-note" id="depositAddressNote">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span data-i18n="deposit.confirmation">✓ Blockchain confirmation 1-5 minutes</span>
+                        </div>
+                    </div>
+                    
+                    <button class="modal-btn" onclick="submitDeposit()" id="submitDepositBtn">
+                        <i class="fa-regular fa-circle-down"></i>
+                        <span data-i18n="deposit.submit">Submit Deposit</span>
+                    </button>
                 </div>
-                <div class="p2p-countdown">
-                    <span data-i18n="p2p.launching">Launching in:</span>
-                    <div class="countdown-timer" id="p2pCountdown">7 days</div>
-                </div>
-                <button class="modal-btn" onclick="closeModal('p2pModal')" data-i18n="actions.gotIt">
-                    Got it!
-                </button>
             </div>
         </div>
-    </div>
 
-    <!-- نافذة تفاصيل الستيكينغ -->
-    <div id="stakingDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="staking.details">Staking Details</h3>
-                <button class="close-btn" onclick="closeModal('stakingDetailsModal')">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="stakingDetailsBody"></div>
-        </div>
-    </div>
-
-    <!-- إشعار منبثق -->
-    <div id="toast" class="toast hidden">
-        <div class="toast-content">
-            <i class="fa-regular fa-circle-check"></i>
-            <span id="toastMessage">Message</span>
-        </div>
-    </div>
-
-    <!-- زر العودة للأعلى -->
-    <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
-    <!-- ====== LAUNCH POPUP - OFFICIAL LAUNCH WINDOW ====== -->
-    <div id="launchPopup" class="launch-popup-overlay">
-        <div class="launch-popup-container">
-            <div class="launch-popup-header">
-                <div class="launch-popup-title">
-                    <i class="fa-solid fa-rocket"></i>
-                    <h2>REFI NETWORK</h2>
+        <!-- ====== نافذة السحب ====== -->
+        <div id="withdrawModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="withdraw.title">Withdraw Funds</h3>
+                    <button class="close-btn" onclick="closeModal('withdrawModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
                 </div>
-                <button class="launch-popup-close" onclick="closeLaunchPopup()">
-                    <i class="fa-solid fa-times"></i>
-                </button>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label data-i18n="withdraw.selectCurrency">Select Currency</label>
+                        <div class="currency-select-wrapper">
+                            <select id="withdrawCurrency" class="form-select" onchange="checkWithdrawFee()">
+                                <option value="REFI">REFI BEP20 (Min: 2,500,000)</option>
+                                <option value="USDT">Tether BEP20 (Min: 1 USDT)</option>
+                                <option value="BNB">Binance coin (Min: 0.01 BNB)</option>
+                            </select>
+                            <img src="https://s2.coinmarketcap.com/static/img/coins/128x128/9065.png" class="select-icon" id="withdrawIcon">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="withdraw.amount">Amount</label>
+                        <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" oninput="checkWithdrawFee()">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="withdraw.address">Wallet Address</label>
+                        <input type="text" id="walletAddress" class="form-input" placeholder="Enter your wallet address (0x...)" maxlength="42" oninput="validateWithdrawAddressInput()">
+                        <div class="address-validation-hint" id="withdrawAddressHint"></div>
+                    </div>
+                    
+                    <div id="feeWarning" class="fee-warning hidden">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="feeWarningText">This withdrawal requires a fee</span>
+                    </div>
+                    
+                    <div class="withdraw-summary">
+                        <div class="summary-row">
+                            <span data-i18n="withdraw.youReceive">You will receive:</span>
+                            <span id="receiveAmount_">0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span data-i18n="withdraw.networkFee">Network fee:</span>
+                            <span id="networkFee">0 BNB</span>
+                        </div>
+                    </div>
+                    
+                    <button class="modal-btn" onclick="submitWithdraw()" id="submitWithdrawBtn">
+                        <i class="fa-regular fa-circle-up"></i>
+                        <span data-i18n="withdraw.submit">Submit Withdrawal</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== نافذة التاريخ ====== -->
+        <div id="historyModal" class="modal">
+            <div class="modal-content history-modal">
+                <div class="modal-header">
+                    <h3 data-i18n="history.title">Transaction History</h3>
+                    <button class="close-btn" onclick="closeModal('historyModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="history-tabs">
+                        <button class="history-tab active" onclick="filterHistory('all')" data-i18n="history.all">All</button>
+                        <button class="history-tab" onclick="filterHistory('deposit')" data-i18n="history.deposits">Deposits</button>
+                        <button class="history-tab" onclick="filterHistory('withdraw')" data-i18n="history.withdrawals">Withdrawals</button>
+                        <button class="history-tab" onclick="filterHistory('swap')" data-i18n="history.swaps">Swaps</button>
+                        <button class="history-tab" onclick="filterHistory('referral')" data-i18n="history.referrals">Referrals</button>
+                        <button class="history-tab" onclick="filterHistory('staking')" data-i18n="history.staking">Staking</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="loading-spinner">
+                            <i class="fa-solid fa-spinner"></i> <span data-i18n="messages.loadingHistory">Loading history...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== نافذة الإشعارات ====== -->
+        <div id="notificationsModal" class="modal">
+            <div class="modal-content notifications-modal">
+                <div class="modal-header">
+                    <h3 data-i18n="notifications.title">Notifications</h3>
+                    <button class="close-btn" onclick="closeModal('notificationsModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="notifications-list" id="notificationsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== لوحة المشرف (Admin Panel) ====== -->
+        <div id="adminPanel" class="admin-panel hidden">
+            <div class="admin-header">
+                <div class="admin-header-content">
+                    <h2><i class="fa-solid fa-crown"></i> Admin Dashboard</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="icon-btn" id="adminRefreshBtn" onclick="refreshAdminPanel()" title="Refresh" style="background: rgba(255,90,217,0.1); border: 1px solid rgba(255,90,217,0.3);">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button class="admin-close-btn" onclick="closeAdminPanel()">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-stats" id="adminStats">
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-label">Total Users</span>
+                        <span class="admin-stat-value" id="totalUsers">0</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-label">Pending</span>
+                        <span class="admin-stat-value" id="pendingCount">0</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-label">Approved</span>
+                        <span class="admin-stat-value" id="approvedCount">0</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-label">Total Referrals</span>
+                        <span class="admin-stat-value" id="totalReferralsCount">0</span>
+                    </div>
+                </div>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="showAdminTab('deposits')">
+                        <i class="fa-regular fa-circle-down"></i> Deposits
+                    </button>
+                    <button class="admin-tab" onclick="showAdminTab('withdrawals')">
+                        <i class="fa-regular fa-circle-up"></i> Withdrawals
+                    </button>
+                    <button class="admin-tab" onclick="showAdminTab('completed')">
+                        <i class="fa-regular fa-circle-check"></i> Completed
+                    </button>
+                    <button class="admin-tab" onclick="showAdminTab('rejected')">
+                        <i class="fa-regular fa-circle-xmark"></i> Rejected
+                    </button>
+                    <button class="admin-tab" onclick="showUsersCount()">
+                        <i class="fa-solid fa-users"></i> Users Count
+                    </button>
+                </div>
             </div>
             
-            <div class="launch-popup-body">
-                <div class="popup-main-text">
-                    <div class="launch-title">
-                        <h1>🚀 Official Launch – Real Finance Network 🛜</h1>
+            <div class="admin-content" id="adminContent">
+                <div class="loading-spinner">
+                    <i class="fa-solid fa-spinner"></i> Loading admin panel...
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== نافذة اختيار العملة ====== -->
+        <div id="currencySelectorModal" class="modal currency-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="currency.select">Select Currency</h3>
+                    <button class="close-btn" onclick="closeModal('currencySelectorModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="currency-search">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="currencySearch" placeholder="Search currency..." oninput="filterCurrencies()">
                     </div>
-                    
-                    <p><strong>Welcome to Real Finance Network</strong> — built to be one of the simplest, most powerful, and fastest-growing financial networks.</p>
-                    
-                    <p>We are now opening direct <strong>24/7 support</strong> to guide you every step of the way.</p>
-                    
-                    <div class="popup-card">
-                        <div class="card-header">
-                            <i class="fa-regular fa-headset"></i>
-                            <span>💬 Live Support (24/7):</span>
+                    <div class="currency-list" id="currencyList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== نافذة P2P ====== -->
+        <div id="p2pModal" class="modal">
+            <div class="modal-content p2p-modal">
+                <div class="modal-header">
+                    <h3>P2P Trading</h3>
+                    <button class="close-btn" onclick="closeModal('p2pModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body p2p-body">
+                    <div class="p2p-icon">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h2 class="p2p-title" data-i18n="p2p.comingSoon">Coming Soon!</h2>
+                    <p class="p2p-text" data-i18n="p2p.description">
+                        We're working hard to bring you the best P2P trading experience. 
+                        Stay tuned for exciting updates!
+                    </p>
+                    <div class="p2p-features">
+                        <div class="feature-item">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span data-i18n="p2p.feature1">Trade directly with others</span>
                         </div>
-                        <p>Get instant help with deposits, withdrawals, and full platform guidance anytime.</p>
-                        <a href="https://t.me/Real_finance_2026" target="_blank" class="professional-link support" style="margin-top: 12px;">
-                            <div class="link-info">
-                                <i class="fa-regular fa-message"></i>
-                                <div class="link-text">
-                                    <span class="link-label">Contact Support</span>
-                                    <span class="link-username">@Real_finance_2026</span>
-                                </div>
-                            </div>
-                            <div class="link-arrow">
-                                <i class="fa-regular fa-arrow-up-right-from-square"></i>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="popup-card">
-                        <div class="card-header">
-                            <i class="fa-regular fa-circle-dollar"></i>
-                            <span>💰 Earn with Confidence:</span>
+                        <div class="feature-item">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span data-i18n="p2p.feature2">Best exchange rates</span>
                         </div>
-                        <ul class="popup-list">
-                            <li><i class="fa-regular fa-circle-check"></i> Complete referral tasks and earn real USDT rewards</li>
-                            <li><i class="fa-regular fa-circle-check"></i> Withdraw your profits anytime — full control is in your hands</li>
-                            <li><i class="fa-regular fa-circle-check"></i> Or choose staking to generate stable and consistent returns</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="popup-card">
-                        <div class="card-header">
-                            <i class="fa-regular fa-shield"></i>
-                            <span>🔒 Security & Full Control:</span>
+                        <div class="feature-item">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span data-i18n="p2p.feature3">Secure escrow system</span>
                         </div>
-                        <ul class="popup-list">
-                            <li><i class="fa-regular fa-circle-check"></i> No loss of user funds</li>
-                            <li><i class="fa-regular fa-circle-check"></i> Full visibility on your balance and transactions</li>
-                            <li><i class="fa-regular fa-circle-check"></i> You stay in control of every action you make</li>
-                        </ul>
                     </div>
-                    
-                    <div class="popup-card">
-                        <div class="card-header">
-                            <i class="fa-regular fa-chart-line"></i>
-                            <span>📈 Why Real Finance Network?</span>
+                    <div class="p2p-countdown">
+                        <span data-i18n="p2p.launching">Launching in:</span>
+                        <div class="countdown-timer" id="p2pCountdown">7 days</div>
+                    </div>
+                    <button class="modal-btn" onclick="closeModal('p2pModal')" data-i18n="actions.gotIt">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== نافذة تفاصيل الستيكينغ ====== -->
+        <div id="stakingDetailsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="staking.details">Staking Details</h3>
+                    <button class="close-btn" onclick="closeModal('stakingDetailsModal')">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="stakingDetailsBody"></div>
+            </div>
+        </div>
+
+        <!-- ====== إشعار منبثق ====== -->
+        <div id="toast" class="toast hidden">
+            <div class="toast-content">
+                <i class="fa-regular fa-circle-check"></i>
+                <span id="toastMessage">Message</span>
+            </div>
+        </div>
+
+        <!-- ====== زر العودة للأعلى ====== -->
+        <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+
+        <!-- ====== نافذة الإطلاق (Launch Popup) ====== -->
+        <div id="launchPopup" class="launch-popup-overlay">
+            <div class="launch-popup-container">
+                <div class="launch-popup-header">
+                    <div class="launch-popup-title">
+                        <i class="fa-solid fa-rocket"></i>
+                        <h2>REFI NETWORK</h2>
+                    </div>
+                    <button class="launch-popup-close" onclick="closeLaunchPopup()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="launch-popup-body">
+                    <div class="popup-main-text">
+                        <div class="launch-title">
+                            <h1>🚀 Official Launch – Real Finance Network 🛜</h1>
                         </div>
-                        <ul class="popup-list">
-                            <li><i class="fa-regular fa-circle-check"></i> Simple and beginner-friendly</li>
-                            <li><i class="fa-regular fa-circle-check"></i> Fast-growing community</li>
-                            <li><i class="fa-regular fa-circle-check"></i> Multiple earning options (Referral + Staking)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="closing-text">
-                        <strong>We are building a network where you earn, you control, and you grow safely.</strong><br>
-                        Join now and start your journey.
-                    </div>
-                    
-                    <div class="links-container">
-                        <a href="https://t.me/Real_finance_2026" target="_blank" class="professional-link support">
-                            <div class="link-info">
+                        
+                        <p><strong>Welcome to Real Finance Network</strong> — built to be one of the simplest, most powerful, and fastest-growing financial networks.</p>
+                        
+                        <p>We are now opening direct <strong>24/7 support</strong> to guide you every step of the way.</p>
+                        
+                        <div class="popup-card">
+                            <div class="card-header">
                                 <i class="fa-regular fa-headset"></i>
-                                <div class="link-text">
-                                    <span class="link-label">Live Support</span>
-                                    <span class="link-username">@Real_finance_2026</span>
+                                <span>💬 Live Support (24/7):</span>
+                            </div>
+                            <p>Get instant help with deposits, withdrawals, and full platform guidance anytime.</p>
+                            <a href="https://t.me/Real_finance_2026" target="_blank" class="professional-link support" style="margin-top: 12px;">
+                                <div class="link-info">
+                                    <i class="fa-regular fa-message"></i>
+                                    <div class="link-text">
+                                        <span class="link-label">Contact Support</span>
+                                        <span class="link-username">@Real_finance_2026</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="link-arrow">
-                                <i class="fa-regular fa-arrow-up-right-from-square"></i>
-                            </div>
-                        </a>
-                        <a href="https://t.me/Realfinance_REFI" target="_blank" class="professional-link channel">
-                            <div class="link-info">
-                                <i class="fa-regular fa-megaphone"></i>
-                                <div class="link-text">
-                                    <span class="link-label">Follow Updates</span>
-                                    <span class="link-username">@Realfinance_REFI</span>
+                                <div class="link-arrow">
+                                    <i class="fa-regular fa-arrow-up-right-from-square"></i>
                                 </div>
+                            </a>
+                        </div>
+                        
+                        <div class="popup-card">
+                            <div class="card-header">
+                                <i class="fa-regular fa-circle-dollar"></i>
+                                <span>💰 Earn with Confidence:</span>
                             </div>
-                            <div class="link-arrow">
-                                <i class="fa-regular fa-arrow-up-right-from-square"></i>
+                            <ul class="popup-list">
+                                <li><i class="fa-regular fa-circle-check"></i> Complete referral tasks and earn real USDT rewards</li>
+                                <li><i class="fa-regular fa-circle-check"></i> Withdraw your profits anytime — full control is in your hands</li>
+                                <li><i class="fa-regular fa-circle-check"></i> Or choose staking to generate stable and consistent returns</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="popup-card">
+                            <div class="card-header">
+                                <i class="fa-regular fa-shield"></i>
+                                <span>🔒 Security & Full Control:</span>
                             </div>
-                        </a>
+                            <ul class="popup-list">
+                                <li><i class="fa-regular fa-circle-check"></i> No loss of user funds</li>
+                                <li><i class="fa-regular fa-circle-check"></i> Full visibility on your balance and transactions</li>
+                                <li><i class="fa-regular fa-circle-check"></i> You stay in control of every action you make</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="popup-card">
+                            <div class="card-header">
+                                <i class="fa-regular fa-chart-line"></i>
+                                <span>📈 Why Real Finance Network?</span>
+                            </div>
+                            <ul class="popup-list">
+                                <li><i class="fa-regular fa-circle-check"></i> Simple and beginner-friendly</li>
+                                <li><i class="fa-regular fa-circle-check"></i> Fast-growing community</li>
+                                <li><i class="fa-regular fa-circle-check"></i> Multiple earning options (Referral + Staking)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="closing-text">
+                            <strong>We are building a network where you earn, you control, and you grow safely.</strong><br>
+                            Join now and start your journey.
+                        </div>
+                        
+                        <div class="links-container">
+                            <a href="https://t.me/Real_finance_2026" target="_blank" class="professional-link support">
+                                <div class="link-info">
+                                    <i class="fa-regular fa-headset"></i>
+                                    <div class="link-text">
+                                        <span class="link-label">Live Support</span>
+                                        <span class="link-username">@Real_finance_2026</span>
+                                    </div>
+                                </div>
+                                <div class="link-arrow">
+                                    <i class="fa-regular fa-arrow-up-right-from-square"></i>
+                                </div>
+                            </a>
+                            <a href="https://t.me/Realfinance_REFI" target="_blank" class="professional-link channel">
+                                <div class="link-info">
+                                    <i class="fa-regular fa-megaphone"></i>
+                                    <div class="link-text">
+                                        <span class="link-label">Follow Updates</span>
+                                        <span class="link-username">@Realfinance_REFI</span>
+                                    </div>
+                                </div>
+                                <div class="link-arrow">
+                                    <i class="fa-regular fa-arrow-up-right-from-square"></i>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="launch-popup-footer">
-                <button class="popup-gotit-btn" onclick="closeLaunchPopup()">
-                    Got it! <i class="fa-regular fa-circle-check"></i>
-                </button>
-                <p class="popup-auto-close">✨ Closes automatically in <span id="popupCountdown">10</span> seconds</p>
+                
+                <div class="launch-popup-footer">
+                    <button class="popup-gotit-btn" onclick="closeLaunchPopup()">
+                        Got it! <i class="fa-regular fa-circle-check"></i>
+                    </button>
+                    <p class="popup-auto-close">✨ Closes automatically in <span id="popupCountdown">10</span> seconds</p>
+                </div>
             </div>
         </div>
     </div>
