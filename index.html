@@ -27,19 +27,9 @@
         }
     </script>
     
+    <!-- Adsterra Ad SDK (تم استبدال OnClickA بـ Adsterra) -->
     <!-- OnClickA Ad SDK -->
     <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
-    
-    <!-- RichAds SDK -->
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-    <script>
-        window.TelegramAdsController = new TelegramAdsController();
-        window.TelegramAdsController.initialize({
-            pubId: "1008922",
-            appId: "7180",
-        });
-        console.log("✅ RichAds initialized with appId: 7180");
-    </script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
@@ -225,11 +215,11 @@
                 <div class="earn-stats">
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.adsWatched">ADS WATCHED</span>
-                        <span class="stat-value" id="earnWatchedCount">0 / 40</span>
+                        <span class="stat-value" id="earnWatchedCount">0 / 30</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.remaining">REMAINING</span>
-                        <span class="stat-value" id="earnRemaining">40 remaining</span>
+                        <span class="stat-value" id="earnRemaining">30 remaining</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label" data-i18n="earn.resetIn">RESETS IN</span>
@@ -284,7 +274,7 @@
                     </div>
                     <div class="rules-footer">
                         <span class="rule-badge"><i class="fa-regular fa-clock"></i> Resets every <strong>6 hours</strong></span>
-                        <span class="rule-badge"><i class="fa-regular fa-gem"></i> 40 ads = <strong>400,000 REFI</strong></span>
+                        <span class="rule-badge"><i class="fa-regular fa-gem"></i> 30 ads = <strong>300,000 REFI</strong></span>
                         <span class="rule-badge"><i class="fa-regular fa-circle-info"></i> Min claim: <strong>500,000 REFI</strong></span>
                     </div>
                 </div>
