@@ -4811,20 +4811,22 @@ const AD_PLATFORMS = [
         name: 'OnClickA',
         init: () => {
             if (typeof window.initCdTma === 'function') {
-                window.initCdTma({ id: '6117297' }).then(show => {
+                window.initCdTma({ id: '6117305' }).then(show => {
                     window.show = show;
-                    console.log('✅ OnClickA initialized with ID: 6117297');
+                    console.log('✅ OnClickA initialized with Spot ID: 6117305');
                 }).catch(e => console.error('OnClickA init error:', e));
+            } else {
+                console.error('❌ window.initCdTma not found');
             }
         },
         show: () => {
             return new Promise((resolve, reject) => {
                 if (window.show && typeof window.show === 'function') {
                     window.show().then(() => {
-                        console.log('✅ OnClickA ad played successfully');
+                        console.log('✅ OnClickA rewarded video completed');
                         resolve();
                     }).catch((err) => {
-                        console.error('OnClickA ad error:', err);
+                        console.error('❌ OnClickA ad error:', err);
                         reject(err);
                     });
                 } else {
