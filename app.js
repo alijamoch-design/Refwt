@@ -4834,6 +4834,32 @@ const AD_PLATFORMS = [
                 }
             });
         }
+    },
+    {
+        name: 'RichAds',
+        init: () => {
+            console.log('🎮 RichAds ready');
+        },
+        show: () => {
+            return new Promise((resolve, reject) => {
+                if (window.TelegramAdsController && typeof window.TelegramAdsController.showAd === 'function') {
+                    window.TelegramAdsController.showAd().then(() => {
+                        console.log('✅ RichAds Playable ad completed');
+                        resolve();
+                    }).catch((err) => {
+                        console.error('❌ RichAds ad error:', err);
+                        reject(err);
+                    });
+                } else if (window.TelegramAdsController && typeof window.TelegramAdsController.show === 'function') {
+                    window.TelegramAdsController.show().then(() => {
+                        console.log('✅ RichAds ad completed');
+                        resolve();
+                    }).catch(reject);
+                } else {
+                    reject('RichAds not ready');
+                }
+            });
+        }
     }
 ];
 
