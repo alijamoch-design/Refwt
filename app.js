@@ -4808,53 +4808,27 @@ const AD_PLATFORMS = [
         }
     },
     {
-        name: 'Adsterra',
+        name: 'OnClickA',
         init: () => {
-            console.log('Adsterra initialized');
-            // التأكد من وجود عنصر الإعلان
-            if (!document.querySelector('#adsterra_invoke')) {
-                const adContainer = document.createElement('div');
-                adContainer.id = 'adsterra_invoke';
-                adContainer.style.display = 'none';
-                document.body.appendChild(adContainer);
+            if (typeof window.initCdTma === 'function') {
+                window.initCdTma({ id: '437811' }).then(show => {
+                    window.showOnClickaAd = show;
+                    console.log('✅ OnClickA initialized with ID: 437811');
+                }).catch(e => console.error('OnClickA init error:', e));
             }
         },
         show: () => {
             return new Promise((resolve, reject) => {
-                try {
-                    // محاولة عرض إعلان Adsterra
-                    if (typeof window.adsterra !== 'undefined' && typeof window.adsterra.show === 'function') {
-                        window.adsterra.show().then(resolve).catch(reject);
-                    } 
-                    // الطريقة البديلة: فتح النافذة المنبثقة مباشرة
-                    else {
-                        const zoneId = '29224593';
-                        const adUrl = `https://pl${zoneId}.profitablecpmratenetwork.com/ec29551cda213c0df9d222191d9fbbce/invoke.js`;
-                        
-                        // إنشاء iframe مؤقت لعرض الإعلان
-                        const iframe = document.createElement('iframe');
-                        iframe.src = adUrl;
-                        iframe.style.position = 'fixed';
-                        iframe.style.top = '0';
-                        iframe.style.left = '0';
-                        iframe.style.width = '100%';
-                        iframe.style.height = '100%';
-                        iframe.style.zIndex = '9999';
-                        iframe.style.border = 'none';
-                        
-                        document.body.appendChild(iframe);
-                        
-                        // إزالة iframe بعد 5 ثواني
-                        setTimeout(() => {
-                            if (iframe && iframe.parentNode) {
-                                iframe.parentNode.removeChild(iframe);
-                            }
-                            resolve();
-                        }, 5000);
-                    }
-                } catch (error) {
-                    console.error('Adsterra error:', error);
-                    reject(error);
+                if (window.showOnClickaAd && typeof window.showOnClickaAd === 'function') {
+                    window.showOnClickaAd().then(() => {
+                        console.log('✅ OnClickA ad played successfully');
+                        resolve();
+                    }).catch((err) => {
+                        console.error('OnClickA ad error:', err);
+                        reject(err);
+                    });
+                } else {
+                    reject('OnClickA not ready');
                 }
             });
         }
