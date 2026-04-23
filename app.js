@@ -4808,18 +4808,59 @@ const AD_PLATFORMS = [
         }
     },
     {
-        name: 'OnClickA',
+        name: 'Adsterra',
         init: () => {
-            // التهيئة تمت في index.html عبر window.initCdTma
+            console.log('Adsterra initialized');
+            // التأكد من وجود عنصر الإعلان
+            if (!document.querySelector('#adsterra_invoke')) {
+                const adContainer = document.createElement('div');
+                adContainer.id = 'adsterra_invoke';
+                adContainer.style.display = 'none';
+                document.body.appendChild(adContainer);
+            }
         },
         show: () => {
-            if (window.showOnClickaAd && typeof window.showOnClickaAd === 'function') {
-                return window.showOnClickaAd();
-            }
-            return Promise.reject('OnClickA not ready');
+            return new Promise((resolve, reject) => {
+                try {
+                    // محاولة عرض إعلان Adsterra
+                    if (typeof window.adsterra !== 'undefined' && typeof window.adsterra.show === 'function') {
+                        window.adsterra.show().then(resolve).catch(reject);
+                    } 
+                    // الطريقة البديلة: فتح النافذة المنبثقة مباشرة
+                    else {
+                        const zoneId = '29224593';
+                        const adUrl = `https://pl${zoneId}.profitablecpmratenetwork.com/ec29551cda213c0df9d222191d9fbbce/invoke.js`;
+                        
+                        // إنشاء iframe مؤقت لعرض الإعلان
+                        const iframe = document.createElement('iframe');
+                        iframe.src = adUrl;
+                        iframe.style.position = 'fixed';
+                        iframe.style.top = '0';
+                        iframe.style.left = '0';
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.style.zIndex = '9999';
+                        iframe.style.border = 'none';
+                        
+                        document.body.appendChild(iframe);
+                        
+                        // إزالة iframe بعد 5 ثواني
+                        setTimeout(() => {
+                            if (iframe && iframe.parentNode) {
+                                iframe.parentNode.removeChild(iframe);
+                            }
+                            resolve();
+                        }, 5000);
+                    }
+                } catch (error) {
+                    console.error('Adsterra error:', error);
+                    reject(error);
+                }
+            });
         }
     }
 ];
+
 // ============================================================================
 // 32. EARN SYSTEM - COMPLETE WITH PENDING BALANCE & CLAIM
 // ============================================================================
