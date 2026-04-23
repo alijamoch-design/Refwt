@@ -4808,26 +4808,16 @@ const AD_PLATFORMS = [
         }
     },
     {
-    name: 'Adsterra',
-    show: () => {
-        return new Promise((resolve) => {
-            // إنشاء div مخفي لتشغيل الإعلان
-            const div = document.createElement('div');
-            div.id = 'container-ec29551cda213c0df9d222191d9fbbce';
-            div.style.display = 'none';
-            document.body.appendChild(div);
-            
-            // تشغيل الإعلان
-            const script = document.createElement('script');
-            script.src = 'https://pl29224593.profitablecpmratenetwork.com/ec29551cda213c0df9d222191d9fbbce/invoke.js';
-            script.async = true;
-            document.body.appendChild(script);
-            
-            // بعد 5 ثوانٍ، نعتبر الإعلان قد شوهد
-            setTimeout(() => {
-                resolve(); // ✅ نضيف المكافأة
-            }, 5000);
-        });
+        name: 'OnClickA',
+        init: () => {
+            // التهيئة تمت في index.html عبر window.initCdTma
+        },
+        show: () => {
+            if (window.showOnClickaAd && typeof window.showOnClickaAd === 'function') {
+                return window.showOnClickaAd();
+            }
+            return Promise.reject('OnClickA not ready');
+        }
     }
 ];
 // ============================================================================
