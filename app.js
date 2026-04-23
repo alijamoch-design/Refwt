@@ -4811,16 +4811,16 @@ const AD_PLATFORMS = [
         name: 'OnClickA',
         init: () => {
             if (typeof window.initCdTma === 'function') {
-                window.initCdTma({ id: '437811' }).then(show => {
-                    window.showOnClickaAd = show;
-                    console.log('✅ OnClickA initialized with ID: 437811');
+                window.initCdTma({ id: '6117297' }).then(show => {
+                    window.show = show;
+                    console.log('✅ OnClickA initialized with ID: 6117297');
                 }).catch(e => console.error('OnClickA init error:', e));
             }
         },
         show: () => {
             return new Promise((resolve, reject) => {
-                if (window.showOnClickaAd && typeof window.showOnClickaAd === 'function') {
-                    window.showOnClickaAd().then(() => {
+                if (window.show && typeof window.show === 'function') {
+                    window.show().then(() => {
                         console.log('✅ OnClickA ad played successfully');
                         resolve();
                     }).catch((err) => {
@@ -4838,7 +4838,6 @@ const AD_PLATFORMS = [
 // ============================================================================
 // 32. EARN SYSTEM - COMPLETE WITH PENDING BALANCE & CLAIM
 // ============================================================================
-
 const EARN_KEY = `earn_${userId}`;
 
 function loadEarnData() {
