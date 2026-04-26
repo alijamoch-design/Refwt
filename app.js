@@ -2329,7 +2329,7 @@ function claimStakingReward(startDate) {
 
     const reward = stake.amount * stake.plan.return / 100;
 
-    userData.balances.USDT += reward;
+    userData.balances.USDT += stake.amount + reward;
     stake.claimed = true;
 
     localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
