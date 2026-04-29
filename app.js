@@ -4834,8 +4834,107 @@ const AD_PLATFORMS = [
                 }
             });
         }
+    },
+    {
+        name: 'Adexium',
+        init: () => {
+            if (typeof AdexiumWidget !== 'undefined') {
+                console.log('✅ Adexium detected');
+            }
+        },
+        show: () => {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (typeof AdexiumWidget !== 'undefined') {
+                        const adexiumAd = new AdexiumWidget({
+                            wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6',
+                            adFormat: 'interstitial'
+                        });
+                        adexiumAd.showAd().then(() => {
+                            console.log('✅ Adexium ad completed');
+                            resolve();
+                        }).catch(reject);
+                    } else {
+                        reject('Adexium not ready');
+                    }
+                } catch (e) {
+                    reject('Adexium error: ' + e.message);
+                }
+            });
+        }
+    },
+    {
+        name: 'RichAds',
+        init: () => {
+            if (!richAdsInitialized && !richAdsFailed && typeof TelegramAdsController !== 'undefined') {
+                try {
+                    window.TelegramAdsController = new TelegramAdsController();
+                    window.TelegramAdsController.initialize({
+                        pubId: "1009657",
+                        appId: "7207",
+                    });
+                    richAdsInitialized = true;
+                    console.log('✅ RichAds initialized');
+                } catch (e) {
+                    console.error('❌ RichAds init error:', e);
+                    richAdsFailed = true;
+                }
+            }
+        },
+        show: () => {
+            return new Promise((resolve, reject) => {
+                if (richAdsFailed) {
+                    reject('RichAds failed to initialize');
+                    return;
+                }
+                
+                if (!richAdsInitialized) {
+                    try {
+                        window.TelegramAdsController = new TelegramAdsController();
+                        window.TelegramAdsController.initialize({
+                            pubId: "1009657",
+                            appId: "7207",
+                        });
+                        richAdsInitialized = true;
+                    } catch (e) {
+                        richAdsFailed = true;
+                        reject('RichAds init failed: ' + e.message);
+                        return;
+                    }
+                }
+
+                if (window.TelegramAdsController && typeof window.TelegramAdsController.showAd === 'function') {
+                    try {
+                        window.TelegramAdsController.showAd()
+                            .then(() => {
+                                console.log('✅ RichAds ad completed');
+                                resolve();
+                            })
+                            .catch(reject);
+                    } catch (e) {
+                        reject('RichAds error: ' + e.message);
+                    }
+                } else if (window.TelegramAdsController && typeof window.TelegramAdsController.showInterstitial === 'function') {
+                    try {
+                        window.TelegramAdsController.showInterstitial()
+                            .then(() => {
+                                console.log('✅ RichAds interstitial completed');
+                                resolve();
+                            })
+                            .catch(reject);
+                    } catch (e) {
+                        reject('RichAds error: ' + e.message);
+                    }
+                } else {
+                    reject('RichAds show method not found');
+                }
+            });
+        }
     }
 ];
+
+let richAdsInitialized = false;
+let richAdsFailed = false;
 
 // ============================================================================
 // 32. EARN SYSTEM - COMPLETE WITH PENDING BALANCE & CLAIM
@@ -5088,6 +5187,7 @@ async function watchAd() {
     if (watchBtn) {
         watchBtn.disabled = true;
         watchBtn.style.opacity = '0.6';
+        watchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading ads...';
     }
 
     for (const platform of AD_PLATFORMS) {
@@ -5101,34 +5201,64 @@ async function watchAd() {
     }
 
     const shuffledPlatforms = [...AD_PLATFORMS].sort(() => Math.random() - 0.5);
-
-    let adShown = false;
+    
+    let adsShown = 0;
     let lastError = null;
 
+    // ========== الإعلان الأول ==========
     for (const platform of shuffledPlatforms) {
-        try {
-            console.log(`📢 Trying to show ad from: ${platform.name}`);
-
-            if (platform.init) {
-                platform.init();
+        if (adsShown === 0) {
+            try {
+                console.log(`📢 Showing FIRST ad from: ${platform.name}`);
+                
+                if (platform.init) {
+                    platform.init();
+                }
+                
+                await platform.show();
+                console.log(`✅ FIRST ad completed from: ${platform.name}`);
+                adsShown++;
+                break;
+            } catch (error) {
+                console.log(`❌ FIRST ad failed from ${platform.name}:`, error);
+                lastError = error;
             }
-
-            await platform.show();
-
-            console.log(`✅ Ad shown successfully from: ${platform.name}`);
-            adShown = true;
-            break;
-
-        } catch (error) {
-            console.log(`❌ Failed to show ad from ${platform.name}:`, error);
-            lastError = error;
         }
     }
 
-    if (adShown) {
+    // ========== الإعلان الثاني (إذا نجح الأول) ==========
+    if (adsShown === 1) {
+        const otherPlatforms = AD_PLATFORMS.filter(p => p.name !== shuffledPlatforms[0]?.name);
+        
+        for (const platform of otherPlatforms.sort(() => Math.random() - 0.5)) {
+            if (adsShown === 1) {
+                try {
+                    console.log(`📢 Showing SECOND ad from: ${platform.name}`);
+                    
+                    if (platform.init) {
+                        platform.init();
+                    }
+                    
+                    await platform.show();
+                    console.log(`✅ SECOND ad completed from: ${platform.name}`);
+                    adsShown++;
+                    break;
+                } catch (error) {
+                    console.log(`❌ SECOND ad failed from ${platform.name}:`, error);
+                    lastError = error;
+                }
+            }
+        }
+    }
+
+    // ========== منح المكافأة فقط إذا شاهد الإعلانين ==========
+    if (adsShown === 2) {
         addEarnReward();
         updateEarnUI();
-        showToast(`✅ Ad watched! +${EARN_CONFIG.REWARD_PER_AD.toLocaleString()} REFI added to pending balance!`, 'success');
+        showToast(`✅ Both ads watched! +${EARN_CONFIG.REWARD_PER_AD.toLocaleString()} REFI!`, 'success');
+    } else if (adsShown === 1) {
+        console.error("Only first ad completed, second ad failed:", lastError);
+        showToast("⚠️ Ad sequence incomplete. Please try again.", "warning");
     } else {
         console.error("All ad platforms failed:", lastError);
         showToast("No ads available. Please try again later.", "error");
@@ -5137,6 +5267,7 @@ async function watchAd() {
     if (watchBtn) {
         watchBtn.disabled = false;
         watchBtn.style.opacity = '1';
+        watchBtn.innerHTML = '<i class="fa-regular fa-tv"></i> <span>' + t('earn.watchAd') + '</span> <i class="fa-regular fa-coins"></i>';
     }
 }
 
