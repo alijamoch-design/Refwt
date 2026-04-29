@@ -31,13 +31,19 @@
     <!-- OnClickA Ad SDK -->
     <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
     
-    <!-- Adexium Ad SDK -->
+    <!-- Adexium Ad SDK - تهيئة يدوية بدون autoMode -->
     <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script type="text/javascript">
-        console.log("✅ Adexium SDK loaded (manual mode only)");
+        if (typeof AdexiumWidget !== 'undefined') {
+            window.adexiumController = new AdexiumWidget({
+                wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6',
+                adFormat: 'interstitial'
+            });
+            console.log("✅ Adexium initialized (manual mode only)");
+        }
     </script>
     
-    <!-- RichAds SDK -->
+    <!-- RichAds SDK - تهيئة يدوية بدون autoMode -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
         window.TelegramAdsController = new TelegramAdsController();
@@ -46,7 +52,7 @@
             appId: "7207",
             adUnitId: "395248"
         });
-        console.log("✅ RichAds initialized with adUnitId: 395248");
+        console.log("✅ RichAds initialized with adUnitId: 395248 (manual mode only)");
     </script>
     
     <!-- CSS -->
