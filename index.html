@@ -34,20 +34,20 @@
     <!-- Adexium Ad SDK -->
     <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof AdexiumWidget !== 'undefined') {
-                const adexiumWidget = new AdexiumWidget({
-                    wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6', 
-                    adFormat: 'interstitial'
-                });
-                adexiumWidget.autoMode();
-                console.log("✅ Adexium initialized");
-            }
-        });
+        console.log("✅ Adexium SDK loaded (manual mode only)");
     </script>
     
     <!-- RichAds SDK -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+        window.TelegramAdsController = new TelegramAdsController();
+        window.TelegramAdsController.initialize({
+            pubId: "1009657",
+            appId: "7207",
+            adUnitId: "395248"
+        });
+        console.log("✅ RichAds initialized with adUnitId: 395248");
+    </script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
