@@ -4837,28 +4837,103 @@ const AD_PLATFORMS = [
     },
     {
         name: 'Adexium',
+        init: () => {
+            if (!window.adexiumWidget && typeof AdexiumWidget !== 'undefined') {
+                try {
+                    window.adexiumWidget = new AdexiumWidget({
+                        wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6',
+                        adFormat: 'interstitial'
+                    });
+                    console.log('✅ Adexium widget initialized');
+                } catch (e) {
+                    console.error('❌ Adexium init error:', e);
+                }
+            }
+        },
         show: () => {
             return new Promise((resolve, reject) => {
                 try {
-                    if (window.adexiumWidget && typeof window.adexiumWidget.showAd === 'function') {
-                        window.adexiumWidget.showAd().then(() => {
-                            console.log('✅ Adexium ad completed');
-                            resolve();
-                        }).catch(reject);
-                    } else if (typeof AdexiumWidget !== 'undefined') {
-                        // تهيئة احتياطية إذا لم تكن موجودة
+                    if (!window.adexiumWidget && typeof AdexiumWidget !== 'undefined') {
                         window.adexiumWidget = new AdexiumWidget({
                             wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6',
                             adFormat: 'interstitial'
                         });
-                        window.adexiumWidget.showAd().then(() => {
-                            console.log('✅ Adexium ad completed');
-                            resolve();
-                        }).catch(reject);
-                    } else {
-                        reject('Adexium not ready');
                     }
+                    
+                    if (!window.adexiumWidget) {
+                        reject('Adexium widget not initialized');
+                        return;
+                    }
+                    
+                    let resolved = false;
+                    let timeoutId = null;
+                    
+                    const cleanup = () => {
+                        if (timeoutId) clearTimeout(timeoutId);
+                        try {
+                            window.adexiumWidget.off('adReceived', onAdReceived);
+                            window.adexiumWidget.off('noAdFound', onNoAdFound);
+                            window.adexiumWidget.off('adPlaybackCompleted', onAdPlaybackCompleted);
+                            window.adexiumWidget.off('adClosed', onAdClosed);
+                            window.adexiumWidget.off('adDisplayed', onAdDisplayed);
+                        } catch(e) {}
+                    };
+                    
+                    const onAdReceived = (ad) => {
+                        if (resolved) return;
+                        console.log('✅ Adexium ad received:', ad);
+                        try {
+                            window.adexiumWidget.displayAd(ad);
+                        } catch(e) {
+                            cleanup();
+                            reject('Failed to display ad: ' + e.message);
+                        }
+                    };
+                    
+                    const onNoAdFound = () => {
+                        if (resolved) return;
+                        console.log('❌ Adexium no ad found');
+                        cleanup();
+                        reject('No ad available');
+                    };
+                    
+                    const onAdPlaybackCompleted = () => {
+                        if (resolved) return;
+                        console.log('✅ Adexium ad playback completed');
+                        resolved = true;
+                        cleanup();
+                        resolve();
+                    };
+                    
+                    const onAdClosed = () => {
+                        if (resolved) return;
+                        console.log('❌ Adexium ad closed by user');
+                        cleanup();
+                        reject('Ad closed by user');
+                    };
+                    
+                    const onAdDisplayed = () => {
+                        console.log('✅ Adexium ad displayed');
+                    };
+                    
+                    window.adexiumWidget.on('adReceived', onAdReceived);
+                    window.adexiumWidget.on('noAdFound', onNoAdFound);
+                    window.adexiumWidget.on('adPlaybackCompleted', onAdPlaybackCompleted);
+                    window.adexiumWidget.on('adClosed', onAdClosed);
+                    window.adexiumWidget.on('adDisplayed', onAdDisplayed);
+                    
+                    timeoutId = setTimeout(() => {
+                        if (!resolved) {
+                            console.log('❌ Adexium request timeout');
+                            cleanup();
+                            reject('Ad request timeout');
+                        }
+                    }, 15000);
+                    
+                    window.adexiumWidget.requestAd('interstitial');
+                    
                 } catch (e) {
+                    console.error('❌ Adexium error:', e);
                     reject('Adexium error: ' + e.message);
                 }
             });
@@ -4866,26 +4941,82 @@ const AD_PLATFORMS = [
     },
     {
         name: 'RichAds',
+        init: () => {
+            if (!window.richadsController && typeof TelegramAdsController !== 'undefined') {
+                try {
+                    window.richadsController = new TelegramAdsController();
+                    window.richadsController.initialize({
+                        pubId: "1009657",
+                        appId: "7207",
+                        debug: false
+                    });
+                    console.log('✅ RichAds controller initialized');
+                } catch (e) {
+                    console.error('❌ RichAds init error:', e);
+                }
+            }
+        },
         show: () => {
             return new Promise((resolve, reject) => {
-                if (window.TelegramAdsController) {
-                    // استخدام showInterstitial() بدلاً من showAd()
-                    if (typeof window.TelegramAdsController.showInterstitial === 'function') {
-                        window.TelegramAdsController.showInterstitial().then(() => {
-                            console.log('✅ RichAds interstitial completed');
-                            resolve();
-                        }).catch(reject);
-                    } else if (typeof window.TelegramAdsController.showAd === 'function') {
-                        // احتياطي
-                        window.TelegramAdsController.showAd().then(() => {
-                            console.log('✅ RichAds ad completed');
-                            resolve();
-                        }).catch(reject);
+                try {
+                    if (!window.richadsController && typeof TelegramAdsController !== 'undefined') {
+                        window.richadsController = new TelegramAdsController();
+                        window.richadsController.initialize({
+                            pubId: "1009657",
+                            appId: "7207",
+                            debug: false
+                        });
+                    }
+                    
+                    if (!window.richadsController) {
+                        reject('RichAds not initialized');
+                        return;
+                    }
+                    
+                    let resolved = false;
+                    let timeoutId = null;
+                    
+                    const cleanup = () => {
+                        if (timeoutId) clearTimeout(timeoutId);
+                    };
+                    
+                    const onSuccess = () => {
+                        if (resolved) return;
+                        resolved = true;
+                        cleanup();
+                        console.log('✅ RichAds ad completed');
+                        resolve();
+                    };
+                    
+                    const onError = (err) => {
+                        if (resolved) return;
+                        resolved = true;
+                        cleanup();
+                        console.log('❌ RichAds error:', err);
+                        reject(err || 'RichAds ad failed');
+                    };
+                    
+                    timeoutId = setTimeout(() => {
+                        if (!resolved) {
+                            console.log('❌ RichAds timeout');
+                            onError('RichAds timeout');
+                        }
+                    }, 15000);
+                    
+                    // جلب الدوال المتاحة حسب التوثيق
+                    if (typeof window.richadsController.triggerInterstitialVideo === 'function') {
+                        window.richadsController.triggerInterstitialVideo().then(onSuccess).catch(onError);
+                    } else if (typeof window.richadsController.showInterstitial === 'function') {
+                        window.richadsController.showInterstitial().then(onSuccess).catch(onError);
+                    } else if (typeof window.richadsController.showAd === 'function') {
+                        window.richadsController.showAd().then(onSuccess).catch(onError);
                     } else {
                         reject('RichAds no show method found');
                     }
-                } else {
-                    reject('RichAds not initialized');
+                    
+                } catch (e) {
+                    console.error('❌ RichAds error:', e);
+                    reject('RichAds error: ' + e.message);
                 }
             });
         }
