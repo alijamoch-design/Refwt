@@ -4837,20 +4837,21 @@ const AD_PLATFORMS = [
     },
     {
         name: 'Adexium',
-        init: () => {
-            if (typeof AdexiumWidget !== 'undefined') {
-                console.log('✅ Adexium detected');
-            }
-        },
         show: () => {
             return new Promise((resolve, reject) => {
                 try {
-                    if (typeof AdexiumWidget !== 'undefined') {
-                        const adexiumAd = new AdexiumWidget({
+                    if (window.adexiumWidget && typeof window.adexiumWidget.showAd === 'function') {
+                        window.adexiumWidget.showAd().then(() => {
+                            console.log('✅ Adexium ad completed');
+                            resolve();
+                        }).catch(reject);
+                    } else if (typeof AdexiumWidget !== 'undefined') {
+                        // تهيئة احتياطية إذا لم تكن موجودة
+                        window.adexiumWidget = new AdexiumWidget({
                             wid: 'd671ae85-bab7-4128-9182-50151e2ca8a6',
                             adFormat: 'interstitial'
                         });
-                        adexiumAd.showAd().then(() => {
+                        window.adexiumWidget.showAd().then(() => {
                             console.log('✅ Adexium ad completed');
                             resolve();
                         }).catch(reject);
@@ -4865,68 +4866,26 @@ const AD_PLATFORMS = [
     },
     {
         name: 'RichAds',
-        init: () => {
-            if (!richAdsInitialized && !richAdsFailed && typeof TelegramAdsController !== 'undefined') {
-                try {
-                    window.TelegramAdsController = new TelegramAdsController();
-                    window.TelegramAdsController.initialize({
-                        pubId: "1009657",
-                        appId: "7207",
-                    });
-                    richAdsInitialized = true;
-                    console.log('✅ RichAds initialized');
-                } catch (e) {
-                    console.error('❌ RichAds init error:', e);
-                    richAdsFailed = true;
-                }
-            }
-        },
         show: () => {
             return new Promise((resolve, reject) => {
-                if (richAdsFailed) {
-                    reject('RichAds failed to initialize');
-                    return;
-                }
-                
-                if (!richAdsInitialized) {
-                    try {
-                        window.TelegramAdsController = new TelegramAdsController();
-                        window.TelegramAdsController.initialize({
-                            pubId: "1009657",
-                            appId: "7207",
-                        });
-                        richAdsInitialized = true;
-                    } catch (e) {
-                        richAdsFailed = true;
-                        reject('RichAds init failed: ' + e.message);
-                        return;
-                    }
-                }
-
-                if (window.TelegramAdsController && typeof window.TelegramAdsController.showAd === 'function') {
-                    try {
-                        window.TelegramAdsController.showAd()
-                            .then(() => {
-                                console.log('✅ RichAds ad completed');
-                                resolve();
-                            })
-                            .catch(reject);
-                    } catch (e) {
-                        reject('RichAds error: ' + e.message);
-                    }
-                } else if (window.TelegramAdsController && typeof window.TelegramAdsController.showInterstitial === 'function') {
-                    try {
-                        window.TelegramAdsController.showInterstitial()
-                            .then(() => {
-                                console.log('✅ RichAds interstitial completed');
-                                resolve();
-                            })
-                            .catch(reject);
-                    } catch (e) {
-                        reject('RichAds error: ' + e.message);
+                if (window.TelegramAdsController) {
+                    // استخدام showInterstitial() بدلاً من showAd()
+                    if (typeof window.TelegramAdsController.showInterstitial === 'function') {
+                        window.TelegramAdsController.showInterstitial().then(() => {
+                            console.log('✅ RichAds interstitial completed');
+                            resolve();
+                        }).catch(reject);
+                    } else if (typeof window.TelegramAdsController.showAd === 'function') {
+                        // احتياطي
+                        window.TelegramAdsController.showAd().then(() => {
+                            console.log('✅ RichAds ad completed');
+                            resolve();
+                        }).catch(reject);
+                    } else {
+                        reject('RichAds no show method found');
                     }
                 } else {
-                    reject('RichAds show method not found');
+                    reject('RichAds not initialized');
                 }
             });
         }
@@ -5251,7 +5210,7 @@ async function watchAd() {
         }
     }
 
-    // ========== منح المكافأة فقط إذا شاهد الإعلانين ==========
+    // ========== منح المكافأة إذا شاهد إعلانين ==========
     if (adsShown === 2) {
         addEarnReward();
         updateEarnUI();
@@ -5274,7 +5233,6 @@ async function watchAd() {
 // ============================================================================
 // 33. INITIALIZATION
 // ============================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
     if (currentLanguage === 'ar') {
         document.body.classList.add('rtl');
